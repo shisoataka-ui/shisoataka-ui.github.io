@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Athena 公開デモ 入口</title>
+<style>
+  body { font-family: sans-serif; margin: 0; background: #101418; color: #eef2f5; }
+  main { max-width: 640px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 24px; margin: 8px 0 4px; }
+  .sub { color: #9fb2c1; font-size: 13px; margin-bottom: 16px; line-height: 1.6; }
+  .notice { background: #1b2530; border: 1px solid #2e4256; border-radius: 10px;
+            padding: 10px 12px; font-size: 13px; line-height: 1.6; margin-bottom: 20px; }
+  a.bigbtn { display: block; text-decoration: none; border-radius: 12px;
+    padding: 18px; margin: 12px 0; color: #fff; background: #2f7fd0; }
+  a.bigbtn .t { font-size: 19px; font-weight: bold; display: block; }
+  a.bigbtn .d { font-size: 13px; opacity: .9; display: block; margin-top: 6px;
+    line-height: 1.6; }
+  a.bigbtn.alt { background: #33424f; }
+  a.linkbtn { display: block; background: #24384a; color: #eef2f5;
+    text-decoration: none; padding: 12px 18px; border-radius: 10px;
+    margin: 6px 0; font-size: 16px; }
+  h2 { font-size: 17px; margin: 32px 0 6px; }
+  p.small { font-size: 13px; color: #9fb2c1; line-height: 1.6; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Athena（アテナ）公開デモ</h1>
+  <div class="sub">自主開発の特化型AI「Athena」の公開デモです。
+    お持ちの環境に合わせて、使い方を選んでください。</div>
+  <div class="notice">
+    Athenaは汎用AIではなく、決まった範囲の情報から出典つきで答える特化型AIです。
+    データは外部に送信せず、作り話はしません。使われるほど学習して賢くなります。<br>
+    ※現在は開発者自身の活動内のみで使用中です。一般公開・企業向け提供はこれから行います。
+  </div>
+
+  <a class="bigbtn" href="app/">
+    <span class="t">スマホで使う（軽量版）</span>
+    <span class="d">インストール不要で、このままブラウザで使えます。
+      スマホの中で動く簡易な仕組みのため、PC版（フル版）とは
+      答え方が違い、結果が異なる場合があります。</span>
+  </a>
+  <a class="bigbtn alt"
+     href="https://drive.google.com/file/d/1MPegpqj-qDJVWdBJGPVq-_J4gwLH5pDy/view?usp=drivesdk"
+     target="_blank" rel="noopener">
+    <span class="t">PC版をダウンロード（フル版）</span>
+    <span class="d">Windows PC 用のフル版です（Python 3.12 が必要です）。
+      本来のエンジンで答える、正式なデモはこちらです。</span>
+  </a>
+
+  <h2>記録について</h2>
+  <p class="small">どちらの版でも、質問とフィードバックは学習データとして
+    お使いの端末（スマホ／PC）の中にだけ記録され、外へ自動で送信されることは
+    ありません。記録が開発者のもとへ届くのは、ご本人が書き出して送る操作を
+    したときだけです。個人情報は入力しないでください。</p>
+
+  <h2>もっと知りたい方へ</h2>
+  <a class="linkbtn" href="https://note.com/shisoatx"
+     target="_blank" rel="noopener">noteを見る（しそ / shisoatx）</a>
+  <a class="linkbtn" href="https://www.instagram.com/takasooo._.official/"
+     target="_blank" rel="noopener">Instagramを見る（@takasooo._.official）</a>
+</main>
+</body>
+</html>

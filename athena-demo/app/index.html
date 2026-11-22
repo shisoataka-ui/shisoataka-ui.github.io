@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Athena 公開デモ（スマホ向け軽量版）</title>
+<style>
+  body { font-family: sans-serif; margin: 0; background: #101418; color: #eef2f5; }
+  main { max-width: 640px; margin: 0 auto; padding: 20px 16px 48px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  .sub { color: #9fb2c1; font-size: 13px; margin-bottom: 14px; }
+  .badge { display: inline-block; background: #6b5410; color: #ffe9a8;
+    border: 1px solid #a8871e; border-radius: 999px; padding: 3px 12px;
+    font-size: 13px; margin-bottom: 10px; }
+  .notice { background: #1b2530; border: 1px solid #2e4256; border-radius: 10px;
+            padding: 10px 12px; font-size: 13px; line-height: 1.6; margin-bottom: 16px; }
+  .row { display: flex; gap: 8px; }
+  input[type=text], textarea { flex: 1; font-size: 16px; padding: 12px;
+    border-radius: 10px; border: 1px solid #3a4a59; background: #0c0f12; color: #eef2f5; }
+  button { font-size: 16px; padding: 12px 18px; border-radius: 10px; border: 0;
+    background: #2f7fd0; color: #fff; cursor: pointer; min-height: 48px; }
+  button.sub2 { background: #33424f; }
+  button.pick { background: #24384a; display: block; width: 100%; text-align: left;
+    margin: 6px 0; min-height: 48px; }
+  button:disabled { opacity: .45; cursor: default; }
+  #answer { margin-top: 18px; background: #16202a; border: 1px solid #2e4256;
+    border-radius: 12px; padding: 14px; line-height: 1.7; display: none; }
+  #src { color: #9fb2c1; font-size: 12px; margin-top: 8px; }
+  #feedback, #intentBox, #receiptBox { margin-top: 14px; display: none; }
+  #feedback p, #intentBox p, #receiptBox p { margin: 4px 0 8px; font-size: 14px;
+    color: #c8d6e0; line-height: 1.6; }
+  #receiptCode { font-size: 24px; font-weight: bold; letter-spacing: 2px;
+    background: #0c0f12; border: 1px dashed #3a4a59; border-radius: 10px;
+    padding: 10px; text-align: center; }
+  #thanks { margin-top: 14px; color: #8fd18a; display: none; }
+  textarea { width: 100%; box-sizing: border-box; min-height: 56px; margin-bottom: 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .chips .cap { width: 100%; font-size: 13px; color: #9fb2c1; margin-bottom: 2px; }
+  button.chip { background: #24384a; color: #eef2f5; font-size: 15px;
+    padding: 11px 16px; border-radius: 999px; min-height: 48px; }
+  a.chip { background: #24384a; color: #eef2f5; font-size: 15px;
+    padding: 11px 16px; border-radius: 999px; text-decoration: none;
+    display: inline-flex; align-items: center; min-height: 48px;
+    box-sizing: border-box; }
+  #links { margin-top: 10px; }
+  a.linkbtn { display: block; background: #24384a; color: #eef2f5;
+    text-decoration: none; padding: 12px 18px; border-radius: 10px;
+    margin: 6px 0; font-size: 16px; }
+  section.check { margin-top: 36px; border-top: 1px solid #2e4256; padding-top: 18px; }
+  section.check h2 { font-size: 17px; margin: 0 0 6px; }
+  section.check p { font-size: 13px; color: #9fb2c1; line-height: 1.6; }
+  #checkResult, #exportResult { margin-top: 12px; line-height: 1.7; display: none;
+    background: #16202a; border: 1px solid #2e4256; border-radius: 12px; padding: 14px; }
+  #consentOverlay { position: fixed; inset: 0; background: rgba(5,8,10,.88);
+    display: none; z-index: 10; overflow-y: auto; }
+  #consentCard { max-width: 600px; margin: 32px auto; background: #16202a;
+    border: 1px solid #2e4256; border-radius: 14px; padding: 20px; line-height: 1.8;
+    font-size: 14px; }
+  #consentCard h2 { font-size: 18px; margin-top: 0; }
+  #consentCard ul { padding-left: 20px; }
+  #loginOverlay { position: fixed; inset: 0; background: rgba(5,8,10,.88);
+    display: none; z-index: 10; overflow-y: auto; }
+  #loginCard { max-width: 420px; margin: 48px auto; background: #16202a;
+    border: 1px solid #2e4256; border-radius: 14px; padding: 20px;
+    line-height: 1.8; font-size: 14px; }
+  #loginCard h2 { font-size: 18px; margin-top: 0; }
+  #loginCard label { display: block; margin-top: 12px; color: #c8d6e0; }
+  #loginCard input { width: 100%; box-sizing: border-box; margin-top: 4px; }
+  #loginCard .demo-note { background: #1b2530; border: 1px solid #2e4256;
+    border-radius: 10px; padding: 10px 12px; font-size: 13px; }
+</style>
+</head>
+<body>
+<div id="consentOverlay">
+  <div id="consentCard">
+    <h2>はじめにお読みください</h2>
+    <p>これは、質問に自動で答えるシステム「Athena（アテナ）」の公開デモ
+       （<b>スマホ向け軽量版</b>）です。
+       工作と科学の一般知識をもとに、出典つきで答えます。</p>
+    <ul>
+      <li>このデモの目的は、Athena の改善のための<b>学習データを集めること</b>です。</li>
+      <li>記録されるのは、あなたが入力した<b>質問文</b>と、答えへの<b>評価</b>、
+          「何を知りたかったか」のメモだけです。</li>
+      <li>記録は<b>この端末（スマホ）の中にだけ保存</b>され、外へ自動で送信されることは
+          ありません。</li>
+      <li><b>名前・住所・電話番号などの個人情報は、絶対に入力しないでください。</b>
+          個人情報や、運営団体・学校についての質問にはお答えできません。</li>
+      <li>答えられなかった質問は「受付番号」が発行され、記録されます。
+          いただいた質問と評価は、Athenaの改善（学習）のために使われます。
+          記録が開発者のもとへ届くのは、<b>あなたがこのページから記録を
+          書き出して、送る操作をしたときだけ</b>です（学習に使う前に、
+          個人情報が含まれていないか確認します）。
+          なお、このデモ自体に、あとから回答が届く仕組みはありません。</li>
+      <li>この軽量版は、スマホのブラウザの中で動く簡易な仕組みで答えています。
+          PC版（フル版）とは答え方が違うため、結果が異なる場合があります。</li>
+    </ul>
+    <button id="agreeBtn" style="width:100%;">上記に同意してはじめる</button>
+  </div>
+</div>
+<div id="loginOverlay">
+  <div id="loginCard">
+    <h2>ログイン</h2>
+    <p class="demo-note">これはデモ用のログイン画面です（本物の認証ではありません）。
+       デモ用アカウントが入力されていますので、そのまま「ログイン」を押してください。
+       ご自身の本当のパスワードは入力しないでください。</p>
+    <label>ユーザー名
+      <input type="text" id="loginUser" value="demo" autocomplete="off">
+    </label>
+    <label>パスワード
+      <input type="password" id="loginPass" value="demo2026" autocomplete="off">
+    </label>
+    <button id="loginBtn" style="width:100%; margin-top:16px;">ログイン</button>
+  </div>
+</div>
+<main>
+  <h1>Athena（アテナ）公開デモ</h1>
+  <div class="sub">自主開発の特化型AI「Athena」が、出典を示しながら答えます。</div>
+  <span class="badge">スマホ向け軽量版</span>
+  <div class="notice">
+    Athenaは汎用AIではなく、社内FAQやマニュアルなど決まった範囲の情報から、
+    出典つきで答える特化型AIです。データは外部に送信せず、作り話はしません。
+    使われるほど学習して賢くなります。独自規格「Aegis」による能動的サイバー防御も備えています。<br>
+    ※現在は開発者自身の活動内のみで使用中です。一般公開・企業向け提供はこれから行います。<br>
+    これは公開デモの<b>スマホ向け軽量版</b>です。スマホのブラウザの中で動く
+    簡易な仕組みで、一般知識のダミーデータから答えを探しています。
+    PC版（フル版）とは答え方が違うため、結果が異なる場合があります。
+    フル版は入口ページからダウンロードできます。<br>
+    質問とフィードバックは、改善のための学習データとして、この端末内に記録されます
+    （外へ自動で送信されることはありません）。<br>
+    <b>名前・住所・電話番号などの個人情報は入力しないでください。</b>
+  </div>
+  <div class="row">
+    <input type="text" id="q" placeholder="例：コマが倒れないのはなぜ？">
+    <button id="askBtn">聞く</button>
+  </div>
+  <div class="chips" id="topChips"></div>
+  <div id="answer">
+    <div id="answerText"></div>
+    <div id="choices"></div>
+    <div id="links"></div>
+    <div id="src"></div>
+  </div>
+  <div id="receiptBox">
+    <p>この質問には答えられなかったため、記録しました。<b>受付番号</b>は、
+       この質問の記録番号です。画面の下にある「学習データの書き出し」から
+       記録を送っていただくと、Athenaの学習に使われます。</p>
+    <div id="receiptCode"></div>
+  </div>
+  <div id="feedback">
+    <p>この答えは、知りたかったことと合っていましたか？</p>
+    <div class="row">
+      <button id="okBtn">その通り</button>
+      <button id="ngBtn" class="sub2">ちがう</button>
+    </div>
+    <div id="expectedBox" style="display:none; margin-top:10px;">
+      <textarea id="expected" placeholder="期待していた内容があれば書いてください（任意）"></textarea>
+      <button id="expectedSend" class="sub2">送る</button>
+    </div>
+  </div>
+  <div id="intentBox">
+    <p>何を知りたかったですか？（今後の改善に使います）</p>
+    <textarea id="intended" placeholder="例：コマの軸の太さで何が変わるか知りたかった"></textarea>
+    <button id="intentSend" class="sub2">送る</button>
+  </div>
+  <div id="thanks">ありがとうございました！</div>
+  <div class="chips" id="nextChips"></div>
+  <section class="check">
+    <h2>記録した質問の確認</h2>
+    <p>答えられなかった質問についた「受付番号」を入力すると、
+       記録した質問の内容を確認できます（確認できるのは、この端末で
+       記録した質問だけです）。</p>
+    <div class="row">
+      <input type="text" id="receiptInput" placeholder="受付番号（例：AB3K9XYZ）"
+             style="text-transform: uppercase;">
+      <button id="checkBtn" class="sub2">確認する</button>
+    </div>
+    <div id="checkResult"></div>
+  </section>
+  <section class="check">
+    <h2>学習データの書き出し</h2>
+    <p>このデモでの質問・評価の記録は、この端末の中にだけ保存されていて、
+       外へ自動で送信されることはありません。Athenaの学習に役立てるため、
+       記録をファイルに書き出して送っていただけると助かります。
+       書き出されるのは、そのまま学習データとして使える形式（JSONL）の
+       ファイルです。送っていただいた記録は、個人情報が含まれていないか
+       確認（スクリーニング）したうえで、学習に使います。</p>
+    <div class="row">
+      <button id="exportBtn" class="sub2">書き出す</button>
+    </div>
+    <div id="exportResult"></div>
+  </section>
+  <section class="check">
+    <h2>もっと知りたい方へ</h2>
+    <p>Athenaの作り方を分けた技術シリーズや、工作機器の使い方の記事（note）、
+       紹介動画や写真（Instagram）も公開しています。</p>
+    <a class="linkbtn" href="https://note.com/shisoatx"
+       target="_blank" rel="noopener">noteを見る（しそ / shisoatx）</a>
+    <a class="linkbtn" href="https://www.instagram.com/takasooo._.official/"
+       target="_blank" rel="noopener">Instagramを見る（@takasooo._.official）</a>
+  </section>
+</main>
+<script src="kb.js"></script>
+<script src="engine.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
