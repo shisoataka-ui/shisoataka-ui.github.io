@@ -890,7 +890,7 @@ body.is-phone .toast{bottom:calc(132px + env(safe-area-inset-bottom))}
 <dialog id="licenseDlg">
   <h3 style="margin-top:0">ライセンス登録</h3>
   <p style="font-size:12.5px;line-height:1.8">ご購入ありがとうございます。購入時にお渡しした<b>購入ID（ライセンスキー）</b>を入力してください。登録情報はこの端末のブラウザ内にだけ保存されます。</p>
-  <p style="font-size:12.5px;line-height:1.8"><b>1ライセンスで端末3台まで登録できます。</b>登録すると、この端末が下記の端末IDでライセンスに紐付きます。登録した端末は、月1回のオンライン確認を行います（確認予定日は「登録端末の管理」で確認できます）。</p>
+  <p style="font-size:12.5px;line-height:1.8"><b>1ライセンスで端末2台まで登録できます。</b>登録すると、この端末が下記の端末IDでライセンスに紐付きます。登録した端末は、月1回のオンライン確認を行います（確認予定日は「登録端末の管理」で確認できます）。</p>
   <div class="dlg-form">
     <label>購入ID <input type="text" id="licKey" placeholder="VK-XXXX-XXXX-XXXX-X" style="width:210px;text-transform:uppercase"></label>
     <label>購入者名（任意） <input type="text" id="licName" placeholder="例：山田太郎" style="width:210px"></label>
@@ -907,7 +907,7 @@ body.is-phone .toast{bottom:calc(132px + env(safe-area-inset-bottom))}
 </dialog>
 <dialog id="deviceDlg">
   <h3 style="margin-top:0">登録端末の管理</h3>
-  <p style="font-size:12.5px;line-height:1.8">1ライセンスで登録できる端末は<b>3台まで</b>です。端末を買い替えたときは、古い端末の登録を解除すると枠が空きます。登録端末は月1回のオンライン確認を行います。</p>
+  <p style="font-size:12.5px;line-height:1.8">1ライセンスで登録できる端末は<b>2台まで</b>です。端末を買い替えたときは、古い端末の登録を解除すると枠が空きます。登録端末は月1回のオンライン確認を行います。</p>
   <div id="deviceList"></div>
   <p id="deviceCheckInfo" style="font-size:12.5px;line-height:1.8"></p>
   <div class="row"><button class="btn" id="deviceCheckBtn" style="flex:1">オンライン確認を実行（確認日を更新）</button></div>
@@ -943,12 +943,12 @@ body.is-phone .toast{bottom:calc(132px + env(safe-area-inset-bottom))}
     </ul>
     <p><b>安定性：</b>作業内容はこの端末のブラウザ内に自動保存され、閉じても下書きから復元できます。Undo/Redoは最大80ステップまで対応します。多数のオブジェクトでも操作が重くなりにくいよう、描画の最適化を行っています。</p>
     <p><b>買い切り・完全オフライン：</b>カーヴェリアは買い切り型で、<b>完全オフラインで動作し、データが外部に送信されることはありません</b>。払い続けなくても、手元のファイルが開けなくなることはありません。</p>
-    <p><b>ライセンス登録制：</b>購入者専用サポートとアップデートは正規購入者のみを対象とします。<b>1ライセンスで端末3台まで登録可</b>（登録端末は月1回のオンライン確認を行います）。<span id="licStatus">現在の登録状況：未登録（試用モード）</span> <button class="btn" onclick="document.getElementById('productDlg').close();openLicenseDialog()">ライセンス登録</button> <button class="btn" onclick="document.getElementById('productDlg').close();openDeviceManager()">登録端末の管理</button></p>
+    <p><b>ライセンス登録制：</b>購入者専用サポートとアップデートは正規購入者のみを対象とします。<b>1ライセンスで端末2台まで登録可</b>（登録端末は月1回のオンライン確認を行います）。<span id="licStatus">現在の登録状況：未登録（試用モード）</span> <button class="btn" onclick="document.getElementById('productDlg').close();openLicenseDialog()">ライセンス登録</button> <button class="btn" onclick="document.getElementById('productDlg').close();openDeviceManager()">登録端末の管理</button></p>
     <p style="font-size:12px;color:var(--mut)">書き出すSVGとプロジェクトファイルには、購入者IDがメタデータとして自動で記録されます（流出時の追跡用です）。未登録の場合は「未登録（試用）」と記録されます。</p>
     <p><b>購入者専用Athena（別売り予定）：</b>カーヴェリアの使い方に加え、レーザー加工・印刷入稿の相談に特化した専用Athenaを、購入者向け追加オプションとして提供予定です（本体の最終版完成後に提供）。</p>
     <p><button class="btn" onclick="document.getElementById('ossDlg').showModal()">オープンソースライセンス表記</button></p>
     <p><b>Illustratorとの互換（要点）：</b>SVG開く／保存 ◎（レイヤー名・ID保持）／PDFで保存 ◎（ベクター・CMYK・塗り足し・トンボ）／複数のアートボード ◎／.aiを開く ○（PDF互換で保存された.aiのみ）／PDFを開いて編集 ○／CMYKで作る ○／特色 ○（名前登録方式）／.epsで保存 ○／.epsを開く ○（簡易）／<b>.aiで保存 ×</b>（代替手段あり：PDF＋SVGの二重書き出し。大手代替ソフトでも.ai保存はほぼ不可が共通認識です）。詳しい互換表は右パネル「印刷・互換」にあります。</p>
-    <p style="color:var(--mut);font-size:12px">正直なお知らせ：パスファインダーの合体・型抜き・交差・中マドはブーリアン演算ライブラリによる実演算ですが、「分割／トリム」は近似表現です。画像トレースの高品質モード（VTracer）はWebAssemblyを使うため、対応ブラウザでのみ動作します（使えない環境では簡易モードに切り替わります）。PSDは合成画像（フラット画像）としてのみ読み込めます（レイヤー分離・再編集はできず、レイヤー名のみ保持します。合成画像のないPSDは開けません）。ライセンスの端末登録（3台まで）と月1回のオンライン確認は、現在はこの端末内の記録で判定しており、端末数のサーバー側カウントはライセンスサーバー接続後に有効になります。PDF/X-1a等の厳密な規格準拠や本格分版プレビューは対象外です。Adobe、IllustratorはAdobe Inc.の商標であり、本製品はAdobeとは関係のない独立したソフトです。</p>
+    <p style="color:var(--mut);font-size:12px">正直なお知らせ：パスファインダーの合体・型抜き・交差・中マドはブーリアン演算ライブラリによる実演算ですが、「分割／トリム」は近似表現です。画像トレースの高品質モード（VTracer）はWebAssemblyを使うため、対応ブラウザでのみ動作します（使えない環境では簡易モードに切り替わります）。PSDは合成画像（フラット画像）としてのみ読み込めます（レイヤー分離・再編集はできず、レイヤー名のみ保持します。合成画像のないPSDは開けません）。ライセンスの端末登録（2台まで）と月1回のオンライン確認は、現在はこの端末内の記録で判定しており、端末数のサーバー側カウントはライセンスサーバー接続後に有効になります。PDF/X-1a等の厳密な規格準拠や本格分版プレビューは対象外です。Adobe、IllustratorはAdobe Inc.の商標であり、本製品はAdobeとは関係のない独立したソフトです。</p>
   </div>
   <button class="btn primary" onclick="document.getElementById('productDlg').close()" style="margin-top:10px">閉じる</button>
 </dialog>
@@ -13742,8 +13742,8 @@ const LIC_KEY="vectorKobo.license.v1";
 function licenseChecksum(payload){const chars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";let sum=0;const s="VK"+payload;for(let i=0;i<s.length;i++)sum+=s.charCodeAt(i)*(i+1);return chars[sum%36];}
 function validateLicenseKey(key){const m=/^VK-([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9])$/.exec((key||"").trim().toUpperCase());if(!m)return false;return licenseChecksum(m[1]+m[2]+m[3])===m[4];}
 function getLicense(){try{return JSON.parse(localStorage.getItem(LIC_KEY)||"null");}catch(e){return null;}}
-/* ---- 端末登録（1ライセンス3台まで＋月1回オンライン確認） ---- */
-const LIC_MAX_DEVICES=3;
+/* ---- 端末登録（1ライセンス2台まで＋月1回オンライン確認） ---- */
+const LIC_MAX_DEVICES=2;
 const LIC_CHECK_INTERVAL_DAYS=30;
 function saveLicense(l){try{localStorage.setItem(LIC_KEY,JSON.stringify(l));}catch(e){}}
 function getDeviceId(){try{const s=localStorage.getItem("vectorKobo.deviceId");if(s)return s;}catch(e){}
