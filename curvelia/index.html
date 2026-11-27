@@ -15,7 +15,7 @@ button,select,input{font:inherit;min-height:36px}button{cursor:pointer}
 .topbar{background:#fff;border-bottom:1px solid var(--line);padding:6px 10px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;z-index:30}
 .logo{font-weight:800;font-size:15px;margin-right:4px}.logo span{color:var(--acc)}
 .menu{position:relative}.menu>button{background:none;border:1px solid transparent;border-radius:8px;padding:4px 10px;font-weight:600}.menu>button:hover{background:#f1f5f9}
-.dropdown{position:absolute;top:42px;left:0;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.15);min-width:240px;padding:6px;display:none;z-index:100}.dropdown.open{display:block}.dropdown button{display:flex;justify-content:space-between;width:100%;background:none;border:0;padding:8px 10px;border-radius:8px;text-align:left}.dropdown button:hover{background:#eff6ff}.dropdown kbd{color:var(--mut);font-size:11px}
+.dropdown{position:absolute;top:42px;left:0;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.15);min-width:240px;padding:6px;display:none;z-index:100;max-width:calc(100vw - 16px);max-height:calc(100dvh - 104px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}.dropdown.open{display:block}.dropdown button{display:flex;justify-content:space-between;width:100%;background:none;border:0;padding:8px 10px;border-radius:8px;text-align:left}.dropdown button:hover{background:#eff6ff}.dropdown kbd{color:var(--mut);font-size:11px}
 .top-quick{display:flex;gap:8px;align-items:center;margin-left:auto;flex-wrap:wrap}
 .swatch-mini{width:30px;height:30px;border-radius:8px;border:2px solid #fff;box-shadow:0 0 0 1px #cbd5e1;overflow:hidden;padding:0}.swatch-mini input{width:100%;height:100%;border:0;padding:0;cursor:pointer}
 label.small{font-size:11px;color:var(--mut);display:flex;align-items:center;gap:4px}
@@ -35,7 +35,7 @@ input[type=text],select{padding:6px 8px;border:1px solid var(--line);border-radi
 .ruler-left{width:22px;background:#f8fafc;border-right:1px solid var(--line);position:relative;overflow:hidden;flex-shrink:0}
 .canvas-row{flex:1;display:flex;min-height:0}
 .viewport{flex:1;overflow:hidden;background:#dfe4ea;background-image:radial-gradient(#c3cad4 1px,transparent 1px);background-size:22px 22px;position:relative;touch-action:none}
-.viewport svg{position:absolute;left:0;top:0}
+.viewport svg{position:absolute;left:0;top:0;touch-action:none}
 .statusbar{background:#fff;border-top:1px solid var(--line);padding:4px 10px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--mut)}
 .statusbar b{color:var(--ink)}
 /* right panel */
@@ -104,7 +104,7 @@ body.is-phone .prod-badge{display:none}
 body.is-phone .device-badge{display:none}
 body.is-phone .topbar>.btn:not(.fs-btn){display:none}
 body.is-phone .menu>button{white-space:nowrap;padding:4px 5px;font-size:12px;min-height:30px}
-body.is-phone .dropdown{min-width:200px;max-width:86vw}
+body.is-phone .dropdown{min-width:200px;max-width:calc(100vw - 16px);max-height:calc(100dvh - 92px)}
 body.is-phone .menu-end .dropdown{left:auto;right:0}
 .fs-btn{display:none}
 body.is-phone .fs-btn{display:inline-flex;align-items:center;order:99;margin-left:auto;padding:4px 7px;font-size:11px;min-height:30px;white-space:nowrap;flex:none}
@@ -249,7 +249,7 @@ body.is-coarse input:not([type=range]):not([type=color]):not([type=checkbox]),bo
 .ctxbar::-webkit-scrollbar{display:none}
 body.is-phone .ctxbar{top:auto;bottom:8px}
 .zoom-label{background:none;border:0;color:var(--acc);font-weight:800;padding:4px;min-height:30px;cursor:pointer;font-size:13px}
-.zoom-menu{position:absolute;right:8px;bottom:52px;z-index:66;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 34px rgba(0,0,0,.2);padding:6px;display:none;flex-direction:column;min-width:180px;max-height:60dvh;overflow-y:auto;overscroll-behavior:contain}
+.zoom-menu{position:absolute;right:8px;bottom:52px;z-index:66;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 34px rgba(0,0,0,.2);padding:6px;display:none;flex-direction:column;min-width:180px;max-width:calc(100vw - 16px);max-height:60dvh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
 .zoom-menu.show{display:flex}
 .zoom-menu button{background:none;border:0;border-radius:8px;padding:9px 12px;text-align:left;font-weight:600;min-height:40px}
 .zoom-menu button:hover{background:#eff6ff}
@@ -266,7 +266,7 @@ body.is-coarse .layer-item{min-height:48px}
 /* ===== アートボード名ラベル（画面座標のDOMチップ：ズームで大きさが変わらず、見切れない） ===== */
 #stage{overflow:visible}
 .board-labels{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:6}
-.board-chip{position:absolute;left:0;top:0;pointer-events:auto;font-size:11px;line-height:1.35;font-weight:600;padding:2px 8px;border-radius:6px;background:rgba(248,250,252,.9);color:#334155;border:1px solid rgba(148,163,184,.65);white-space:nowrap;max-width:min(72vw,430px);overflow:hidden;text-overflow:ellipsis;cursor:pointer;box-shadow:0 1px 4px rgba(15,23,42,.14)}
+.board-chip{position:absolute;left:0;top:0;pointer-events:auto;font-size:11px;line-height:1.35;font-weight:600;padding:2px 8px;border-radius:6px;background:rgba(248,250,252,.9);color:#334155;border:1px solid rgba(148,163,184,.65);white-space:nowrap;max-width:min(72vw,430px);overflow:hidden;text-overflow:ellipsis;cursor:pointer;box-shadow:0 1px 4px rgba(15,23,42,.14);touch-action:none}
 .board-chip.active{background:rgba(37,99,235,.92);color:#fff;border-color:rgba(37,99,235,.35)}
 /* ===== テーマ：黒（ダーク） ===== */
 :root{color-scheme:light}
@@ -12309,6 +12309,10 @@ function selectObj(o,additive){if(!o){if(!additive)state.selected=[];}
 
 /* ============ POINTER INTERACTION ============ */
 let drag=null, penDraft=null, freeDraft=null, shapeDraft=null, spaceDown=false;
+/* パン専用の軽量描画：ズームが変わらない移動ではSVG全体を再構築せず、変換とDOMチップ／FABだけを更新する（パン中のカクつき・横成分の取りこぼし防止） */
+function panRender(){stage.style.transform=`translate(${state.pan.x}px,${state.pan.y}px) scale(${state.zoom})`;stage.style.transformOrigin="0 0";try{updateBoardLabels();}catch(e){}try{layoutFab();}catch(e){}}
+/* 画面座標でそのまま滑らせる（軸固定なし：渡した dx/dy を両軸そのまま適用し、斜め移動も可能にする） */
+function panByScreen(dx,dy){if(!dx&&!dy)return;_viewMoved=true;state.pan.x+=dx;state.pan.y+=dy;panRender();}
 vp.addEventListener("pointerdown",e=>{
   if(e.target.closest("button"))return;
   if(_pinch||_gestureLock)return;
@@ -12381,7 +12385,7 @@ vp.addEventListener("pointermove",e=>{
   if(drag)LIGHT=true;
   const p0=toSVG(e),p=snapPt(p0);$("stPos").textContent=`${Math.round(p0.x)}, ${Math.round(p0.y)}`;
   if(!drag)return;
-  if(drag.kind==="pan"){state.pan.x=drag.px+(e.clientX-drag.sx);state.pan.y=drag.py+(e.clientY-drag.sy);renderAll();return;}
+  if(drag.kind==="pan"){state.pan.x=drag.px+(e.clientX-drag.sx);state.pan.y=drag.py+(e.clientY-drag.sy);_viewMoved=true;panRender();return;}
   if(drag.kind==="guide"){const gd=state.guides[drag.idx];if(gd)gd.pos=gd.axis==="x"?p0.x:p0.y;renderAll();return;}
   if(drag.kind==="penHandle"&&penDraft){if(state.tool==="curve"){renderAll();return;}const a=penDraft.anchors[drag.idx];const dx=p0.x-a.x,dy=p0.y-a.y;if(Math.hypot(dx,dy)>3){a.hOut={x:a.x+dx,y:a.y+dy};a.hIn={x:a.x-dx,y:a.y-dy};}renderAll();return;}
   if(drag.kind==="shapebuilder"){drag.pts.push(p0);renderAll();const ui=stage.querySelector(".sel-ui")||el("g",{class:"sel-ui"});el("path",{d:"M "+drag.pts.map(q=>q.x+" "+q.y).join(" L "),fill:"none",stroke:"#f59e0b","stroke-width":2/state.zoom,"stroke-dasharray":"5 3"},ui);return;}
@@ -12466,10 +12470,21 @@ vp.addEventListener("pointerup",e=>{
   if(["move","resize","rotate","scale","shear","anchor","handle","anchorConvert","guide","bresize","bmove"].includes(drag.kind)&&drag.moved!==false)pushHistory();
   drag=null;LIGHT=false;renderAll();
 });
+/* モバイルではブラウザのジェスチャー割り込み等で pointerup ではなく pointercancel が来ることがある。
+   ここでドラッグを確実に終了しないと、ドラッグ状態と LIGHT（描画間引き）が残って次のパンが効かなくなる */
+vp.addEventListener("pointercancel",()=>{if(drag){drag=null;LIGHT=false;renderAll();}});
+/* iOS系WebView向け保険：パン／ピンチ中はタッチ移動をページ側ジェスチャーに奪わせない */
+vp.addEventListener("touchmove",e=>{if(drag||_pinch)e.preventDefault();},{passive:false});
 vp.addEventListener("dblclick",e=>{const p=toSVG(e);
   const ge=e.target.getAttribute&&e.target.getAttribute("data-guide");if(ge!==null&&ge!==undefined){state.guides.splice(+ge,1);pushHistory();renderAll();return;}
   const o=hitObject(p);if(o&&o.type==="text"){askText(o.text,txt=>{if(txt!==null){o.text=txt;$("textEdit").value=txt;pushHistory();renderAll();}});}});
-vp.addEventListener("wheel",e=>{e.preventDefault();zoomBy(e.deltaY<0?1.1:0.9,toSVG(e));},{passive:false});
+vp.addEventListener("wheel",e=>{e.preventDefault();
+  const unit=e.deltaMode===1?16:(e.deltaMode===2?Math.max(120,vp.clientHeight):1);
+  const dx=(e.deltaX||0)*unit,dy=(e.deltaY||0)*unit;
+  if(e.ctrlKey){zoomBy(dy<0?1.1:0.9,toSVG(e));return;} // トラックパッドのピンチ／Ctrl+ホイールはズーム
+  if(e.shiftKey){const d=Math.abs(dx)>=Math.abs(dy)?dx:dy;panByScreen(-d,0);return;} // Shift+ホイール＝左右スライド
+  if(dx!==0&&Math.abs(dx)>=Math.abs(dy)){panByScreen(-dx,-dy);return;} // 横方向が主成分のスワイプは両軸そのままスライド（斜め可）
+  zoomBy(e.deltaY<0?1.1:0.9,toSVG(e));},{passive:false});
 /* キャンバス上の右クリックは独自メニュー（入力欄など他の場所では標準メニューを残す） */
 vp.addEventListener("contextmenu",e=>{e.preventDefault();const m=$("ctxMenu");if(!m)return;const sw=vp.closest(".stage-wrap").getBoundingClientRect();m.style.left=Math.max(4,Math.min(e.clientX-sw.left,sw.width-196))+"px";m.style.top=Math.max(4,Math.min(e.clientY-sw.top,sw.height-280))+"px";m.classList.add("show");});
 function ctxAction(a){const m=$("ctxMenu");if(m)m.classList.remove("show");if(a==="fit")zoomFit();else if(a==="100")zoom100();else if(a==="undo")undo();else if(a==="redo")redo();else if(a==="paste")pasteSel();else if(a==="all")selectAll();else if(a==="panel")togglePanel();}
@@ -12585,7 +12600,17 @@ function zoomMenuGo(v){toggleZoomMenu(false);if(v==="fit"){zoomFit();return;}zoo
 function setTool(t){state.tool=t;document.querySelectorAll(".tool").forEach(b=>b.classList.toggle("active",b.dataset.tool===t));$("stTool").textContent=TOOLNAMES[t]||t;$("toolHelp").innerHTML=TOOLHELP[t]||(" <b>"+TOOLNAMES[t]+"</b>");if(t!=="pen"&&t!=="curve"&&penDraft){state.objects=state.objects.filter(o=>o.id!==penDraft.id);penDraft=null;}renderAll();}
 document.querySelectorAll(".tool").forEach(b=>b.addEventListener("click",()=>setTool(b.dataset.tool)));
 document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".tabpage").forEach(p=>p.classList.remove("active"));$("tab-"+b.dataset.tab).classList.add("active");}));
-document.querySelectorAll("[data-menu]").forEach(b=>b.addEventListener("click",e=>{e.stopPropagation();const dd=$("dd-"+b.dataset.menu);const was=dd.classList.contains("open");document.querySelectorAll(".dropdown").forEach(d=>d.classList.remove("open"));if(!was)dd.classList.add("open");}));
+/* ドロップダウンを画面（visualViewport）内に必ず収める：右にはみ出す場合は内側へ寄せ、縦はCSSの max-height＋内部スクロールで最後まで辿れる */
+function placeDropdown(dd){try{dd.style.left="";dd.style.right="";const menu=dd.parentElement;if(!menu)return;const mr=menu.getBoundingClientRect();const r=dd.getBoundingClientRect();if(!r.width)return;const vv=window.visualViewport;const vw=vv?vv.width:window.innerWidth;const m=8;let want=r.left;if(r.right>vw-m)want=vw-m-r.width;if(want<m)want=m;if(Math.abs(want-r.left)>1){dd.style.right="auto";dd.style.left=Math.round(want-mr.left)+"px";}}catch(e){}}
+document.querySelectorAll("[data-menu]").forEach(b=>b.addEventListener("click",e=>{e.stopPropagation();const dd=$("dd-"+b.dataset.menu);const was=dd.classList.contains("open");document.querySelectorAll(".dropdown").forEach(d=>{d.classList.remove("open");d.style.left="";d.style.right="";});if(!was){dd.classList.add("open");placeDropdown(dd);}}));
+window.addEventListener("resize",()=>{document.querySelectorAll(".dropdown").forEach(d=>{d.style.left="";d.style.right="";});});
+/* メニュー内スクロールと項目タップの誤爆防止＋スクロールをメニュー内で完結させる（キャンバス側へ伝えない） */
+document.querySelectorAll(".dropdown").forEach(dd=>{let _sx=0,_sy=0,_scrolled=false;
+  dd.addEventListener("pointerdown",e=>{_sx=e.clientX;_sy=e.clientY;_scrolled=false;e.stopPropagation();},{passive:true});
+  dd.addEventListener("pointermove",e=>{if(Math.hypot(e.clientX-_sx,e.clientY-_sy)>10)_scrolled=true;},{passive:true});
+  dd.addEventListener("click",e=>{if(_scrolled){e.stopPropagation();e.preventDefault();_scrolled=false;}},true);
+  dd.addEventListener("touchmove",e=>{e.stopPropagation();},{passive:true});
+  dd.addEventListener("wheel",e=>{e.stopPropagation();},{passive:true});});
 document.addEventListener("click",()=>document.querySelectorAll(".dropdown").forEach(d=>d.classList.remove("open")));
 function togglePanel(){$("panel").classList.toggle("open");document.body.classList.toggle("panel-open",$("panel").classList.contains("open"));syncFabLabel();}
 function syncFabLabel(){const f=$("fabPanel");if(!f)return;f.textContent=$("panel").classList.contains("open")?"✕ パネルを閉じる":"⚙ パネル";}
@@ -12999,7 +13024,7 @@ function loadStarter(){
 /* ============ KEYBOARD ============ */
 window.addEventListener("keydown",e=>{
   const typing=/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
-  if(e.key===" "&&!typing){spaceDown=true;}
+  if(e.key===" "&&!typing){spaceDown=true;e.preventDefault();}
   if(typing)return;
   const mod=e.ctrlKey||e.metaKey;
   if(mod&&e.key.toLowerCase()==="p"&&!isLicensed()){e.preventDefault();requireLicense("印刷");return;}
@@ -13030,7 +13055,7 @@ window.addEventListener("keydown",e=>{
   if(map[k]&&!mod&&!e.shiftKey)setTool(map[k]);
   if(e.key==="="&&state.tool!=="pen")setTool("addAnchor");if(e.key==="-")setTool("delAnchor");
 });
-window.addEventListener("keyup",e=>{spaceDown=false;});
+window.addEventListener("keyup",e=>{if(e.key===" ")spaceDown=false;});
 /* ============ DEVICE-ADAPTIVE UI ============ */
 let uiModeOverride="auto"; // auto | desktop | tablet | phone (session only, not persisted)
 let currentDevice=null;
@@ -13126,7 +13151,7 @@ function handleViewportChange(reason){
   // ユーザーがズーム/パン操作の最中（ピンチ等）は自動フィットを割り込ませない。手動UIモード中も自動判定によるフィットはしない。
   const wNow=window.innerWidth;
   const gestureBusy=(typeof _pinch!=="undefined"&&_pinch)||(typeof _pointers!=="undefined"&&_pointers&&_pointers.size>0);
-  if(effNow==="phone"&&_fitW!==null&&Math.abs(wNow-_fitW)>2&&!gestureBusy&&uiModeOverride==="auto"){
+  if(effNow==="phone"&&_fitW!==null&&Math.abs(wNow-_fitW)>2&&!gestureBusy&&uiModeOverride==="auto"&&(!_viewMoved||reason==="orientation")){
     requestAnimationFrame(()=>{try{if(!_pinch&&_pointers.size===0)zoomFit();}catch(e){}});
   }
   _fitW=wNow;
@@ -13166,10 +13191,14 @@ vp.addEventListener("pointermove",e=>{const rec=_pointers.get(e.pointerId);if(!r
     const mx=(ps[0].x+ps[1].x)/2-r.left,my=(ps[0].y+ps[1].y)/2-r.top;
     let nz=clampZoom(_pinch.zoom*(nd/_pinch.d)); // 上限/下限ではその場で滑らかに止める（指を離した瞬間に表示が跳ばない）
     if(Math.abs(nz/_pinch.zoom-1)>0.06||rec.moved>16)_pinch.tapOk=false;
-    if(nz!==state.zoom)_viewMoved=true;
-    state.zoom=nz;state.pan.x=mx-_pinch.wx*nz;state.pan.y=my-_pinch.wy*nz;renderAll();}});
+    const _opx=state.pan.x,_opy=state.pan.y,_oz=state.zoom;
+    state.zoom=nz;state.pan.x=mx-_pinch.wx*nz;state.pan.y=my-_pinch.wy*nz;
+    if(nz!==_oz||state.pan.x!==_opx||state.pan.y!==_opy)_viewMoved=true; // ズームだけでなく2本指の平行移動（斜め含む）でも手動移動として記録し、自動フィットに打ち消されないようにする
+    renderAll();}});
 const _endPointer=e=>{if(e.pointerType==="pen")_penDown=false;const rec=_pointers.get(e.pointerId);_pointers.delete(e.pointerId);
   if(_pinch&&_pointers.size<2){const wasTap=_pinch.tapOk&&(Date.now()-_pinch.t)<300;_pinch=null;LIGHT=false;
+    /* ピンチを片指だけ離した場合は、残った指でそのままパンを継続できるようにする（従来は残った指が無反応になり「効いたり効かなかったり」の原因になっていた） */
+    if(!wasTap&&_pointers.size===1){const rem=[..._pointers.values()][0];if(rem)drag={kind:"pan",sx:rem.x,sy:rem.y,px:state.pan.x,py:state.pan.y};}
     state.zoom=clampZoom(state.zoom);renderAll();
     if(wasTap){undo();toast("2本指タップ：元に戻しました");}}
   if(_pointers.size===0){_gestureLock=false;
