@@ -12221,6 +12221,7 @@ function renderAll(){
     else el("line",{x1:b.x-40,y1:gd.pos,x2:b.x+b.w+40,y2:gd.pos,stroke:"#0ea5e9","stroke-width":1/state.zoom,"data-guide":i,style:"cursor:ns-resize"});});
   renderSelection();updateStatus();updateCtxBar();
   try{updateBoardLabels();}catch(e){}
+  try{layoutFab();}catch(e){}
   if(!LIGHT){renderLayers();renderBoards();updatePropsFromSel();drawRulers();}
   _renderMs=_renderMs*0.7+(performance.now()-_t0)*0.3;
 }
@@ -12479,15 +12480,42 @@ let _chipSig="";
 function updateBoardLabels(){const wrap=$("boardLabels");if(!wrap)return;const vw=vp.clientWidth,vh=vp.clientHeight;if(!vw||!vh)return;
   const sig=state.boards.map(b=>b.id+"|"+b.name+"|"+Math.round(b.w)+"x"+Math.round(b.h)).join(";")+"#"+state.activeBoard;
   if(sig!==_chipSig){_chipSig=sig;wrap.innerHTML="";state.boards.forEach(b=>{const c=document.createElement("div");c.className="board-chip"+(b.id===state.activeBoard?" active":"");c.dataset.bid=b.id;c.textContent=b.name+" "+Math.round(b.w)+"×"+Math.round(b.h);wrap.appendChild(c);});}
+  // 実際に画面に見えている範囲（ビューポートと表示領域の交差）を boardLabels ローカル座標で求め、チップはその内側に必ず完全に収める
+  let visL=4,visT=4,visR=vw-4,visB=vh-4;
+  try{const vr=vp.getBoundingClientRect();const vv=window.visualViewport;const aw=vv?vv.width:window.innerWidth,ah=vv?vv.height:window.innerHeight;
+    const il=Math.max(vr.left,0),it=Math.max(vr.top,0),ir=Math.min(vr.right,aw),ib=Math.min(vr.bottom,ah);
+    if(ir-il>=80&&ib-it>=60){visL=Math.max(4,Math.ceil(il-vr.left)+4);visT=Math.max(4,Math.ceil(it-vr.top)+4);visR=Math.min(vw-4,Math.floor(ir-vr.left)-4);visB=Math.min(vh-4,Math.floor(ib-vr.top)-4);}
+  }catch(e){}
+  if(visR-visL<40){visL=4;visR=vw-4;}
+  if(visB-visT<30){visT=4;visB=vh-4;}
   const z=state.zoom,px=state.pan.x,py=state.pan.y;
   for(const c of wrap.children){const b=state.boards.find(x=>x.id===c.dataset.bid);if(!b){c.style.display="none";continue;}
     const sx=b.x*z+px,sy=b.y*z+py,sw=b.w*z,sh=b.h*z;
     if(!(sw>=2&&sh>=2&&sx+sw>0&&sy+sh>0&&sx<vw&&sy<vh)){c.style.display="none";continue;}
     c.style.display="block";
-    const cw=c.offsetWidth||80,chh=c.offsetHeight||18;
-    let L=Math.min(Math.max(sx+4,4),Math.max(4,vw-cw-4));
-    let T=Math.min(Math.max(sy+4,4),Math.max(4,vh-chh-4));
+    c.style.maxWidth=Math.max(40,Math.min(430,visR-visL))+"px";
+    const cw=Math.min(c.offsetWidth||80,visR-visL),chh=c.offsetHeight||18;
+    let L=Math.min(Math.max(sx+4,visL),Math.max(visL,visR-cw));
+    let T=Math.min(Math.max(sy+4,visT),Math.max(visT,visB-chh));
     c.style.transform=`translate(${L}px,${T}px)`;}
+}
+/* ============ FAB（フローティング「パネル」ボタン）をアートボードに被せない ============ */
+function layoutFab(){const fab=$("fabPanel");if(!fab)return;
+  if(fab.style.bottom)fab.style.bottom="";
+  const cs=getComputedStyle(fab);if(cs.display==="none"||cs.visibility==="hidden")return;
+  const vr=vp.getBoundingClientRect();if(!vr.width||!vr.height)return;
+  const fr=fab.getBoundingClientRect();if(!fr.width||!fr.height)return;
+  const z=state.zoom,px=state.pan.x,py=state.pan.y;
+  let lowB=-Infinity;
+  for(const b of state.boards){const bx=vr.left+b.x*z+px,by=vr.top+b.y*z+py,br=bx+b.w*z,bb=by+b.h*z;
+    if(fr.left<br-2&&fr.right>bx+2&&fr.top<bb-2&&fr.bottom>by+2&&bb>lowB)lowB=bb;}
+  if(lowB===-Infinity)return; // どのボードにも重なっていない（通常位置のまま）
+  const par=fab.offsetParent;if(!par)return;const swr=par.getBoundingClientRect();
+  // FABの上端がボード下端+8pxに来るよう下へずらす。ただしFABの下端はビューポート下端+2pxより下（ステータスバー側）へ出さず、上端はビューポート上端+4pxより上へ出さない
+  let nb=swr.bottom-(lowB+8+fr.height);
+  nb=Math.max(nb,swr.bottom-(vr.bottom+2));
+  nb=Math.min(nb,swr.bottom-(vr.top+4+fr.height));
+  fab.style.bottom=Math.round(nb)+"px";
 }
 $("boardLabels").addEventListener("pointerdown",e=>{const c=e.target&&e.target.closest?e.target.closest(".board-chip"):null;if(!c)return;e.stopPropagation();e.preventDefault();if(state.activeBoard!==c.dataset.bid){state.activeBoard=c.dataset.bid;renderAll();renderBoards();}});
 
@@ -12520,7 +12548,9 @@ function zoomStep(dir){const cur=state.zoom;let nz=null;
 function computeFit(){const b=state.boards.find(x=>x.id===state.activeBoard)||state.boards[0];if(!b)return null;
   const eff=currentDevice?currentDevice.effective:"desktop";
   const vw=vp.clientWidth,vh=vp.clientHeight;if(!vw||!vh)return null;
-  let padT=eff==="desktop"?34:42;const padB=eff==="phone"?96:28,padL=16,padR=eff==="phone"?20:16;
+  let padT=eff==="desktop"?34:42;let padB=eff==="phone"?96:28;const padL=16,padR=eff==="phone"?20:16;
+  // フローティング「パネル」ボタンの占有領域を下余白に織り込む（フィットしたボードがボタンの下に潜り込まないように、ボタンの上端より上にボード下端が来る余白を実測で確保する）
+  try{const fab=$("fabPanel");if(fab){if(fab.style.bottom)fab.style.bottom="";const fcs=getComputedStyle(fab);if(fcs.display!=="none"&&fcs.visibility!=="hidden"){const fr2=fab.getBoundingClientRect(),vr2=vp.getBoundingClientRect();if(fr2.height>0&&vr2.height>0)padB=Math.max(padB,Math.ceil(vr2.bottom-fr2.top)+10);}}}catch(e){}
   // ビューポート上部に重なって食い込む要素（ヒントバー・選択バー等）の実高さを測り、その分だけ上余白を広げて枠の上辺が隠れないようにする
   try{const vr=vp.getBoundingClientRect();["touchHint","ctxBar","fsExit"].forEach(id=>{const e=document.getElementById(id);if(!e)return;const cs=getComputedStyle(e);if(cs.display==="none"||cs.visibility==="hidden")return;const r=e.getBoundingClientRect();if(r.height>0&&r.top<vr.top&&r.bottom>vr.top)padT=Math.max(padT,Math.ceil(r.bottom-vr.top)+10);});}catch(e){}
   const aw=Math.max(40,vw-padL-padR),ah=Math.max(40,vh-padT-padB);
@@ -13060,7 +13090,8 @@ function handleViewportChange(reason){
   _fitW=wNow;
   _lastEff=effNow;
 }
-window.addEventListener("resize",()=>{drawRulers();try{updateBoardLabels();}catch(e){}clearTimeout(_resizeTimer);_resizeTimer=setTimeout(()=>handleViewportChange("resize"),120);});
+window.addEventListener("resize",()=>{drawRulers();try{updateBoardLabels();}catch(e){}try{layoutFab();}catch(e){}clearTimeout(_resizeTimer);_resizeTimer=setTimeout(()=>handleViewportChange("resize"),120);});
+if(window.visualViewport){const _vvSync=()=>{try{updateBoardLabels();}catch(e){}try{layoutFab();}catch(e){}};window.visualViewport.addEventListener("resize",_vvSync);window.visualViewport.addEventListener("scroll",_vvSync);}
 window.addEventListener("orientationchange",()=>setTimeout(()=>handleViewportChange("orientation"),180));
 try{
   window.matchMedia("(pointer: coarse)").addEventListener("change",()=>handleViewportChange("pointer"));
