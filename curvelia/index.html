@@ -300,6 +300,11 @@ html[data-theme="dark"] .device-badge{background:#17304d;border-color:#2f5b8f;co
 html[data-theme="dark"] .device-badge small{color:#9db8d6}
 html[data-theme="dark"] .restore-bar{background:#2e270f;border-color:#6b5518;color:var(--ink)}
 html[data-theme="dark"] #licenseBar{background:#1c2440!important;border-color:#33477a!important;color:var(--ink)}
+button.lic-locked{opacity:.82}
+.lock-badge{font-size:10px;font-weight:700;color:#b45309;white-space:nowrap}
+html[data-theme="dark"] .lock-badge{color:#fbbf24}
+#printNotice{display:none}
+@media print{html[data-lic="trial"] .app{display:none!important}html[data-lic="trial"] #printNotice{display:block!important;padding:48px 24px;font-size:16px;line-height:1.9;color:#000;background:#fff}}
 html[data-theme="dark"] .compat-table th{background:#262c33}
 html[data-theme="dark"] .kbd-list kbd{background:#262c33;border-color:#3a424c;color:var(--ink)}
 html[data-theme="dark"] .tut-card p{color:var(--mut)}
@@ -422,7 +427,7 @@ body.is-phone .toast{bottom:calc(132px + env(safe-area-inset-bottom))}
     </div>
   </header>
   <div class="restore-bar" id="restoreBar" hidden><span>💾 前回の作業が自動保存されています（<b id="restoreWhen"></b>）。開いていたドキュメントをすべて復元しますか？</span><button class="btn primary" onclick="restoreDraft()">復元する</button><button class="btn" onclick="discardDraft()">破棄する</button><span style="color:var(--mut)">下書きはこの端末のブラウザ内にだけ保存されます</span></div>
-  <div class="restore-bar" id="licenseBar" hidden style="background:#eef2ff;border-color:#c7d2fe"><span>🔑 <b>未登録（試用）モード</b><span class="lic-long">です。編集・書き出しはそのまま使えますが、書き出しファイルには「未登録（試用）」と記録されます。</span></span><button class="btn primary" onclick="openLicenseDialog()">ライセンス登録</button><button class="btn" onclick="closeLicenseBar()" title="閉じると次回から表示されません（登録は「表示」メニューの製品情報からいつでもできます）">閉じる</button></div>
+  <div class="restore-bar" id="licenseBar" hidden style="background:#eef2ff;border-color:#c7d2fe"><span>🔑 <b>未登録（試用）モード</b><span class="lic-long">です。編集とブラウザ内への自動保存は使えますが、書き出し（SVG／PNG／JPG／PDF／EPS）・プロジェクト保存・印刷はライセンス登録後に使えます。</span></span><button class="btn primary" onclick="openLicenseDialog()">ライセンス登録</button><button class="btn" onclick="closeLicenseBar()" title="閉じると次回から表示されません（登録は「表示」メニューの製品情報からいつでもできます）">閉じる</button></div>
 
   <!-- ======= DOCUMENT TABS ======= -->
   <div class="docbar" id="docBar">
@@ -737,6 +742,7 @@ body.is-phone .toast{bottom:calc(132px + env(safe-area-inset-bottom))}
           <button onclick="applyExportPreset('print')">印刷入稿</button>
         </div>
         <h3>⬇ 書き出し</h3>
+        <p class="perf-note" id="exportLockNote" hidden style="color:#b45309;font-weight:700">🔒 未登録（試用）モードでは、書き出しとプロジェクト保存はできません。編集とブラウザ内への自動保存はそのまま使えます。ライセンス登録をすると、今の作品をそのまま書き出せます。</p>
         <div class="grid2">
           <button onclick="exportFile('svg')">SVG（ベクター）</button><button onclick="exportFile('png')">PNG（透明）</button>
           <button onclick="exportFile('jpg')">JPG（写真風）</button>
@@ -792,6 +798,7 @@ body.is-phone .toast{bottom:calc(132px + env(safe-area-inset-bottom))}
         <label class="small"><input type="checkbox" id="cropMarksChk" checked> トンボ（トリムマーク）を付ける</label></div>
         <p class="perf-note">国内印刷入稿の標準セットは「CMYK＋塗り足し3mm＋トンボ＋フォントのアウトライン化＋画像300dpi目安」です。本アプリのPDFは図形をベクターのまま出力し、文字は高解像度画像として埋め込むため見た目が崩れません。文字をパス化したい場合は2通りあります：①「見た目」パネルの文字設定でフォントファイル（TTF/OTF）を読み込んで行う実アウトライン化（opentype.js使用）、②フォント不要で配置枠から作る簡易パス化（近似表現）。印刷入稿では、どちらも行わずPDF書き出しを使うのが最も崩れません。パターンはPDFでは単色近似になります。</p>
         <h3>⬇ 印刷用に書き出す</h3>
+        <p class="perf-note" id="exportLockNotePrint" hidden style="color:#b45309;font-weight:700">🔒 未登録（試用）モードでは、PDF／EPS／SVG／PNGの書き出しと印刷はできません。ライセンス登録後に使えます。</p>
         <div class="grid2">
           <button onclick="exportPDF()">PDF（図形はベクター・文字は画像埋め込み／全ボード）</button>
           <button onclick="exportEPS()">EPS（現在のボード）</button>
@@ -898,13 +905,24 @@ body.is-phone .toast{bottom:calc(132px + env(safe-area-inset-bottom))}
   </div>
   <p style="font-size:12px;line-height:1.7">この端末の端末ID：<b id="licDevId">—</b><br><span style="color:var(--mut)">端末IDはブラウザ・OS・画面などの組み合わせから自動生成されます（個人を特定する情報は含みません）。</span></p>
   <p id="licMsg" style="font-size:12px;min-height:18px"></p>
-  <p style="font-size:11.5px;color:var(--mut);line-height:1.7">登録すると、書き出すSVGとプロジェクトファイルに購入者IDがメタデータとして自動で記録されます（流出時の追跡のため）。未登録でも試用として全機能を使えますが、書き出しファイルには「未登録（試用）」と記録されます。</p>
+  <p style="font-size:11.5px;color:var(--mut);line-height:1.7">登録すると、書き出すSVGとプロジェクトファイルに購入者IDがメタデータとして自動で記録されます（流出時の追跡のため）。未登録（試用）では編集とブラウザ内への自動保存は使えますが、書き出し（SVG／PNG／JPG／PDF／EPS・レーザー用SVG）・プロジェクト保存・SVGコードのコピー・印刷はできません。登録すると、そのまま全て使えるようになります。</p>
   <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
     <button class="btn" id="licDevicesBtn">登録端末の管理</button>
     <button class="btn" id="licLater">後で登録する</button>
     <button class="btn primary" id="licSave">登録する</button>
   </div>
 </dialog>
+<dialog id="exportBlockDlg">
+  <h3 style="margin-top:0">🔒 書き出しはライセンス登録後に使えます</h3>
+  <p style="font-size:13px;line-height:1.9">現在は<b>未登録（試用）モード</b>です。試用モードでは、ファイルの書き出し系統（アプリの外へファイルを持ち出す機能）は使えません。</p>
+  <p id="exportBlockWhat" style="font-size:12.5px;line-height:1.8;color:var(--mut)"></p>
+  <p style="font-size:12.5px;line-height:1.8">対象：SVG／PNG／JPG／PDF／EPSの書き出し、レーザー用SVG、プロジェクトファイルの保存、PDFの再保存、SVGコードのコピー、印刷。<br>編集作業とブラウザ内への自動保存はそのまま使えます。作業データは消えませんので、登録すれば今の作品をそのまま書き出せます。</p>
+  <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
+    <button class="btn" onclick="document.getElementById('exportBlockDlg').close()">閉じる</button>
+    <button class="btn primary" onclick="document.getElementById('exportBlockDlg').close();openLicenseDialog()">ライセンス登録する</button>
+  </div>
+</dialog>
+<div id="printNotice">このページの印刷は、未登録（試用）モードでは使えません。印刷・書き出しはライセンス登録後に使えます。カーヴェリア（CURVELIA）</div>
 <dialog id="deviceDlg">
   <h3 style="margin-top:0">登録端末の管理</h3>
   <p style="font-size:12.5px;line-height:1.8">1ライセンスで登録できる端末は<b>2台まで</b>です。端末を買い替えたときは、古い端末の登録を解除すると枠が空きます。登録端末は月1回のオンライン確認を行います。</p>
@@ -944,7 +962,7 @@ body.is-phone .toast{bottom:calc(132px + env(safe-area-inset-bottom))}
     <p><b>安定性：</b>作業内容はこの端末のブラウザ内に自動保存され、閉じても下書きから復元できます。Undo/Redoは最大80ステップまで対応します。多数のオブジェクトでも操作が重くなりにくいよう、描画の最適化を行っています。</p>
     <p><b>買い切り・完全オフライン：</b>カーヴェリアは買い切り型で、<b>完全オフラインで動作し、データが外部に送信されることはありません</b>。払い続けなくても、手元のファイルが開けなくなることはありません。</p>
     <p><b>ライセンス登録制：</b>購入者専用サポートとアップデートは正規購入者のみを対象とします。<b>1ライセンスで端末2台まで登録可</b>（登録端末は月1回のオンライン確認を行います）。<span id="licStatus">現在の登録状況：未登録（試用モード）</span> <button class="btn" onclick="document.getElementById('productDlg').close();openLicenseDialog()">ライセンス登録</button> <button class="btn" onclick="document.getElementById('productDlg').close();openDeviceManager()">登録端末の管理</button></p>
-    <p style="font-size:12px;color:var(--mut)">書き出すSVGとプロジェクトファイルには、購入者IDがメタデータとして自動で記録されます（流出時の追跡用です）。未登録の場合は「未登録（試用）」と記録されます。</p>
+    <p style="font-size:12px;color:var(--mut)">書き出すSVGとプロジェクトファイルには、購入者IDがメタデータとして自動で記録されます（流出時の追跡用です）。未登録（試用）では、書き出し・プロジェクト保存・印刷はできません（編集とブラウザ内への自動保存は使えます）。</p>
     <p><b>購入者専用Athena（別売り予定）：</b>カーヴェリアの使い方に加え、レーザー加工・印刷入稿の相談に特化した専用Athenaを、購入者向け追加オプションとして提供予定です（本体の最終版完成後に提供）。</p>
     <p><button class="btn" onclick="document.getElementById('ossDlg').showModal()">オープンソースライセンス表記</button></p>
     <p><b>Illustratorとの互換（要点）：</b>SVG開く／保存 ◎（レイヤー名・ID保持）／PDFで保存 ◎（ベクター・CMYK・塗り足し・トンボ）／複数のアートボード ◎／.aiを開く ○（PDF互換で保存された.aiのみ）／PDFを開いて編集 ○／CMYKで作る ○／特色 ○（名前登録方式）／.epsで保存 ○／.epsを開く ○（簡易）／<b>.aiで保存 ×</b>（代替手段あり：PDF＋SVGの二重書き出し。大手代替ソフトでも.ai保存はほぼ不可が共通認識です）。詳しい互換表は右パネル「印刷・互換」にあります。</p>
@@ -12917,9 +12935,32 @@ function buildExportSVG(){
   const title=document.createElementNS(NS,"title");title.textContent="カーヴェリア（CURVELIA）で作成";clone.insertBefore(title,defs.nextSibling);
   return new XMLSerializer().serializeToString(clone);
 }
-function download(name,blob){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);}
+/* ============ 未登録（試用）時の書き出しブロック ============ */
+function isLicensed(){try{const l=getLicense();return !!(l&&l.id);}catch(e){return false;}}
+function requireLicense(what){
+  if(isLicensed())return true;
+  const d=$("exportBlockDlg");const w=$("exportBlockWhat");
+  if(w)w.textContent=what?("\u300C"+what+"\u300Dはファイルの書き出し（外部への持ち出し）にあたるため、試用モードでは実行できませんでした。"):"";
+  if(d&&!d.open){try{d.showModal();}catch(e){toast("書き出しはライセンス登録後に使えます");}}
+  return false;
+}
+function applyExportLockUI(){
+  const locked=!isLicensed();
+  try{document.documentElement.dataset.lic=locked?"trial":"full";}catch(e){}
+  const sel='button[onclick*="exportFile"],button[onclick*="exportPDF"],button[onclick*="exportEPS"],button[onclick*="exportLaserSVG"],button[onclick*="saveProject"],button[onclick*="copySvgCode"],button[onclick*="importPdfResave"]';
+  document.querySelectorAll(sel).forEach(b=>{
+    b.classList.toggle("lic-locked",locked);
+    let badge=b.querySelector(".lock-badge");
+    if(locked){if(!badge){badge=document.createElement("span");badge.className="lock-badge";badge.textContent=" 🔒登録が必要";b.appendChild(badge);}b.title="書き出しはライセンス登録後に使えます";}
+    else{if(badge)badge.remove();if(b.title==="書き出しはライセンス登録後に使えます")b.removeAttribute("title");}
+  });
+  const n1=$("exportLockNote");if(n1)n1.hidden=!locked;
+  const n2=$("exportLockNotePrint");if(n2)n2.hidden=!locked;
+}
+window.addEventListener("beforeprint",()=>{if(!isLicensed()){try{document.documentElement.dataset.lic="trial";}catch(e){}}});
+function download(name,blob){if(!requireLicense("ファイルの保存"))return false;const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);return true;}
 function licenseExportNote(){try{const l=getLicense();if(l&&l.id)return;if(localStorage.getItem("vectorKobo.licenseAsked"))return;localStorage.setItem("vectorKobo.licenseAsked","1");setTimeout(()=>toast("試用モードで書き出しました。気に入ったら「表示」メニューの製品情報からライセンス登録ができます"),900);}catch(e){}}
-function exportFile(kind){
+function exportFile(kind){if(!requireLicense("書き出し"))return;
   const b0=state.boards.find(x=>x.id===state.activeBoard);const sizeNote=b0?("実寸 約 "+(b0.w*25.4/96).toFixed(1)+" × "+(b0.h*25.4/96).toFixed(1)+" mm"):"";
   const svg=buildExportSVG();
   if(kind==="svg"){download("vector-art.svg",new Blob([svg],{type:"image/svg+xml"}));toast("SVGを書き出しました（"+sizeNote+"／ベクターのまま保存されます）");licenseExportNote();return;}
@@ -12932,8 +12973,8 @@ function exportFile(kind){
   img.onload=()=>{const cv=document.createElement("canvas");cv.width=b.w*scale;cv.height=b.h*scale;const ctx=cv.getContext("2d");if(kind==="jpg"){ctx.fillStyle="#fff";ctx.fillRect(0,0,cv.width,cv.height);}ctx.drawImage(img,0,0,cv.width,cv.height);cv.toBlob(bl=>{download("vector-art."+kind,bl);toast(kind.toUpperCase()+"を書き出しました（"+cv.width+"×"+cv.height+"px／"+sizeNote+"）");licenseExportNote();},"image/"+(kind==="jpg"?"jpeg":"png"),0.92);URL.revokeObjectURL(url);};
   img.src=url;
 }
-function copySvgCode(){navigator.clipboard&&navigator.clipboard.writeText(buildExportSVG()).then(()=>notify("SVGコードをコピーしました"));}
-function saveProject(){download("vector-project.json",new Blob([JSON.stringify({boards:state.boards,layers:state.layers,objects:state.objects,guides:state.guides,uid},null,2)],{type:"application/json"}));}
+function copySvgCode(){if(!requireLicense("SVGコードのコピー"))return;navigator.clipboard&&navigator.clipboard.writeText(buildExportSVG()).then(()=>notify("SVGコードをコピーしました"));}
+function saveProject(){if(!requireLicense("プロジェクト保存"))return false;download("vector-project.json",new Blob([JSON.stringify({boards:state.boards,layers:state.layers,objects:state.objects,guides:state.guides,uid},null,2)],{type:"application/json"}));return true;}
 $("loadProj").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{let d;try{d=JSON.parse(t);}catch(err){toast("プロジェクトファイルを読み込めませんでした");return;}if(!d||!Array.isArray(d.boards)||!Array.isArray(d.layers)||!Array.isArray(d.objects)){toast("プロジェクトの形式が正しくありません");return;}
   const data=normalizeDocData(d);data.objects.forEach(o=>{if(o.svgInner)o.svgInner=sanitizeSvgInnerString(o.svgInner);});if(d.uid)uid=Math.max(uid,d.uid);
   const doc=createDoc((f.name||"プロジェクト").replace(/\.json$/i,""),data);e.target.value="";toast("「"+doc.name+"」を新しいドキュメントとして開きました");});});
@@ -12961,7 +13002,8 @@ window.addEventListener("keydown",e=>{
   if(e.key===" "&&!typing){spaceDown=true;}
   if(typing)return;
   const mod=e.ctrlKey||e.metaKey;
-  if(mod&&e.key.toLowerCase()==="s"){e.preventDefault();saveDraft();saveProject();toast("プロジェクトを保存しました");return;}
+  if(mod&&e.key.toLowerCase()==="p"&&!isLicensed()){e.preventDefault();requireLicense("印刷");return;}
+  if(mod&&e.key.toLowerCase()==="s"){e.preventDefault();saveDraft();if(saveProject())toast("プロジェクトを保存しました");return;}
   if(mod&&e.key.toLowerCase()==="n"){e.preventDefault();newDoc();return;}
   if(mod&&e.key.toLowerCase()==="z"){e.preventDefault();e.shiftKey?redo():undo();return;}
   if(mod&&e.key.toLowerCase()==="y"){e.preventDefault();redo();return;}
@@ -13539,7 +13581,7 @@ async function buildPDF(){
   addP(te.encode(xref));
   return new Blob(parts,{type:"application/pdf"});
 }
-async function exportPDF(){toast("PDFを作成中です…");try{const blob=await buildPDF();download("vector-art.pdf",blob);toast("PDFを書き出しました（"+state.boards.length+"ページ／"+(state.colorMode==="cmyk"?"CMYK":"RGB")+"／塗り足し "+state.bleedMm+"mm）");}catch(e){toast("PDFの作成に失敗しました："+(e&&e.message||e));}}
+async function exportPDF(){if(!requireLicense("PDF書き出し"))return;toast("PDFを作成中です…");try{const blob=await buildPDF();download("vector-art.pdf",blob);toast("PDFを書き出しました（"+state.boards.length+"ページ／"+(state.colorMode==="cmyk"?"CMYK":"RGB")+"／塗り足し "+state.bleedMm+"mm）");}catch(e){toast("PDFの作成に失敗しました："+(e&&e.message||e));}}
 
 /* ============ PDF / AI IMPORT（ベクター要素を取り込む） ============ */
 async function extractPdfStreams(buf){
@@ -13635,7 +13677,7 @@ $("importPdfAi").addEventListener("change",async e=>{const f=e.target.files[0];i
   }catch(err){toast("開けませんでした："+(err&&err.message||err));}});
 
 /* ============ EPS EXPORT / IMPORT ============ */
-function exportEPS(){
+function exportEPS(){if(!requireLicense("EPS書き出し"))return;
   const b=state.boards.find(x=>x.id===state.activeBoard)||state.boards[0];
   const S=72/96,W=Math.round(b.w*S),H=Math.round(b.h*S);
   const X=x=>(x-b.x)*S,Y=y=>H-(y-b.y)*S;
@@ -13748,6 +13790,7 @@ $("importPsd").addEventListener("change",async e=>{const f=e.target.files[0];if(
 
 /* ============ PDF-LIB（読み込んだPDFの情報取得・再保存） ============ */
 $("importPdfResave").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;e.target.value="";
+  if(!requireLicense("PDFの再保存"))return;
   try{toast("pdf-libでPDFを読み込んでいます…");const PL=await ensurePdfLib();const buf=await f.arrayBuffer();
     const doc=await PL.PDFDocument.load(buf,{ignoreEncryption:true});
     const pages=doc.getPages();const title=doc.getTitle()||"";
@@ -13795,7 +13838,7 @@ function licenseCheckState(l){if(!l||!l.id||!Array.isArray(l.devices))return nul
 function licFmtDate(ts){if(!ts)return "—";const d=new Date(ts);return d.getFullYear()+"/"+(d.getMonth()+1)+"/"+d.getDate();}
 function licenseComment(){const l=getLicense();const id=l&&l.id?l.id:"UNREGISTERED-TRIAL";const nm=l&&l.name?(" / "+String(l.name).replace(/-->/g,"")):"";return `<!-- CURVELIA | Purchaser-ID: ${id}${nm} | Licensed copy. Redistribution is prohibited by the license terms. -->`;}
 function maskLicense(id){if(!id)return"";return id.slice(0,7)+"••••-••••-"+id.slice(-1);}
-function refreshLicenseUI(){const l=getLicense();if(l&&l.id)ensureLicenseDevices(l);const st=$("licStatus");if(st)st.textContent="現在の登録状況："+(l&&l.id?("登録済み（購入ID: "+maskLicense(l.id)+(l.name?"／"+l.name:"")+"）"+licenseDeviceSummary(l)):"未登録（試用モード）");const bar=$("licenseBar");if(bar&&l&&l.id)bar.hidden=true;}
+function refreshLicenseUI(){const l=getLicense();if(l&&l.id)ensureLicenseDevices(l);const st=$("licStatus");if(st)st.textContent="現在の登録状況："+(l&&l.id?("登録済み（購入ID: "+maskLicense(l.id)+(l.name?"／"+l.name:"")+"）"+licenseDeviceSummary(l)):"未登録（試用モード）");const bar=$("licenseBar");if(bar&&l&&l.id)bar.hidden=true;try{applyExportLockUI();}catch(e){}}
 function licenseDeviceSummary(l){if(!l||!Array.isArray(l.devices))return "";const cs=licenseCheckState(l);let s="／登録端末 "+l.devices.length+"/"+LIC_MAX_DEVICES+"台";if(cs&&cs.state==="check-needed")s+="・月1回のオンライン確認が必要です";else if(cs&&cs.state==="unregistered-device")s+="・この端末は未登録";return s;}
 function openLicenseDialog(){const l=getLicense();if(l){$("licKey").value=l.id||"";$("licName").value=l.name||"";const mine=(l.devices||[]).find(d=>d.devId===getDeviceId());$("licDevName").value=mine?mine.devName:"";}if(!$("licDevName").value)$("licDevName").value=defaultDeviceName();$("licDevId").textContent=getDeviceId();$("licMsg").textContent="";$("licenseDlg").showModal();}
 $("licSave").addEventListener("click",()=>{const key=$("licKey").value.trim().toUpperCase();if(!validateLicenseKey(key)){$("licMsg").innerHTML="<span style='color:#b91c1c'>購入IDの形式が正しくありません（VK-XXXX-XXXX-XXXX-X の形式で、チェック文字が一致するものだけ登録できます）</span>";return;}
@@ -13834,7 +13877,7 @@ $("deviceCheckBtn").addEventListener("click",()=>{const l=getLicense();if(!l||!l
   if(!dev){toast("この端末はまだ登録されていません");return;}
   dev.lastCheckedAt=Date.now();saveLicense(l);renderDeviceList();refreshLicenseUI();
   toast("確認日を更新しました（ライセンスサーバー未接続のため、端末内の記録として保存しています）");});
-function saveProject(){const l=getLicense();download("vector-project.json",new Blob([JSON.stringify({app:"カーヴェリア（CURVELIA）",version:"5.0",purchaserId:l&&l.id?l.id:"UNREGISTERED-TRIAL",purchaserName:l&&l.name?l.name:"",exportedAt:new Date().toISOString(),boards:state.boards,layers:state.layers,objects:state.objects,guides:state.guides,uid,colorMode:state.colorMode,spotColors:state.spotColors},null,2)],{type:"application/json"}));toast("プロジェクトを保存しました（購入者IDを記録済み）");}
+function saveProject(){if(!requireLicense("プロジェクト保存"))return false;const l=getLicense();download("vector-project.json",new Blob([JSON.stringify({app:"カーヴェリア（CURVELIA）",version:"5.0",purchaserId:l&&l.id?l.id:"UNREGISTERED-TRIAL",purchaserName:l&&l.name?l.name:"",exportedAt:new Date().toISOString(),boards:state.boards,layers:state.layers,objects:state.objects,guides:state.guides,uid,colorMode:state.colorMode,spotColors:state.spotColors},null,2)],{type:"application/json"}));toast("プロジェクトを保存しました（購入者IDを記録済み）");return true;}
 
 /* ============ PRINT PANEL（CMYK・特色・オーバープリント） ============ */
 function refreshPrintPanel(){const now=$("cmykNow");if(!now)return;const o=selObjs()[0];const op=$("opOverprint"),warn=$("opWarn");
@@ -13999,7 +14042,7 @@ function outlineTextWithFont(){if(!_userFont)return toast("先にフォントフ
   state.objects=state.objects.filter(o=>!sel.includes(o));state.objects.push(...news);state.selected=news.map(n=>n.id);pushHistory();renderAll();toast(count+" 個の文字パスにアウトライン化しました（読み込んだフォント使用）");}
 
 /* ============ FABRICATION（レーザー／ステッカー／検査／試し切り） ============ */
-function exportLaserSVG(){const b=state.boards.find(x=>x.id===state.activeBoard)||state.boards[0];
+function exportLaserSVG(){if(!requireLicense("レーザー用SVG書き出し"))return;const b=state.boards.find(x=>x.id===state.activeBoard)||state.boards[0];
   const mmInput=$("expMmW");const prev=mmInput.value;mmInput.value=(b.w*25.4/96).toFixed(2);
   let svg=buildExportSVG();mmInput.value=prev;
   svg=svg.replace(/stroke="(?!none")[^"]*"/g,'stroke="#ff0000"').replace(/stroke-width="[^"]*"/g,'stroke-width="0.1"');
@@ -14129,7 +14172,7 @@ const TUT_STEPS=[
   {t:"2. 描いて、選んで、直す",b:"キャンバスでドラッグして描いたら、「選択」ツールでクリックして選び、右パネルで色・大きさ・位置を変えます。失敗しても Ctrl+Z でいつでも戻れます。"},
   {t:"3. ペンとアンカー",b:"自由な形は「ペン」で点をつないで描きます。クリック＝角、ドラッグ＝曲線。簡単に曲線を描きたいときは「曲線」ツールがおすすめです。"},
   {t:"4. ドキュメントは複数開ける",b:"上部のタブがドキュメントです。「＋新規ドキュメント」で増やせます。作業は自動保存され、次回は続きから始められます。"},
-  {t:"5. 書き出し",b:"完成したら右パネル「書き出し」からSVG/PNGを保存します。印刷所に出すときは「印刷・互換」タブのPDF（CMYK・塗り足し・トンボ付き）が使えます。レーザー用SVGやステッカーのカットラインもここから作れます。"},
+  {t:"5. 書き出し",b:"完成したら右パネル「書き出し」からSVG/PNGを保存します（書き出しはライセンス登録後に使えます。試用中は編集と自動保存のみです）。印刷所に出すときは「印刷・互換」タブのPDF（CMYK・塗り足し・トンボ付き）が使えます。レーザー用SVGやステッカーのカットラインもここから作れます。"},
   {t:"レベル切替",b:"上部の「レベル」を「入門」にすると、よく使う機能だけの簡単な画面になります。慣れてきたら「標準」「プロ」に切り替えてください。"}];
 let tutIdx=0,_tutList=TUT_STEPS;
 function startTutorial(){_tutList=document.body.classList.contains("level-beginner")?TUT_STEPS.slice(0,3):TUT_STEPS;tutIdx=0;showTutStep();$("tutCard").classList.add("open");}
