@@ -36,7 +36,7 @@ input[type=text],select{padding:6px 8px;border:1px solid var(--line);border-radi
 .toolbar{width:100px;background:#fff;border-right:1px solid var(--line);overflow-y:auto;padding:8px 6px;display:flex;flex-direction:column;gap:2px;flex-shrink:0}
 .tgroup{font-size:10px;color:var(--mut);font-weight:700;margin:8px 2px 3px}
 .tool{display:flex;flex-direction:column;align-items:center;gap:1px;border:1px solid transparent;background:none;border-radius:10px;padding:6px 2px;font-size:10px;line-height:1.2;color:var(--ink)}
-.tool .ic{font-size:17px}.tool .lbl{white-space:normal;word-break:keep-all;line-break:strict;text-align:center}.tool.active{background:#dbeafe;border-color:#93c5fd;color:#1d4ed8}.tool:hover{background:#f1f5f9}.tool.active:hover{background:#dbeafe}
+.tool .ic{font-size:17px}.tool .ic svg{width:21px;height:21px;display:block}.tool .lbl{white-space:normal;word-break:keep-all;line-break:strict;text-align:center}.tool.active{background:#dbeafe;border-color:#93c5fd;color:#1d4ed8}.tool:hover{background:#f1f5f9}.tool.active:hover{background:#dbeafe}
 /* canvas */
 .stage-wrap{flex:1;display:flex;flex-direction:column;min-width:0;position:relative}
 .ruler-top{height:22px;background:#f8fafc;border-bottom:1px solid var(--line);position:relative;overflow:hidden;flex-shrink:0}
@@ -212,8 +212,8 @@ body.is-phone .restore-bar{padding:5px 8px;font-size:11px;gap:6px;line-height:1.
 body.is-phone .restore-bar>span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 body.is-phone .restore-bar .btn{min-height:28px;padding:3px 9px;font-size:11px;white-space:nowrap;flex:none}
 body.is-phone .lic-long{display:none}
-.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:#111827;color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;font-weight:700;opacity:0;pointer-events:none;transition:.2s;z-index:200;box-shadow:0 10px 30px rgba(0,0,0,.3);max-width:92vw;text-align:center}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:#111827;color:#fff;padding:14px 42px 14px 18px;border-radius:20px;font-size:13px;font-weight:700;opacity:0;pointer-events:none;transition:.2s;z-index:200;box-shadow:0 10px 30px rgba(0,0,0,.3);width:max-content;max-width:min(94vw,540px);text-align:left}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
 .perf-note{font-size:11px;color:var(--mut);line-height:1.7}
 /* ===== Level (入門/標準/プロ) ===== */
 body.level-beginner [data-adv]{display:none!important}
@@ -344,7 +344,14 @@ html[data-theme="dark"] .board-chip.active{background:rgba(37,99,235,.92);color:
 .theme-check{font-weight:800;color:var(--acc);min-width:14px;text-align:right}
 /* ===== 監査ラウンド2：状態の見える化・ゆったり・横向き・右クリック等 ===== */
 .toast{display:flex;align-items:center;gap:10px;justify-content:center}
-.toast-btn{background:#fff;color:#111827;border:0;border-radius:999px;padding:5px 13px;font-weight:800;min-height:30px;flex:none;pointer-events:auto} /* G10: トースト本体は pointer-events:none のため、ボタン側で明示的に有効化（従来は案内が出ても押せなかった） */
+.toast-btn{background:#fff;color:#111827;border:0;border-radius:999px;padding:8px 15px;font-weight:800;min-height:38px;flex:none;pointer-events:auto} /* G10: トースト本体は pointer-events:none のため、ボタン側で明示的に有効化（従来は案内が出ても押せなかった） */
+#toastMsg{flex:1 1 auto;min-width:0;line-height:1.6;font-weight:600;line-break:strict;overflow-wrap:break-word}
+.toast-x[hidden]{display:none}.toast-x{position:absolute;top:7px;right:7px;width:30px;height:30px;min-height:30px;border-radius:50%;border:0;background:rgba(255,255,255,.16);color:#fff;font-size:13px;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;pointer-events:auto;padding:0;flex:none}
+#toastShade{position:fixed;inset:0;z-index:199;background:transparent}
+#toastShade[hidden]{display:none}
+body.is-phone .toast{width:calc(100vw - 20px);max-width:calc(100vw - 20px);flex-direction:column;align-items:stretch;gap:10px;padding:16px 42px 16px 16px}
+body.is-phone #toastMsg{flex:none;width:100%}
+body.is-phone .toast-btn{align-self:stretch;text-align:center;min-height:44px}
 body.is-phone #stSave{display:inline;font-size:10px;white-space:nowrap}
 .fab-panel{transition:transform .18s ease,opacity .18s ease}
 /* 選択中・ドラッグ中も「押せる」見た目を保つ：薄くして無効化に見せるのではなく、少し小さくするだけに留め、不透明度と影は維持する */
@@ -579,7 +586,7 @@ dialog{padding-right:52px}
     <nav class="toolbar" id="toolbar" aria-label="ツール">
       <div class="tgroup">選択・移動</div>
       <button class="tool active" data-tool="select" title="選択ツール（V）— オブジェクトを選んで移動・変形します"><span class="ic">➤</span><span class="lbl">選択</span></button>
-      <button class="tool" data-tool="direct" title="ダイレクト選択ツール（A）— アンカーポイントやハンドルを直接編集します"><span class="ic">➤</span><span class="lbl">アンカー編集</span></button>
+      <button class="tool" data-tool="direct" title="ダイレクト選択ツール（A）— アンカーポイントやハンドルを直接編集します"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 3.5 L19 11.8 L12.8 13.2 L15.2 19.8 L12.6 20.8 L10.2 14.2 L6.2 17.8 Z"/></svg></span><span class="lbl">アンカー編集</span></button>
       <button class="tool" data-tool="lasso" title="なげなわツール（Q）— 線で囲んだ範囲のオブジェクトと、範囲内のアンカーポイント（点単位）を選択します"><span class="ic">◌</span><span class="lbl">なげなわ</span></button>
       <button class="tool" data-tool="wand" title="自動選択ツール（Y）— クリックしたオブジェクトと同じ塗り色のものを全部選びます"><span class="ic">✦</span><span class="lbl">自動選択</span></button>
       <button class="tool" data-tool="artboard" title="アートボードツール（Shift+O）— ボードの移動と、辺・角のドラッグでのサイズ変更ができます"><span class="ic">▦</span><span class="lbl">アートボード</span></button>
@@ -589,13 +596,13 @@ dialog{padding-right:52px}
       <button class="tool" data-tool="curve" title="曲線ツール（Shift+`）— クリックするだけで、なめらかな曲線が自動でできます"><span class="ic">⌒</span><span class="lbl">曲線</span></button>
       <button class="tool" data-adv="1" data-tool="addAnchor" title="アンカーポイント追加（=）— パス上をクリックして点を追加"><span class="ic">✒+</span><span class="lbl">点を追加</span></button>
       <button class="tool" data-adv="1" data-tool="delAnchor" title="アンカーポイント削除（-）— 点をクリックして削除"><span class="ic">✒−</span><span class="lbl">点を削除</span></button>
-      <button class="tool" data-adv="1" data-tool="anchor" title="アンカーポイントツール（Shift+C）— 点をドラッグしてハンドルを出し入れ"><span class="ic">⌒</span><span class="lbl">ハンドル変換</span></button>
+      <button class="tool" data-adv="1" data-tool="anchor" title="アンカーポイントツール（Shift+C）— 点をドラッグしてハンドルを出し入れ"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 18 C7.5 8, 16.5 8, 20 18"/><path d="M12 11.5 L6.2 4.6 M12 11.5 L17.8 4.6" stroke-dasharray="2.4 2.4"/><circle cx="12" cy="11.5" r="2.3" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.9"/><circle cx="20" cy="18" r="1.9"/><circle cx="6.2" cy="4.6" r="1.7"/><circle cx="17.8" cy="4.6" r="1.7"/></svg></span><span class="lbl">ハンドル変換</span></button>
       <button class="tool" data-tool="scissors" title="はさみツール（C）— パスをクリックした点で切り離します"><span class="ic">✂</span><span class="lbl">はさみ</span></button>
       <button class="tool" data-tool="pencil" title="鉛筆ツール（N）— 手書きの線をなめらかなパスにします"><span class="ic">✏</span><span class="lbl">鉛筆</span></button>
       <button class="tool" data-tool="brush" title="ブラシツール（B）— 筆のような太いストロークで描きます"><span class="ic">🖌</span><span class="lbl">ブラシ</span></button>
-      <button class="tool" data-tool="eraser" title="消しゴムツール（Shift+E）— ドラッグで触れたオブジェクトを消します"><span class="ic">▭</span><span class="lbl">消しゴム</span></button>
+      <button class="tool" data-tool="eraser" title="消しゴムツール（Shift+E）— ドラッグした部分だけを消します（太さは「見た目」パネルで変更）"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 14.8 L13.6 5.4 a2.1 2.1 0 0 1 3 0 l2 2 a2.1 2.1 0 0 1 0 3 L12.4 17 H8 a2.1 2.1 0 0 1-1.5-.6 l-1.3-1.3 a1.9 1.9 0 0 1 0-2.7 Z"/><path d="M9.8 9.6 L14.6 14.4"/><path d="M3.5 20.5 H20.5" stroke-linecap="round"/></svg></span><span class="lbl">消しゴム</span></button>
       <div class="tgroup">図形</div>
-      <button class="tool" data-tool="rect" title="長方形ツール（M）— ドラッグで四角。Shiftで正方形"><span class="ic">▭</span><span class="lbl">長方形</span></button>
+      <button class="tool" data-tool="rect" title="長方形ツール（M）— ドラッグで四角。Shiftで正方形"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="7" width="16" height="10" rx="1"/><rect x="2.6" y="5.6" width="3" height="3" fill="currentColor" stroke="none"/><rect x="18.4" y="5.6" width="3" height="3" fill="currentColor" stroke="none"/><rect x="18.4" y="15.4" width="3" height="3" fill="currentColor" stroke="none"/><rect x="2.6" y="15.4" width="3" height="3" fill="currentColor" stroke="none"/></svg></span><span class="lbl">長方形</span></button>
       <button class="tool" data-tool="ellipse" title="楕円形ツール（L）— ドラッグで円・楕円。Shiftで正円"><span class="ic">◯</span><span class="lbl">楕円</span></button>
       <button class="tool" data-tool="polygon" title="多角形ツール — ドラッグで多角形（辺の数は右パネルで変更）"><span class="ic">⬠</span><span class="lbl">多角形</span></button>
       <button class="tool" data-tool="star" title="スターツール — ドラッグで星形"><span class="ic">★</span><span class="lbl">星</span></button>
@@ -737,8 +744,9 @@ dialog{padding-right:52px}
           <label class="small">幅 <input type="text" data-num inputmode="decimal" id="tW"></label><label class="small">高さ <input type="text" data-num inputmode="decimal" id="tH"></label>
           <label class="small">回転° <input type="text" data-num inputmode="decimal" id="tRot" value="0"></label><label class="small">傾き° <input type="text" data-num inputmode="decimal" id="tShear" value="0"></label>
         </div>
+        <div class="row" id="polySelRow" hidden><label class="small" style="font-weight:700">多角形の辺の数（選択中の多角形に適用） <span style="display:inline-flex;gap:4px;align-items:center"><button type="button" class="icon-btn" onclick="stepPolySidesSel(-1)" aria-label="辺の数を減らす">−</button><input type="number" id="polySidesSel" value="6" min="3" max="12" step="1" style="width:60px"><button type="button" class="icon-btn" onclick="stepPolySidesSel(1)" aria-label="辺の数を増やす">＋</button></span></label><span class="small" style="color:var(--mut)">中心と大きさはそのまま、形だけが変わります</span></div>
         <div class="row"><label class="small">数値の単位 <select id="tUnit" aria-label="位置と大きさの単位"><option value="px">px</option><option value="mm">mm（実寸）</option></select></label><label class="small"><input type="checkbox" id="tLock"> 縦横比を固定（幅と高さを連動）</label><span class="small" id="tSizeInfo" style="color:var(--mut)"></span></div>
-        <p class="perf-note">幅・高さは数値指定できます。「50mm」「120px」のような単位付きや、「25.4*2」のような計算式も使えます（単位なしは上の単位で解釈）。mmはレーザー加工などの実寸指定用で、96dpi換算（1mm＝約3.78px）で正確に反映されます。図形を描いた直後も、ここでサイズを決められます。多角形は「ブラシ・図形の細かい設定」の「多角形の辺」で 3〜12 の正多角形になります。</p>
+        <p class="perf-note">幅・高さは数値指定できます。「50mm」「120px」のような単位付きや、「25.4*2」のような計算式も使えます（単位なしは上の単位で解釈）。mmはレーザー加工などの実寸指定用で、96dpi換算（1mm＝約3.78px）で正確に反映されます。図形を描いた直後も、ここでサイズを決められます。多角形を選ぶと、すぐ上に「多角形の辺の数」（3〜12）が出て、その場で角の数を変えられます（描く前の既定値は「ブラシ・図形の細かい設定」の「多角形の辺」でも指定できます）。</p>
         <div class="grid3" style="margin-top:6px">
           <button onclick="transformSel('flipH')">左右反転</button><button onclick="transformSel('flipV')">上下反転</button><button onclick="transformSel('rot90')">90°回転</button>
           <button onclick="transformSel('rot-90')">-90°回転</button><button onclick="transformSel('big')">1.2倍</button><button onclick="transformSel('small')">0.8倍</button>
@@ -758,13 +766,14 @@ dialog{padding-right:52px}
         <textarea id="textEdit" rows="2" placeholder="文字ツールを選んでキャンバスをクリックすると、ここでも編集できます"></textarea>
         <div data-adv="1">
           <div class="row"><button class="btn" onclick="document.getElementById('fontFile').click()">フォントファイルを読み込む（アウトライン化用）</button><span style="font-size:12px;color:var(--mut)" id="fontName">未読み込み</span></div>
-          <div class="row"><button class="btn" onclick="outlineTextWithFontAsk()" style="flex:1">読み込んだフォントで文字をアウトライン化</button></div>
-          <p class="perf-note">ブラウザからは端末のフォントを直接読めないため、アウトライン化は「お持ちのフォントファイル（TTF/OTF）」を読み込んで行います。フォントの利用条件は各フォントのライセンスに従ってください。</p>
+          <div class="row"><button class="btn" onclick="outlineTextWithFontAsk()" style="flex:1">文字をアウトライン化</button></div>
+          <p class="perf-note">フォントファイル（TTF/OTF）を読み込むと、そのフォントの字形そのままでアウトライン化できます。読み込まなくても、画面に表示されているフォントの形をトレースしてアウトライン化できます（フォントファイル不要・輪郭は近似になります）。フォントの利用条件は各フォントのライセンスに従ってください。</p>
         </div>
 
         <h3>🖌 ブラシ・図形の細かい設定</h3>
         <div class="grid2">
           <label class="small">ブラシ太さ <input type="number" id="brushSize" value="10" min="1" max="100"></label>
+          <label class="small">消しゴム太さ <input type="number" id="eraserSize" value="24" min="2" max="200"></label>
           <label class="small">多角形の辺（正多角形） <span style="display:inline-flex;gap:4px;align-items:center"><button type="button" class="icon-btn" onclick="stepPolySides(-1)" aria-label="辺の数を減らす">−</button><input type="number" id="polySides" value="6" min="3" max="12" step="1"><button type="button" class="icon-btn" onclick="stepPolySides(1)" aria-label="辺の数を増やす">＋</button></span></label>
           <label class="small"><input type="checkbox" id="shapeNoFill" checked> 図形は「塗りなし・線だけ」で描く</label>
           <label class="small">星の先端 <input type="number" id="starPoints" value="5" min="3" max="24"></label>
@@ -942,7 +951,7 @@ dialog{padding-right:52px}
         <h3>📐 塗り足し・トンボ（PDF書き出し用）</h3>
         <div class="row"><label class="small">塗り足し <input type="number" id="bleedMm" value="3" min="0" max="10" step="0.5"> mm</label>
         <label class="small"><input type="checkbox" id="cropMarksChk" checked> トンボ（トリムマーク）を付ける</label></div>
-        <p class="perf-note">国内印刷入稿の標準セットは「CMYK＋塗り足し3mm＋トンボ＋フォントのアウトライン化＋画像300dpi目安」です。本アプリのPDFは図形をベクターのまま出力し、文字は高解像度画像として埋め込むため見た目が崩れません。文字をパス化したい場合は2通りあります：①「見た目」パネルの文字設定でフォントファイル（TTF/OTF）を読み込んで行う実アウトライン化（opentype.js使用）、②フォント不要で配置枠から作る簡易パス化（近似表現）。印刷入稿では、どちらも行わずPDF書き出しを使うのが最も崩れません。パターンはPDFでは単色近似になります。</p>
+        <p class="perf-note">国内印刷入稿の標準セットは「CMYK＋塗り足し3mm＋トンボ＋フォントのアウトライン化＋画像300dpi目安」です。本アプリのPDFは図形をベクターのまま出力し、文字は高解像度画像として埋め込むため見た目が崩れません。文字をパス化したい場合は2通りあります：①「見た目」パネルの文字設定でフォントファイル（TTF/OTF）を読み込んで行う実アウトライン化（opentype.js使用）、②フォント不要で、画面表示中のフォントの形をトレースしてパス化する方式（近似表現）。印刷入稿では、どちらも行わずPDF書き出しを使うのが最も崩れません。パターンはPDFでは単色近似になります。</p>
         <h3>⬇ 印刷用に書き出す</h3>
         <p class="perf-note" id="exportLockNotePrint" hidden style="color:#b45309;font-weight:700">🔒 未登録（試用）モードでは、PDF／EPS／SVG／PNGの書き出しと印刷はできません。ライセンス登録後に使えます。</p>
         <div class="grid2">
@@ -1029,8 +1038,8 @@ dialog{padding-right:52px}
     <ul style="margin:4px 0;padding-left:18px">
       <li><b>perfect-freehand</b> — MIT License（Copyright © Steve Ruiz）— ブラシの筆圧風ストローク生成</li>
       <li><b>simplify-js</b> — BSD 2-Clause License（Copyright © Vladimir Agafonkin）— パスの点数削減</li>
-      <li><b>martinez-polygon-clipping</b> — MIT License — パスファインダーのブーリアン演算</li>
-      <li><b>clipper-lib</b>（JavaScript版 Clipper）— Boost Software License 1.0 — パスのオフセット演算</li>
+      <li><b>martinez-polygon-clipping</b> — MIT License — 同梱ライブラリ（予備）</li>
+      <li><b>clipper-lib</b>（JavaScript版 Clipper）— Boost Software License 1.0 — パスファインダーのブーリアン演算・パスのオフセット演算・消しゴムの切り取り演算</li>
       <li><b>opentype.js</b> — MIT License — フォント解析と文字のアウトライン化（利用者が読み込んだフォントでのみ使用）</li>
       <li><b>ImageTracerJS</b> — Public Domain（Unlicense）— 画像トレース（簡易モード）</li>
       <li><b>VTracer</b>（@visioncortex/vtracer 1.0.0-alpha.4）— MIT License / Apache License 2.0 — 画像トレース（高品質モード）。WebAssembly版を版固定で同梱し、オフラインで動作します</li>
@@ -1209,7 +1218,7 @@ dialog{padding-right:52px}
   <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end"><button class="btn primary" onclick="document.getElementById('lockSetDlg').close()">閉じる</button></div>
 </dialog>
 <div id="penHoverRing" aria-hidden="true"></div><div id="hoverBox" aria-hidden="true"></div>
-<div class="toast" id="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button class="toast-btn" id="toastBtn" hidden>元に戻す</button></div>
+<div id="toastShade" hidden></div><div class="toast" id="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button class="toast-btn" id="toastBtn" hidden>元に戻す</button><button class="toast-x" id="toastClose" hidden aria-label="この表示を閉じる" title="閉じる">✕</button></div>
 <div class="tut-card" id="tutCard" role="dialog" aria-label="チュートリアル">
   <h3 id="tutTitle"></h3>
   <p id="tutBody"></p>
@@ -12388,7 +12397,7 @@ function _segBBoxInto(anchors,closed,bb){
   const add=(x,y)=>{if(x<bb.x1)bb.x1=x;if(y<bb.y1)bb.y1=y;if(x>bb.x2)bb.x2=x;if(y>bb.y2)bb.y2=y;};
   add(anchors[0].x,anchors[0].y);
   const seg=(p,c)=>{if(p.hOut||c.hIn){const x1=p.hOut?p.hOut.x:p.x,y1=p.hOut?p.hOut.y:p.y,x2=c.hIn?c.hIn.x:c.x,y2=c.hIn?c.hIn.y:c.y;
-      for(let t=0.125;t<1;t+=0.125){const u=1-t;add(u*u*u*p.x+3*u*u*t*x1+3*u*t*t*x2+t*t*t*c.x,u*u*u*p.y+3*u*u*t*y1+3*u*t*t*y2+t*t*t*c.y);}}
+      for(let t=0.0625;t<1;t+=0.0625){const u=1-t;add(u*u*u*p.x+3*u*u*t*x1+3*u*t*t*x2+t*t*t*c.x,u*u*u*p.y+3*u*u*t*y1+3*u*t*t*y2+t*t*t*c.y);}}
     add(c.x,c.y);};
   for(let i=1;i<n;i++)seg(anchors[i-1],anchors[i]);
   if(closed&&n>1)seg(anchors[n-1],anchors[0]);
@@ -12402,12 +12411,32 @@ function xformD(d,fn){const subs=parsePathD(d).map(sp=>({closed:sp.closed,anchor
 function bbox(o){
   if(o.type==="path"||o.type==="pencil"||o.type==="brush"){if(!o.anchors||!o.anchors.length)return{x:o.x||0,y:o.y||0,w:0,h:0};const r=subsBBox([{anchors:o.anchors,closed:!!o.closed}]);if(r)return r;const xs=o.anchors.map(a=>a.x),ys=o.anchors.map(a=>a.y);const x=Math.min(...xs),y=Math.min(...ys);return{x,y,w:Math.max(...xs)-x,h:Math.max(...ys)-y};}
   if(o.type==="compound")return compoundBBox(o);
-  if(o.type==="line"||o.type==="arc"){const x=Math.min(o.x,o.x2),y=Math.min(o.y,o.y2);return{x,y,w:Math.abs(o.x2-o.x),h:Math.abs(o.y2-o.y)};}
+  if(o.type==="line"){const x=Math.min(o.x,o.x2),y=Math.min(o.y,o.y2);return{x,y,w:Math.abs(o.x2-o.x),h:Math.abs(o.y2-o.y)};}
+  if(o.type==="arc"){ /* FB5-P1: 円弧は弦の外側へ膨らむ。端点だけの枠だと描画が枠からはみ出すため、実際の弧をサンプリングして枠に入れる（描画は半径=弦長・sweep=1 の弧） */
+    const dx=o.x2-o.x,dy=o.y2-o.y,c=Math.hypot(dx,dy);if(!c)return{x:o.x,y:o.y,w:0,h:0};
+    const mx=(o.x+o.x2)/2,my=(o.y+o.y2)/2,nx=-dy/c,ny=dx/c,h=c*Math.sqrt(3)/2;
+    const cx=mx+nx*h,cy=my+ny*h; /* sweep=1 で膨らむ側の中心 */
+    const a1=Math.atan2(o.y-cy,o.x-cx);let dA=Math.atan2(o.y2-cy,o.x2-cx)-a1;
+    const am=Math.atan2(-ny,-nx);let dm=am-a1;while(dm>Math.PI)dm-=2*Math.PI;while(dm<-Math.PI)dm+=2*Math.PI;
+    while(dA>Math.PI)dA-=2*Math.PI;while(dA<-Math.PI)dA+=2*Math.PI;
+    if(Math.sign(dA)!==Math.sign(dm)&&Math.abs(dm)>1e-9)dA+=Math.sign(dm)*2*Math.PI;
+    let x1=Math.min(o.x,o.x2),y1=Math.min(o.y,o.y2),x2=Math.max(o.x,o.x2),y2=Math.max(o.y,o.y2);
+    for(let i=1;i<16;i++){const a=a1+dA*i/16,px=cx+c*Math.cos(a),py=cy+c*Math.sin(a);if(px<x1)x1=px;if(py<y1)y1=py;if(px>x2)x2=px;if(py>y2)y2=py;}
+    return{x:x1,y:y1,w:x2-x1,h:y2-y1};}
   if(o.type==="image"||o.type==="svgImport")return{x:o.x,y:o.y,w:o.w,h:o.h};
   if(o.type==="text"){const w=o.w||0;const al=o.align||"start";const x=al==="middle"?o.x-w/2:al==="end"?o.x-w:o.x;return{x,y:o.y,w,h:o.h||0};}
   return{x:o.x,y:o.y,w:o.w||0,h:o.h||0};
 }
 function center(o){const b=bbox(o);return{x:b.x+b.w/2,y:b.y+b.h/2};}
+/* FB5-P1: 実際に画面へ描かれている範囲（回転・シアー・拡縮を bbox 中心まわりに適用した軸平行外接枠）。
+   従来の複数選択枠・範囲選択・当たり判定は未変形の bbox(o) を使っていたため、回転／拡大縮小した
+   オブジェクトが混ざると枠が実物より大きくずれて表示され、アートボード外まではみ出していた */
+function visualBBox(o){const b=bbox(o);const rot=o.rotation||0,sh=o.shear||0,sx=o.scaleX==null?1:o.scaleX,sy=o.scaleY==null?1:o.scaleY;
+  if(!rot&&!sh&&sx===1&&sy===1)return b;
+  const cx=b.x+b.w/2,cy=b.y+b.h/2,th=rot*Math.PI/180,tn=Math.tan(sh*Math.PI/180),cs=Math.cos(th),sn=Math.sin(th);
+  let x1=Infinity,y1=Infinity,x2=-Infinity,y2=-Infinity;
+  [[b.x,b.y],[b.x+b.w,b.y],[b.x+b.w,b.y+b.h],[b.x,b.y+b.h]].forEach(pt=>{let vx=(pt[0]-cx)*sx,vy=(pt[1]-cy)*sy;vx+=tn*vy;const rx=cx+vx*cs-vy*sn,ry=cy+vx*sn+vy*cs;if(rx<x1)x1=rx;if(ry<y1)y1=ry;if(rx>x2)x2=rx;if(ry>y2)y2=ry;});
+  return{x:x1,y:y1,w:x2-x1,h:y2-y1};}
 function pathD(o){
   if(o.customD)return o.customD;
   const a=o.anchors;if(!a||!a.length)return"";
@@ -12590,13 +12619,13 @@ function renderSelection(){
   }
   /* G3: なげなわ確定後の選択も、オブジェクトの外枠をはっきり表示する（ハンドルは付けない） */
   if(state.tool==="lasso"){
-    selObjs().forEach(o=>{const b=bbox(o);if(!b.w&&!b.h)return;el("rect",{x:b.x-4,y:b.y-4,width:b.w+8,height:b.h+8,fill:"rgba(37,99,235,.06)",stroke:"#2563eb","stroke-width":1.8/state.zoom,"stroke-dasharray":"6 4"},ui);});
+    selObjs().forEach(o=>{const b=visualBBox(o);if(!b.w&&!b.h)return;el("rect",{x:b.x-4,y:b.y-4,width:b.w+8,height:b.h+8,fill:"rgba(37,99,235,.06)",stroke:"#2563eb","stroke-width":1.8/state.zoom,"stroke-dasharray":"6 4"},ui);});
     return;
   }
   if(state.tool!=="select"&&state.tool!=="rotate"&&state.tool!=="scale"&&state.tool!=="shear"&&state.tool!=="reflect")return;
   /* G5: 複数選択時は個別ハンドルを出さず、全体の外接枠＋全体用ハンドルだけにする（個別拡縮に化けないように） */
   if(state.tool==="select"&&selObjs().length>1){
-    const bs=selObjs().map(bbox);const X1=Math.min(...bs.map(b=>b.x)),Y1=Math.min(...bs.map(b=>b.y)),X2=Math.max(...bs.map(b=>b.x+b.w)),Y2=Math.max(...bs.map(b=>b.y+b.h));
+    const bs=selObjs().map(visualBBox);const X1=Math.min(...bs.map(b=>b.x)),Y1=Math.min(...bs.map(b=>b.y)),X2=Math.max(...bs.map(b=>b.x+b.w)),Y2=Math.max(...bs.map(b=>b.y+b.h)); /* FB5-P1: 合算枠は描画実範囲（変形込み）で計算する */
     const ub={x:X1-4,y:Y1-4,w:(X2-X1)+8,h:(Y2-Y1)+8};
     el("rect",{x:ub.x,y:ub.y,width:ub.w,height:ub.h,fill:"none",stroke:"#2563eb","stroke-width":1.8/state.zoom,"stroke-dasharray":"6 4"},ui);
     bs.forEach(b=>el("rect",{x:b.x-2,y:b.y-2,width:b.w+4,height:b.h+4,fill:"none",stroke:"rgba(37,99,235,.45)","stroke-width":1/state.zoom},ui));
@@ -12631,7 +12660,7 @@ function hitObject(p){
   const layerOrder={};state.layers.forEach((l,i)=>layerOrder[l.id]=i);
   const sorted=[...state.objects].sort((a,b)=>(layerOrder[a.layer]??0)-(layerOrder[b.layer]??0));
   for(let i=sorted.length-1;i>=0;i--){const o=sorted[i];const layer=state.layers.find(l=>l.id===o.layer);if(layer&&!layer.visible)continue;if(o.visible===false)continue;
-    const b=bbox(o);const pad=6/state.zoom+4;
+    const b=visualBBox(o);const pad=6/state.zoom+4; /* FB5-P1: 当たり判定も描画実範囲に合わせる */
     if(p.x>=b.x-pad&&p.x<=b.x+b.w+pad&&p.y>=b.y-pad&&p.y<=b.y+b.h+pad){
       if(o.type==="path"||o.type==="pencil"||o.type==="brush"||o.type==="line"||o.type==="arc"){
         // near any anchor segment approx: bbox check with tighter pad for open paths: check distance to anchors
@@ -12743,7 +12772,7 @@ vp.addEventListener("pointerdown",e=>{
   if(t==="text"){const px=p.x,py=p.y;askText("テキスト",txt=>{if(txt===null)return;const o=baseObj("text",{x:px,y:py,text:txt,fontSize:parseFloat($("fSize").value)||36,fontFamily:$("fFamily").value,fontWeight:$("fWeight").value,tracking:parseFloat($("fTracking").value)||0,leading:parseFloat($("fLeading").value)||1.2,align:"start",italic:$("fItalic").checked,underline:$("fUnderline").checked,vertical:$("fVertical").checked,ruby:$("fRuby").value||"",name:"テキスト"});state.objects.push(o);state.selected=[o.id];$("textEdit").value=txt;pushHistory();setTool("select");renderAll();});return;}
   if(t==="eyedropper"){const o=hitObject(p);if(o){["fill","stroke","strokeWidth","opacity","gradient","pattern","dash"].forEach(k=>{selObjs().forEach(s=>s[k]=JSON.parse(JSON.stringify(o[k])));});syncStyleUI(o);pushHistory();renderAll();}return;}
   if(t==="blend"){const o=hitObject(p);if(o){if(!state.blendFirst)state.blendFirst=o.id;else{state.selected=[state.blendFirst,o.id];blendSel();state.blendFirst=null;}}return;}
-  if(t==="eraser"){drag={kind:"erase"};eraseAt(p);vp.setPointerCapture(e.pointerId);return;}
+  if(t==="eraser"){drag={kind:"erase",pts:[{x:p0.x,y:p0.y}],changed:false,lastDone:0};eraseProcess(drag);drawEraserCursor(p0);vp.setPointerCapture(e.pointerId);return;}
   if(t==="reflect"){const o=hitObject(p)||selObjs()[0];if(o){o.scaleX=(o.scaleX||1)*-1;pushHistory();renderAll();}return;}
   if(t==="width"){const o=hitObject(p);if(o){o.strokeWidth=Math.min(80,(o.strokeWidth||2)+2);pushHistory();renderAll();}return;}
   if(t==="rotate"||t==="scale"||t==="shear"){const o=hitObject(p);if(o&&!state.selected.includes(o.id))state.selected=[o.id];
@@ -12769,6 +12798,7 @@ vp.addEventListener("pointerdown",e=>{
 vp.addEventListener("pointermove",e=>{
   if(drag)LIGHT=true;
   const p0=toSVG(e),p=snapPt(p0);$("stPos").textContent=`${Math.round(p0.x)}, ${Math.round(p0.y)}`;
+  if(state.tool==="eraser")drawEraserCursor(p0); /* FB6-Q3: 消しゴムの大きさを円でプレビュー */
   if(!drag)return;
   if(drag.kind==="pan"){state.pan.x=drag.px+(e.clientX-drag.sx);state.pan.y=drag.py+(e.clientY-drag.sy);_viewMoved=true;panRender();return;}
   if(drag.kind==="guide"){const gd=state.guides[drag.idx];if(gd)gd.pos=gd.axis==="x"?p0.x:p0.y;renderAll();return;}
@@ -12792,7 +12822,7 @@ vp.addEventListener("pointermove",e=>{
     if(shapeDraft.type==="polygon"){const m=Math.max(Math.abs(w),Math.abs(h));w=Math.sign(w||1)*m;h=Math.sign(h||1)*m;} // 正多角形：外接する正方形に内接させる（横長・縦長に潰れた多角形にしない）
     if(shapeDraft.type==="line"||shapeDraft.type==="arc"){shapeDraft.x2=s.x+w;shapeDraft.y2=s.y+h;}
     else{shapeDraft.x=Math.min(s.x,s.x+w);shapeDraft.y=Math.min(s.y,s.y+h);shapeDraft.w=Math.abs(w);shapeDraft.h=Math.abs(h);}lightRender([shapeDraft]);return;}
-  if(drag.kind==="erase"){eraseAt(p0);return;}
+  if(drag.kind==="erase"){const evs=(e.getCoalescedEvents&&e.getCoalescedEvents().length)?e.getCoalescedEvents():[e];evs.forEach(ev=>{const q=toSVG(ev);const last=drag.pts[drag.pts.length-1];if(!last||Math.hypot(q.x-last.x,q.y-last.y)>Math.max(1.2,eraserRadius()/8))drag.pts.push(q);});eraseProcess(drag);drawEraserCursor(p0);return;}
   if(drag.kind==="marquee"){drag.cur=p0;renderAll();drawMarquee(drag);return;}
   if(drag.kind==="lasso"){drag.cur=p0;if(!drag.pts)drag.pts=[drag.start];const lp=drag.pts[drag.pts.length-1];if(Math.hypot(p0.x-lp.x,p0.y-lp.y)>2.5/state.zoom)drag.pts.push({x:p0.x,y:p0.y});renderAll();drawMarquee(drag);return;}
   if(drag.kind==="anchor"){const o=state.objects.find(x=>x.id===drag.oid);const a=o.anchors[drag.idx];a.x=drag.orig.x+(p0.x-drag.start.x);a.y=drag.orig.y+(p0.y-drag.start.y);
@@ -12849,7 +12879,8 @@ vp.addEventListener("pointermove",e=>{
 });
 function moveObjTo(s,or,dx,dy){
   if(s.type==="compound"&&s.childrenD){s.childrenD=or.childrenD.map(d=>xformD(d,(x,y)=>({x:x+dx,y:y+dy})));return;} /* N2: 複合パスは childrenD の座標を平行移動する（従来は x/y が無く NaN になって動かなかった） */
-  if(s.anchors){s.anchors=or.anchors.map(a=>({x:a.x+dx,y:a.y+dy,hIn:a.hIn?{x:a.hIn.x+dx,y:a.hIn.y+dy}:undefined,hOut:a.hOut?{x:a.hOut.x+dx,y:a.hOut.y+dy}:undefined}));}
+  if(s.anchors){s.anchors=or.anchors.map(a=>({x:a.x+dx,y:a.y+dy,hIn:a.hIn?{x:a.hIn.x+dx,y:a.hIn.y+dy}:undefined,hOut:a.hOut?{x:a.hOut.x+dx,y:a.hOut.y+dy}:undefined}));
+    if(or.customD)s.customD=xformD(or.customD,(x,y)=>({x:x+dx,y:y+dy}));} /* FB5-P1: ブラシ等の輪郭データ(customD)も一緒に動かす。従来はアンカーだけが動き、描画は元の場所に残って選択枠と実物がずれていた */
   else{s.x=or.x+dx;s.y=or.y+dy;if(s.x2!==undefined){s.x2=or.x2+dx;s.y2=or.y2+dy;}}
 }
 function applyBox(o,nb,or){const ob=bbox(or);if(!ob.w||!ob.h)return;const fx=nb.w/ob.w,fy=nb.h/ob.h;
@@ -12863,7 +12894,7 @@ function drawMarquee(d){const ui=stage.querySelector(".sel-ui")||el("g",{class:"
   if(d.kind==="lasso"&&d.pts&&d.pts.length>1){const pts=d.pts.concat([d.cur]);el("path",{d:"M "+pts.map(q=>q.x+" "+q.y).join(" L ")+" Z",fill:"rgba(37,99,235,.07)",stroke:"#2563eb","stroke-width":1.5/state.zoom,"stroke-dasharray":"6 4","stroke-linejoin":"round"},ui);
     /* G3: 囲んでいる途中から「どれが選択されるか」を先行ハイライトする（対象オブジェクト＝橙の破線枠、範囲内の点＝橙丸） */
     if(d.pts.length>=3){const poly=pts;
-      state.objects.filter(o=>o.visible!==false&&!o._isClipSrc).forEach(o=>{const b=bbox(o);if(polyHitsBBox(poly,b))el("rect",{x:b.x-3,y:b.y-3,width:b.w+6,height:b.h+6,fill:"rgba(245,158,11,.10)",stroke:"#f59e0b","stroke-width":1.6/state.zoom,"stroke-dasharray":"5 3"},ui);});
+      state.objects.filter(o=>o.visible!==false&&!o._isClipSrc).forEach(o=>{const b=visualBBox(o);if(polyHitsBBox(poly,b))el("rect",{x:b.x-3,y:b.y-3,width:b.w+6,height:b.h+6,fill:"rgba(245,158,11,.10)",stroke:"#f59e0b","stroke-width":1.6/state.zoom,"stroke-dasharray":"5 3"},ui);});
       state.objects.filter(o=>o.visible!==false&&!o._isClipSrc).forEach(o=>{effAnchors(o).forEach(a=>{if(pointInPoly(a,poly))el("circle",{cx:a.x,cy:a.y,r:5/state.zoom+2,fill:"#f59e0b",stroke:"#fff","stroke-width":1.5/state.zoom},ui);});});}
     return;}
   const x=Math.min(d.start.x,d.cur.x),y=Math.min(d.start.y,d.cur.y);el("rect",{x,y,width:Math.abs(d.cur.x-d.start.x),height:Math.abs(d.cur.y-d.start.y),class:"sel-box"},ui);}
@@ -12881,15 +12912,15 @@ vp.addEventListener("pointerup",e=>{
     else if(hits.length===1){state.selected=[hits[0].id];}}
   if(drag.kind==="measure"){const d=Math.hypot(drag.cur.x-drag.start.x,drag.cur.y-drag.start.y);toast("距離： "+Math.round(d)+" px（約 "+(d*25.4/96).toFixed(1)+" mm ／ 96dpi換算）");}
   if(drag.kind==="marquee"){const x1=Math.min(drag.start.x,drag.cur.x),x2=Math.max(drag.start.x,drag.cur.x),y1=Math.min(drag.start.y,drag.cur.y),y2=Math.max(drag.start.y,drag.cur.y);
-    state.selected=state.objects.filter(o=>{const b=bbox(o);return b.x>=x1&&b.y>=y1&&b.x+b.w<=x2&&b.y+b.h<=y2;}).map(o=>o.id);}
+    state.selected=state.objects.filter(o=>{if(o.visible===false||o._isClipSrc)return false;const ly=state.layers.find(l=>l.id===o.layer);if(ly&&!ly.visible)return false;const b=visualBBox(o);return b.x>=x1&&b.y>=y1&&b.x+b.w<=x2&&b.y+b.h<=y2;}).map(o=>o.id);}
   if(drag.kind==="lasso"){
     const poly=(drag.pts&&drag.pts.length>=3)?drag.pts:null;
     if(!poly){ // ほとんど線を引いていない場合は従来の矩形選択として扱う
       const x1=Math.min(drag.start.x,drag.cur.x),x2=Math.max(drag.start.x,drag.cur.x),y1=Math.min(drag.start.y,drag.cur.y),y2=Math.max(drag.start.y,drag.cur.y);
-      state.selected=state.objects.filter(o=>{const b=bbox(o);return b.x>=x1&&b.y>=y1&&b.x+b.w<=x2&&b.y+b.h<=y2;}).map(o=>o.id);state.lassoAnchors=[];
+      state.selected=state.objects.filter(o=>{if(o.visible===false||o._isClipSrc)return false;const ly=state.layers.find(l=>l.id===o.layer);if(ly&&!ly.visible)return false;const b=visualBBox(o);return b.x>=x1&&b.y>=y1&&b.x+b.w<=x2&&b.y+b.h<=y2;}).map(o=>o.id);state.lassoAnchors=[];
     }else{
       // オブジェクト選択：囲んだ多角形に「交差する／含まれる」ものを選ぶ（完全内包でなくてもよい）
-      const hits=state.objects.filter(o=>o.visible!==false&&!o._isClipSrc).filter(o=>polyHitsBBox(poly,bbox(o)));
+      const hits=state.objects.filter(o=>o.visible!==false&&!o._isClipSrc).filter(o=>polyHitsBBox(poly,visualBBox(o))); /* FB5-P1: なげなわの対象判定も描画実範囲で */
       state.selected=hits.map(o=>o.id);
       // 点単位選択：範囲内にあるアンカーポイントを集める。図形（四角・多角形など）は編集可能なパス化してから点を拾う
       const la=[];
@@ -12912,12 +12943,13 @@ vp.addEventListener("pointerup",e=>{
   if(drag.kind==="shape"&&shapeDraft){if((shapeDraft.w<3&&shapeDraft.h<3)&&(shapeDraft.type!=="line"&&shapeDraft.type!=="arc")){state.objects=state.objects.filter(o=>o.id!==shapeDraft.id);}else{pushHistory();const _sd=shapeDraft;setTimeout(()=>{if(state.objects.some(o=>o.id===_sd.id))toastAction("図形を作成しました。大きさを数値で指定することもできます","サイズを数値で指定",()=>{state.selected=[_sd.id];openTab("props");renderAll();const tw=$("tW");if(tw){tw.focus();tw.select();}});},60);}shapeDraft=null;}
   if(drag.kind==="duplicate"&&drag.altStack&&drag.altStack.length>1&&!drag.duplicated&&!drag.moved){ // E6: Alt+クリック（ドラッグしなかった）＝複製ではなく重なり循環選択
     const idx=drag.altStack.findIndex(x=>x.id===drag.altTopId);const next=drag.altStack[(idx+1)%drag.altStack.length];if(next){state.selected=[next.id];toast("重なっているオブジェクトを切り替えました（"+(idx+2>drag.altStack.length?1:idx+2)+"/"+drag.altStack.length+"）");}}
+  if(drag.kind==="erase"){if(drag.changed)pushHistory();state.selected=state.selected.filter(id=>state.objects.some(o=>o.id===id));} /* FB6-Q3: 消しゴムは1ドラッグを履歴に1回だけ記録（Undoで戻せる） */
   if(["move","resize","gresize","rotate","scale","shear","anchor","handle","anchorConvert","guide","bresize","bmove","lassoMove"].includes(drag.kind)&&drag.moved!==false)pushHistory();
   drag=null;LIGHT=false;renderAll();
 });
 /* モバイルではブラウザのジェスチャー割り込み等で pointerup ではなく pointercancel が来ることがある。
    ここでドラッグを確実に終了しないと、ドラッグ状態と LIGHT（描画間引き）が残って次のパンが効かなくなる */
-vp.addEventListener("pointercancel",()=>{if(drag){drag=null;LIGHT=false;renderAll();}});
+vp.addEventListener("pointercancel",()=>{if(drag){if(drag.kind==="erase"&&drag.changed)pushHistory();drag=null;LIGHT=false;renderAll();}});
 /* iOS系WebView向け保険：パン／ピンチ中はタッチ移動をページ側ジェスチャーに奪わせない */
 vp.addEventListener("touchmove",e=>{if(drag||_pinch)e.preventDefault();},{passive:false});
 vp.addEventListener("dblclick",e=>{const p=toSVG(e);
@@ -12974,7 +13006,130 @@ function penHoverAt(e){const ring=$("penHoverRing"),box=$("hoverBox");if(!ring||
   else box.style.display="none";}
 function ctxAction(a){const m=$("ctxMenu");if(m)m.classList.remove("show");if(a==="fit")zoomFit();else if(a==="100")zoom100();else if(a==="undo")undo();else if(a==="redo")redo();else if(a==="paste")pasteSel();else if(a==="all")selectAll();else if(a==="panel")togglePanel();}
 document.addEventListener("pointerdown",e=>{const m=$("ctxMenu");if(m&&m.classList.contains("show")&&!(e.target.closest&&e.target.closest("#ctxMenu")))m.classList.remove("show");},true);
-function eraseAt(p){const o=hitObject(p);if(o&&!layerLocked(o)){state.objects=state.objects.filter(x=>x.id!==o.id);state.selected=state.selected.filter(id=>id!==o.id);renderAll();}}
+/* FB6-Q3: 消しゴムを「触れた部分だけ消す」方式に作り替えた（従来はオブジェクト単位の全削除で、履歴にも残らず Undo できなかった）。
+   ・塗りのある閉じた図形／複合パス: 消しゴムの軌跡（カプセル形）との差分を Clipper で実演算し、残りは編集可能なパス／複合パスとして残る
+   ・開いたパス・線だけの図形: パスを細かくサンプリングし、消しゴムに触れた区間を切り離して残りをパスとして残す
+   ・文字・画像: パスではないため従来どおりオブジェクト単位で削除
+   太さは「見た目」パネルの「消しゴム太さ」で変更でき、1回のドラッグは履歴に1回だけ記録される（Undo可） */
+function eraserRadius(){return Math.max(2,Math.min(200,parseFloat(($("eraserSize")||{}).value)||24));}
+function segPtDist(px,py,ax,ay,bx,by){const dx=bx-ax,dy=by-ay;const L2=dx*dx+dy*dy;let t=L2?((px-ax)*dx+(py-ay)*dy)/L2:0;t=t<0?0:t>1?1:t;const x=ax+t*dx,y=ay+t*dy;return Math.hypot(px-x,py-y);}
+function capsulePoly(a,b,r){const pts=[];const N=6;
+  if(Math.hypot(b.x-a.x,b.y-a.y)<0.01){for(let i=0;i<12;i++){const t=i/12*Math.PI*2;pts.push({x:a.x+r*Math.cos(t),y:a.y+r*Math.sin(t)});}return pts;}
+  const d={x:b.x-a.x,y:b.y-a.y};const L=Math.hypot(d.x,d.y);const nx=-d.y/L,ny=d.x/L;const na=Math.atan2(ny,nx);
+  for(let i=0;i<=N;i++){const t=na-i/N*Math.PI;pts.push({x:b.x+r*Math.cos(t),y:b.y+r*Math.sin(t)});}
+  for(let i=0;i<=N;i++){const t=na+Math.PI-i/N*Math.PI;pts.push({x:a.x+r*Math.cos(t),y:a.y+r*Math.sin(t)});}
+  return pts;}
+function eraseStyleClone(o,type,extra){const n=baseObj(type,{});["fill","stroke","strokeWidth","opacity","dash","linecap","gradient","pattern","blendMode","shadow","spotFill","spotStroke","cmykFill","overprint"].forEach(k=>{if(o[k]!==undefined)n[k]=JSON.parse(JSON.stringify(o[k]));});n.name=o.name||n.name;n.layer=o.layer;n.board=o.board;n.group=o.group||null;n.clipOf=o.clipOf||null;Object.assign(n,extra||{});return n;}
+function replaceObjWith(o,news){const idx=state.objects.indexOf(o);if(idx<0)return;state.objects.splice(idx,1,...news);}
+function clipRegionsFromTree(tree){const CL=window.ClipperLib;const out=[];
+  const walkOuter=node=>{out.push({outer:node.Contour(),holes:node.Childs().map(h=>h.Contour())});node.Childs().forEach(h=>h.Childs().forEach(walkOuter));};
+  tree.Childs().forEach(walkOuter);
+  return out.filter(rg=>rg.outer&&rg.outer.length>2&&Math.abs(CL.Clipper.Area(rg.outer))>PF_SCALE*PF_SCALE*0.5);}
+function regionsToObjects(regions,o){const toDoc=p=>({x:r2(p.X/PF_SCALE),y:r2(p.Y/PF_SCALE)});
+  return regions.map(rg=>{
+    if(!rg.holes.length)return eraseStyleClone(o,"path",{anchors:rg.outer.map(toDoc),closed:true,customD:null});
+    const subs=[{anchors:rg.outer.map(toDoc),closed:true},...rg.holes.map(h=>({anchors:h.map(toDoc),closed:true}))];
+    return eraseStyleClone(o,"compound",{childrenD:subs.map(sp=>segmentsToD([sp]))});});}
+function segSegCross(ax,ay,bx,by,cx,cy,dx,dy){const d1=(dx-cx)*(ay-cy)-(dy-cy)*(ax-cx),d2=(dx-cx)*(by-cy)-(dy-cy)*(bx-cx),d3=(bx-ax)*(cy-ay)-(by-ay)*(cx-ax),d4=(bx-ax)*(dy-ay)-(by-ay)*(dx-ax);return ((d1>0)!==(d2>0))&&((d3>0)!==(d4>0));}
+function capsuleTouchesRings(capsules,rings){
+  const inRings=p=>{let c=0;rings.forEach(ring=>{if(pointInPoly(p,ring.map(q=>({x:q[0],y:q[1]}))))c++;});return c%2===1;};
+  for(const cap of capsules){for(const p of cap)if(inRings(p))return true;
+    for(const ring of rings){for(const q of ring)if(pointInPoly({x:q[0],y:q[1]},cap))return true;
+      for(let i=0;i<ring.length;i++){const a=ring[i],b=ring[(i+1)%ring.length];for(let j=0;j<cap.length;j++){const c2=cap[j],d2=cap[(j+1)%cap.length];if(segSegCross(a[0],a[1],b[0],b[1],c2.x,c2.y,d2.x,d2.y))return true;}}}}
+  return false;}
+function eraseFilled(o,capsulesInt){const subj=clipPathsOf(o);if(!subj)return null;
+  const CL=window.ClipperLib;const c=new CL.Clipper();
+  c.AddPaths(subj,CL.PolyType.ptSubject,true);c.AddPaths(capsulesInt,CL.PolyType.ptClip,true);
+  const tree=new CL.PolyTree();
+  if(!c.Execute(CL.ClipType.ctDifference,tree,CL.PolyFillType.pftNonZero,CL.PolyFillType.pftNonZero))return null;
+  return regionsToObjects(clipRegionsFromTree(tree),o);}
+function sampleSubpathPts(sp,step){const a=sp.anchors;if(!a||!a.length)return[];
+  const raw=[{x:a[0].x,y:a[0].y}];
+  const n=a.length,lim=sp.closed?n:n-1;
+  for(let i=1;i<=lim;i++){const p=a[i-1],c=a[i%n];
+    if(p.hOut||c.hIn){for(let s=1;s<=20;s++)raw.push(cubicAt(p,c,s/20));}
+    else{const len=Math.hypot(c.x-p.x,c.y-p.y);const m=Math.max(1,Math.ceil(len/step));for(let s=1;s<=m;s++)raw.push({x:p.x+(c.x-p.x)*s/m,y:p.y+(c.y-p.y)*s/m});}}
+  if(sp.closed&&raw.length>1)raw.pop();
+  const out=[raw[0]];for(let i=1;i<raw.length;i++){const l=out[out.length-1];if(Math.hypot(raw[i].x-l.x,raw[i].y-l.y)>=step*0.7)out.push(raw[i]);}
+  const lastPt=raw[raw.length-1];if(!sp.closed&&out[out.length-1]!==lastPt)out.push(lastPt);
+  return out;}
+function cutRuns(pts,closed,segs,R){
+  const n=pts.length;if(!n)return null;
+  const ds=pts.map(p=>{let d=Infinity;segs.forEach(s=>{const dd=segPtDist(p.x,p.y,s[0].x,s[0].y,s[1].x,s[1].y);if(dd<d)d=dd;});return d;});
+  const inside=ds.map(d=>d<R);
+  if(!inside.some(v=>v))return null;
+  if(inside.every(v=>v))return[];
+  const cross=(p,q,dp,dq)=>{const t=(R-dp)/((dq-dp)||1e-9);const tt=t<0?0:t>1?1:t;return{x:p.x+(q.x-p.x)*tt,y:p.y+(q.y-p.y)*tt};};
+  const runs=[];let run=null;
+  if(!closed){
+    for(let i=0;i<n;i++){
+      if(!inside[i]){if(!run){run=[];if(i>0)run.push(cross(pts[i-1],pts[i],ds[i-1],ds[i]));}run.push(pts[i]);}
+      else if(run){run.push(cross(pts[i-1],pts[i],ds[i-1],ds[i]));if(run.length>1)runs.push(run);run=null;}}
+    if(run&&run.length>1)runs.push(run);
+  }else{
+    const start=inside.findIndex(v=>v);const order=[];for(let k=0;k<n;k++)order.push((start+k)%n);
+    for(let k=1;k<=n;k++){const i=order[k%n],prev=order[k-1];
+      if(!inside[i]){if(!run)run=[cross(pts[prev],pts[i],ds[prev],ds[i])];run.push(pts[i]);}
+      else if(run){run.push(cross(pts[prev],pts[i],ds[prev],ds[i]));if(run.length>1)runs.push(run);run=null;}}
+    if(run&&run.length>1)runs.push(run);
+  }
+  return runs;}
+function cutObjectPaths(o,chunk){
+  const segsAll=objSegments(o);if(!segsAll.length)return null;
+  const R=chunk.r+((o.strokeWidth||0)/2);
+  const step=Math.max(1.2,Math.min(6,R/3));
+  const news=[];let touched=false;
+  segsAll.forEach(sp=>{
+    const pts=sampleSubpathPts(sp,step);
+    if(pts.length<2){news.push({orig:sp});return;}
+    const runs=cutRuns(pts,sp.closed,chunk.segsDoc,R);
+    if(runs===null){news.push({orig:sp});return;}
+    touched=true;
+    runs.forEach(run=>{if(run.length>1)news.push({anchors:run});});
+  });
+  if(!touched)return null;
+  const out=[];
+  news.forEach(it=>{
+    if(it.orig)out.push(eraseStyleClone(o,"path",{anchors:it.orig.anchors,closed:it.orig.closed,customD:null}));
+    else out.push(eraseStyleClone(o,"path",{anchors:it.anchors.map(p=>({x:r2(p.x),y:r2(p.y)})),closed:false,customD:null}));});
+  return out;}
+function eraseApplyToObject(o,chunk){
+  if(layerLocked(o)||o.visible===false||o._isClipSrc)return false;
+  const layer=state.layers.find(l=>l.id===o.layer);if(layer&&!layer.visible)return false;
+  const bb=visualBBox(o);
+  if(bb.x>chunk.bbox.x2||bb.x+bb.w<chunk.bbox.x1||bb.y>chunk.bbox.y2||bb.y+bb.h<chunk.bbox.y1)return false;
+  if(o.type==="text"||o.type==="image"||o.type==="svgImport"){
+    if(chunk.pts.some(p=>p.x>=bb.x-2&&p.x<=bb.x+bb.w+2&&p.y>=bb.y-2&&p.y<=bb.y+bb.h+2)){state.objects=state.objects.filter(x=>x.id!==o.id);state.selected=state.selected.filter(id=>id!==o.id);return true;}
+    return false;}
+  const segsAll=objSegments(o);if(!segsAll.length)return false;
+  const hasFill=(o.fill!=="none"&&o.fill!=null)||o.gradient||o.pattern||o.spotFill;
+  const filledCase=hasFill&&segsAll.every(sp=>sp.closed);
+  if(filledCase){
+    if(!window.ClipperLib)return false;
+    const rings=geoRingsOf(o);if(!rings||!capsuleTouchesRings(chunk.capsulesDoc,rings))return false;
+    const res=eraseFilled(o,chunk.capsulesInt);if(!res)return false;
+    replaceObjWith(o,res);return true;
+  }
+  const res=cutObjectPaths(o,chunk);if(!res)return false;
+  replaceObjWith(o,res);return true;}
+function eraseChunkFromPts(pts,r){
+  const segsDoc=[];for(let i=1;i<pts.length;i++)segsDoc.push([pts[i-1],pts[i]]);
+  if(!segsDoc.length&&pts.length)segsDoc.push([pts[0],pts[0]]);
+  const capsulesDoc=segsDoc.map(s=>capsulePoly(s[0],s[1],r));
+  const capsulesInt=capsulesDoc.map(poly=>poly.map(p=>({X:Math.round(p.x*PF_SCALE),Y:Math.round(p.y*PF_SCALE)})));
+  let x1=Infinity,y1=Infinity,x2=-Infinity,y2=-Infinity;
+  capsulesDoc.forEach(poly=>poly.forEach(p=>{if(p.x<x1)x1=p.x;if(p.y<y1)y1=p.y;if(p.x>x2)x2=p.x;if(p.y>y2)y2=p.y;}));
+  return{segsDoc,capsulesDoc,capsulesInt,bbox:{x1,y1,x2,y2},pts,r};}
+function eraseProcess(drag){
+  const r=eraserRadius();drag.r=r;
+  const from=drag.lastDone>0?drag.lastDone-1:0;
+  const fresh=drag.pts.slice(from);
+  if(fresh.length<1)return;
+  drag.lastDone=drag.pts.length;
+  const chunk=eraseChunkFromPts(fresh,r);
+  [...state.objects].forEach(o=>{if(eraseApplyToObject(o,chunk))drag.changed=true;});
+  renderAll();}
+function drawEraserCursor(p){try{stage.querySelectorAll(".eraser-ui").forEach(e=>e.remove());const ui=el("g",{class:"eraser-ui"});el("circle",{cx:p.x,cy:p.y,r:eraserRadius(),fill:"rgba(239,68,68,0.07)",stroke:"#ef4444","stroke-width":1.2/state.zoom,"stroke-dasharray":(4/state.zoom)+" "+(3/state.zoom)},ui);}catch(e){}}
 function smoothPath(o){ // Catmull-Rom to bezier
   const a=o.anchors;if(a.length<3)return;const na=[{x:a[0].x,y:a[0].y}];
   for(let i=1;i<a.length;i++){const p0=a[Math.max(0,i-2)],p1=a[i-1],p2=a[i],p3=a[Math.min(a.length-1,i+1)];
@@ -13193,8 +13348,15 @@ function shapeNoFillOn(){const c=$("shapeNoFill");return !c||!!c.checked;}
 function tUnitVal(){const s=$("tUnit");return s?s.value:"px";}
 function objDim(v,cur){if(v===null||v===undefined)return cur;const s=String(v).trim();if(!s)return cur;const u=tUnitVal();if(/^-?[\d.]+$/.test(s)){const n=parseFloat(s);return isFinite(n)?(u==="mm"?n*PXMM:n):cur;}const ev=evalDimExpr(s,cur,u);return ev===null?cur:ev;}
 function fmtObjDim(px){return tUnitVal()==="mm"?String(Math.round(px/PXMM*100)/100):String(Math.round(px));}
-function stepPolySides(d){const el2=$("polySides");if(!el2)return;let v=(parseInt(el2.value)||6)+d;v=Math.min(12,Math.max(3,v));el2.value=v;el2.dispatchEvent(new Event("change"));}
-const _polyEl=$("polySides");if(_polyEl)_polyEl.addEventListener("change",()=>{let v=parseInt(_polyEl.value)||6;v=Math.min(12,Math.max(3,v));_polyEl.value=v;const o=selObjs()[0];if(o&&o.type==="polygon"&&o.sides!==v){o.sides=v;pushHistory();renderAll();toast("正多角形を "+v+" 角形にしました");}});
+/* FB5-P2: 辺の数の適用を一本化。作成時の既定値（#polySides）と選択中用のステッパー（#polySidesSel）は常に同期し、
+   選択中の多角形すべてに適用する。図形は x/y/w/h＋sides から描かれるため、辺数だけ変えても中心・大きさは保たれる */
+function setPolySides(v){v=Math.min(12,Math.max(3,parseInt(v)||6));const a=$("polySides"),b=$("polySidesSel");if(a)a.value=v;if(b)b.value=v;
+  const polys=selObjs().filter(o=>o.type==="polygon");let changed=false;polys.forEach(o=>{if(o.sides!==v){o.sides=v;changed=true;}});
+  if(changed){pushHistory();renderAll();toast("正多角形を "+v+" 角形にしました");}return v;}
+function stepPolySides(d){const el2=$("polySides");if(!el2)return;setPolySides((parseInt(el2.value)||6)+d);}
+function stepPolySidesSel(d){const el2=$("polySidesSel");if(!el2)return;setPolySides((parseInt(el2.value)||6)+d);}
+const _polyEl=$("polySides");if(_polyEl)_polyEl.addEventListener("change",()=>setPolySides(_polyEl.value));
+const _polySelEl=$("polySidesSel");if(_polySelEl)_polySelEl.addEventListener("change",()=>setPolySides(_polySelEl.value));
 const _tUnitEl=$("tUnit");if(_tUnitEl)_tUnitEl.addEventListener("change",()=>updatePropsFromSel());
 ["tX","tY","tW","tH","tRot","tShear"].forEach(id=>$(id).addEventListener("change",()=>{const o=selObjs()[0];if(!o)return;const b=bbox(o);
   if(id==="tRot")o.rotation=evalPxExpr($("tRot").value,o.rotation||0);else if(id==="tShear")o.shear=evalPxExpr($("tShear").value,o.shear||0);
@@ -13210,10 +13372,11 @@ $("textEdit").addEventListener("input",()=>{selObjs().filter(o=>o.type==="text")
 $("textEdit").addEventListener("change",()=>pushHistory());
 function setTextAlign(a){selObjs().filter(o=>o.type==="text").forEach(o=>o.align=a);pushHistory();renderAll();}
 function updatePropsFromSel(){const o=selObjs()[0];const info=$("selInfo");
-  if(!o){info.textContent=state.selected.length?state.selected.length+" 個のオブジェクトを選択中":"何も選択されていません。キャンバスでクリックしてみましょう。";if(typeof refreshPrintPanel==="function")refreshPrintPanel();return;}
+  if(!o){info.textContent=state.selected.length?state.selected.length+" 個のオブジェクトを選択中":"何も選択されていません。キャンバスでクリックしてみましょう。";const _pr0=$("polySelRow");if(_pr0)_pr0.hidden=true;if(typeof refreshPrintPanel==="function")refreshPrintPanel();return;}
   const b=bbox(o);$("tX").value=fmtObjDim(b.x);$("tY").value=fmtObjDim(b.y);$("tW").value=fmtObjDim(b.w);$("tH").value=fmtObjDim(b.h);$("tRot").value=Math.round(o.rotation||0);$("tShear").value=Math.round(o.shear||0);
   const _tsi=$("tSizeInfo");if(_tsi)_tsi.textContent="実寸： "+(b.w/PXMM).toFixed(2)+" × "+(b.h/PXMM).toFixed(2)+" mm（"+Math.round(b.w)+" × "+Math.round(b.h)+" px）";
-  if(o.type==="polygon"){const _ps=$("polySides");if(_ps&&document.activeElement!==_ps)_ps.value=o.sides||6;}
+  {const _poly=selObjs().find(x=>x.type==="polygon");const _pr=$("polySelRow");if(_pr)_pr.hidden=!_poly;
+   if(_poly){const _ps=$("polySides");if(_ps&&document.activeElement!==_ps)_ps.value=_poly.sides||6;const _pss=$("polySidesSel");if(_pss&&document.activeElement!==_pss)_pss.value=_poly.sides||6;}} /* FB5-P2: 多角形を選んだら辺数ステッパーを出す */
   syncStyleUI(o);
   if(o.type==="text"){$("textEdit").value=o.text||"";$("fSize").value=o.fontSize||36;$("fFamily").value=o.fontFamily||$("fFamily").value;$("fWeight").value=o.fontWeight||"400";$("fTracking").value=o.tracking||0;$("fLeading").value=o.leading||1.2;$("fVertical").checked=!!o.vertical;$("fItalic").checked=!!o.italic;$("fUnderline").checked=!!o.underline;$("fRuby").value=o.ruby||"";}
   info.innerHTML=`<b>${esc(o.name||o.type)}</b>（${o.type}）<br>位置 ${Math.round(b.x)}, ${Math.round(b.y)} ／ 大きさ ${Math.round(b.w)} × ${Math.round(b.h)} px（${(b.w/PXMM).toFixed(1)} × ${(b.h/PXMM).toFixed(1)} mm）<br>回転 ${Math.round(o.rotation||0)}° ／ 不透明度 ${Math.round((o.opacity??1)*100)}% ${o.group?"／ グループ: "+o.group:""} ${o.locked?"／ 🔒ロック中":""}`;
@@ -13260,11 +13423,19 @@ function addLayer(){const l={id:"l"+Date.now(),name:"レイヤー "+(state.layer
 function deleteLayer(){if(state.layers.length<=1)return notify("レイヤーは最低1つ必要です");state.objects=state.objects.filter(o=>o.layer!==state.activeLayer);state.layers=state.layers.filter(l=>l.id!==state.activeLayer);state.activeLayer=state.layers[0].id;pushHistory();renderAll();}
 function notify(m){const d=document.createElement("dialog");d.innerHTML=`<p>${m}</p><button class="btn primary" onclick="this.closest('dialog').close()">OK</button>`;document.body.appendChild(d);d.addEventListener("close",()=>d.remove());d.showModal();} /* 閉じた通知ダイアログをDOMに残し続けない（他の確認ダイアログと同仕様に統一） */
 let _toastTimer=null;
-function toast(m){const t=$("toast");if(!t)return;const s=$("toastMsg");if(s)s.textContent=m;else t.textContent=m;const b=$("toastBtn");if(b)b.hidden=true;t.classList.add("show");clearTimeout(_toastTimer);
+function hideToast(){const t=$("toast");if(t)t.classList.remove("show");const sh=$("toastShade");if(sh)sh.hidden=true;const tc=$("toastClose");if(tc)tc.hidden=true;clearTimeout(_toastTimer);}
+function toast(m){const t=$("toast");if(!t)return;const s=$("toastMsg");if(s)s.textContent=m;else t.textContent=m;const b=$("toastBtn");if(b)b.hidden=true;const sh=$("toastShade");if(sh)sh.hidden=true;const tc=$("toastClose");if(tc)tc.hidden=false;t.classList.add("show");clearTimeout(_toastTimer);
   /* D4: 表示時間は文字数に応じて伸ばし、数値を含む結果は少し長めに残す */
   const dur=Math.min(6000,2200+Math.max(0,String(m).length-18)*90+(/\d/.test(m)?600:0));
   _toastTimer=setTimeout(()=>t.classList.remove("show"),dur);}
-function toastAction(m,label,fn,ms){const t=$("toast");if(!t)return;const s=$("toastMsg");if(s)s.textContent=m;const b=$("toastBtn");if(b){b.hidden=false;b.textContent=label;b.onclick=()=>{clearTimeout(_toastTimer);t.classList.remove("show");if(fn)fn();};}t.classList.add("show");clearTimeout(_toastTimer);_toastTimer=setTimeout(()=>t.classList.remove("show"),ms||5000);}
+function toastAction(m,label,fn,ms){const t=$("toast");if(!t)return;const s=$("toastMsg");if(s)s.textContent=m;const b=$("toastBtn");if(b){b.hidden=false;b.textContent=label;b.onclick=()=>{hideToast();if(fn)fn();};}
+  /* FB5-P4: アクションボタン付きの吹き出しは、範囲外タップで消せるようにする（全面の透明シールドが外側タップを受けて閉じる。数値入力しなくても作業に戻れる） */
+  const sh=$("toastShade");if(sh)sh.hidden=false;
+  const tc=$("toastClose");if(tc)tc.hidden=false;
+  t.classList.add("show");clearTimeout(_toastTimer);_toastTimer=setTimeout(()=>hideToast(),ms||5000);}
+(function(){const sh=$("toastShade");if(sh)sh.addEventListener("pointerdown",e=>{e.preventDefault();hideToast();});
+  const tc=$("toastClose");if(tc)tc.addEventListener("click",()=>hideToast());
+  const tt=$("toast");if(tt)tt.addEventListener("pointerdown",e=>{if(e.target===tt||e.target.id==="toastMsg")hideToast();});})();
 function askConfirm(m,cb){const d=document.createElement("dialog");d.innerHTML=`<p style="line-height:1.7">${esc(m)}</p><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" data-a="no">キャンセル</button><button class="btn primary" data-a="ok">OK</button></div>`;document.body.appendChild(d);d.querySelector('[data-a="no"]').addEventListener("click",()=>d.close());d.querySelector('[data-a="ok"]').addEventListener("click",()=>{d.close();if(cb)cb();});d.addEventListener("close",()=>d.remove());d.showModal();}
 function clearSelection(){state.selected=[];renderAll();}
 function updateCtxBar(){const bar=$("ctxBar");if(!bar)return;bar.classList.toggle("show",state.selected.length>0);const c=$("ctxCount");if(c)c.textContent=state.selected.length+"個 選択中";document.body.classList.toggle("sel-active",state.selected.length>0);document.body.classList.toggle("dragging",typeof drag!=="undefined"&&!!drag);}
@@ -13497,15 +13668,22 @@ function makeClip(){const s=selObjs();if(s.length<2)return notify("マスクに�
 function releaseClip(){selObjs().forEach(o=>o.clipOf=null);state.objects.forEach(o=>{if(state.selected.includes(o.clipOf))o.clipOf=null;});pushHistory();renderAll();}
 function outlineSel(){if(!selObjs().length)return toast("まずオブジェクトを選んでください");askConfirm("アウトライン化すると、文字や図形がアンカーポイントのパスに変換され、文字としての編集はできなくなります。（「元に戻す」Ctrl+Z では戻せます）",doOutlineSel);}
 function doOutlineSel(){const targets=selObjs();const texts=targets.filter(o=>o.type==="text");
-  targets.forEach(o=>{if(o.type==="text"){if(_userFont)return; /* フォント読み込み済みの文字は下で実アウトライン化する */const b=bbox(o);const c={...o,type:"path",anchors:[{x:b.x,y:b.y},{x:b.x+b.w,y:b.y},{x:b.x+b.w,y:b.y+b.h},{x:b.x,y:b.y+b.h}],closed:true,name:"アウトライン（文字）",customD:null};Object.assign(o,c);}
-  else if(["rect","ellipse","polygon","star","line"].includes(o.type)){const wl=o.type==="line";o.anchors=anchorsForShape(o);o.customD=null;o.type="path";o.closed=!wl;}});
-  if(texts.length&&_userFont){ /* N1: フォント読み込み済みなら、メニューの「アウトライン化」でも文字の形そのままにパス化する（従来はフォントの有無にかかわらず配置枠の四角形になっていた） */
-    const news=[];texts.forEach(o=>{glyphOutlineObjects(o).forEach(n=>news.push(n));});
-    if(news.length){state.objects=state.objects.filter(x=>!texts.includes(x));state.objects.push(...news);state.selected=targets.filter(x=>!texts.includes(x)).map(x=>x.id).concat(news.map(n=>n.id));}
+  const shapeTargets=targets.filter(o=>o.type!=="text");
+  shapeTargets.forEach(o=>{if(["rect","ellipse","polygon","star","line"].includes(o.type)){const wl=o.type==="line";o.anchors=anchorsForShape(o);o.customD=null;o.type="path";o.closed=!wl;}});
+  const finish=(news,how)=>{
+    if(texts.length){state.objects=state.objects.filter(x=>!texts.includes(x));if(news&&news.length)state.objects.push(...news);}
+    state.selected=shapeTargets.map(x=>x.id).concat(news?news.map(n=>n.id):[]);
+    pushHistory();renderAll();
+    if(texts.length&&(!news||!news.length))notify("図形はアウトライン化しましたが、文字はアウトライン化できませんでした。文字が空か、表示フォントで描画できない文字でした。「見た目」パネルの「フォントファイルを読み込む（アウトライン化用）」からTTF/OTFを読み込むと、フォントの字形そのままでアウトライン化できます。");
+    else if(texts.length)notify("アウトライン化しました（文字は"+how+"）。アンカー編集ツールで点の編集ができます。");
+    else notify("アウトライン化しました。アンカー編集ツールで点の編集ができます。");};
+  if(texts.length&&_userFont){const news=[];texts.forEach(o=>{glyphOutlineObjects(o).forEach(n=>news.push(n));});
+    if(news.length)finish(news,"読み込んだフォントの字形そのままに変換");
+    else outlineTextsByRender(texts).then(n2=>finish(n2,"画面表示フォントのトレース方式で変換")); /* FB6-Q2: 読み込んだフォントに無い文字は表示トレースで補う */
   }
-  pushHistory();renderAll();
-  if(texts.length&&!_userFont)notify("アウトライン化しました。※文字はフォント未読み込みのため配置枠の簡易パス化です。文字の形そのままにパス化するには、「見た目」パネルでフォントファイル（TTF/OTF）を読み込んでから実行してください。");
-  else notify("アウトライン化しました。アンカー編集ツールで点の編集ができます。");} /* K3: アウトライン化でも頂点数を保持（多角形→四角形化を防止）。customD を残すと点編集が描画に反映されない問題も同時に解消 */
+  else if(texts.length)outlineTextsByRender(texts).then(news=>finish(news,"画面表示フォントのトレース方式で変換")); /* FB6-Q2: フォント未読み込みでも四角形化せず、表示フォントの字形をトレースしてパス化する */
+  else finish(null,"");
+} /* K3: アウトライン化でも頂点数を保持（多角形→四角形化を防止）。customD を残すと点編集が描画に反映されない問題も同時に解消 */
 function expandSel(){selObjs().forEach(o=>{if(o.gradient){o.fill=o.gradient.stops[0].color;o.gradient=null;}});pushHistory();renderAll();}
 function blendSel(){const s=selObjs();if(s.length!==2)return notify("ブレンドは図形をちょうど2つ選択してください");const [a,b]=s;const steps=parseInt($("blendSteps").value)||8;const ba=bbox(a),bb=bbox(b);const news=[];
   for(let i=1;i<steps;i++){const f=i/steps;const n=JSON.parse(JSON.stringify(a));n.id=nid();n.name="ブレンド "+i+"/"+steps;
@@ -14640,24 +14818,54 @@ function renderSpotList(){const w=$("spotList");if(!w)return;if(!state.spotColor
 function renderSpotAssignSel(){const sel=$("spotAssignSel");if(!sel)return;const cur=sel.value;sel.innerHTML=state.spotColors.length?state.spotColors.map(s=>`<option value="${esc(s.name)}">${esc(s.name)}</option>`).join(""):"<option value=''>（特色が未登録です）</option>";if(cur&&state.spotColors.some(s=>s.name===cur))sel.value=cur;}
 function applySpot(which){const name=$("spotAssignSel").value;if(!selObjs().length)return toast("まずオブジェクトを選んでください");selObjs().forEach(o=>{if(which==="fill"){o.spotFill=name||null;if(name)o.gradient=null;}else if(which==="stroke"){o.spotStroke=name||null;}else{o.spotFill=null;o.spotStroke=null;}});pushHistory();renderAll();refreshPrintPanel();toast(which?("特色「"+name+"」を適用しました"):"特色を解除しました");}
 
-/* ============ PATHFINDER（martinez実演算） / OFFSET（clipper） / SIMPLIFY ============ */
+/* ============ PATHFINDER（Clipper実演算） / OFFSET（clipper） / SIMPLIFY ============ */
 function flattenSeg(sp){const a=sp.anchors;if(!a.length)return[];const pts=[[a[0].x,a[0].y]];const n=a.length;const lim=sp.closed?n:n-1;for(let i=1;i<=lim;i++){const p=a[i-1],c=a[i%n];if(p.hOut||c.hIn){for(let s=1;s<=10;s++){const q=cubicAt(p,c,s/10);pts.push([q.x,q.y]);}}else pts.push([c.x,c.y]);}if(sp.closed)pts.pop();return pts;}
 function shapeToGeo(o){const segs=objSegments(o).filter(sp=>sp.closed);if(!segs.length)return null;return[segs.map(sp=>flattenSeg(sp)).filter(r=>r.length>2)];}
+/* FB6-Q1: パスファインダーで図形が消える問題の修正。
+   旧エンジン(martinez)には次の不具合があった（実機報告＋再現テストで確認）:
+   ① 頂点が相手の辺の上に乗る配置（例: 45°回転した図形と図形の重なり）で演算が無限ループし、画面が固まる。
+   ② 辺を共有する図形同士の「交差」などで例外が発生し、近似処理（不可視の複合パス化）に落ちて図形が消えたように見える。
+   ③ 結果が空になる場合（交差なし・型抜きで全て消える等）に、元の図形を黙って削除していた。
+   対策: 演算エンジンを同梱済みの ClipperLib（オフセットで使用中の堅牢な実装）に切り替え、
+   結果が空・失敗のときは元の図形を残したまま理由を表示する。ClipperLib が無い環境や、
+   閉じた領域を持たない図形（線・開いたパス）が混ざる場合は従来の見た目合成にフォールバックする */
+const PF_SCALE=1000;
+function geoRingsOf(o){const segs=objSegments(o).filter(sp=>sp.closed);if(!segs.length)return null;const rings=segs.map(sp=>flattenSeg(sp)).filter(r=>r.length>2);return rings.length?rings:null;}
+/* オブジェクト単体のリング集合を、偶奇ルールで自己合体して「外周（正の面積）＋穴（負の面積）」の
+   正規化済みパスに変換する。これを挟まないと、複合パスの穴が NonZero では埋まってしまう */
+function clipNormalize(paths){const CL=window.ClipperLib;if(!CL||!paths||!paths.length)return paths;
+  try{const c=new CL.Clipper();c.AddPaths(paths,CL.PolyType.ptSubject,true);const sol=new CL.Paths();
+    if(c.Execute(CL.ClipType.ctUnion,sol,CL.PolyFillType.pftEvenOdd,CL.PolyFillType.pftEvenOdd))return sol.filter(p=>p.length>2&&Math.abs(CL.Clipper.Area(p))>PF_SCALE*PF_SCALE*0.5);}catch(e){}
+  return paths;}
+function clipPathsOf(o){const rings=geoRingsOf(o);if(!rings)return null;const paths=rings.map(ring=>ring.map(p=>({X:Math.round(p[0]*PF_SCALE),Y:Math.round(p[1]*PF_SCALE)}))).filter(p=>p.length>2);return paths.length?clipNormalize(paths):null;}
+function clipBool(op,subj,clip){const CL=window.ClipperLib;const c=new CL.Clipper();
+  c.AddPaths(subj,CL.PolyType.ptSubject,true);if(clip&&clip.length)c.AddPaths(clip,CL.PolyType.ptClip,true);
+  const sol=new CL.Paths();const ct={unite:CL.ClipType.ctUnion,minus:CL.ClipType.ctDifference,intersect:CL.ClipType.ctIntersection,exclude:CL.ClipType.ctXor}[op];
+  if(!c.Execute(ct,sol,CL.PolyFillType.pftNonZero,CL.PolyFillType.pftNonZero))return null;
+  return sol.filter(p=>p.length>2&&Math.abs(CL.Clipper.Area(p))>PF_SCALE*PF_SCALE*0.5);}
 function pathfinderGo(op){
-  if(window.martinez&&["unite","minus","intersect","exclude"].includes(op)){
+  if(["unite","minus","intersect","exclude"].includes(op)){
     const s=selObjs().filter(o=>o.type!=="text"&&o.type!=="image"&&o.type!=="svgImport");
     if(s.length<2)return notify("図形を2つ以上選択してください");
-    try{
-      let acc=shapeToGeo(s[0]);let ok=!!acc;
-      for(let i=1;i<s.length&&ok;i++){const g=shapeToGeo(s[i]);if(!g){ok=false;break;}
-        acc=op==="unite"?martinez.union(acc,g):op==="minus"?martinez.diff(acc,g):op==="intersect"?martinez.intersection(acc,g):martinez.xor(acc,g);}
-      if(ok&&acc&&acc.length){const top=s[s.length-1];const base=op==="minus"?s[0]:top;const childrenD=[];
-        acc.forEach(poly=>{poly.forEach(ring=>{if(ring.length>2)childrenD.push("M "+ring.map(p=>r2(p[0])+" "+r2(p[1])).join(" L ")+" Z");});});
-        if(childrenD.length){const c={...baseObj("compound",{name:({unite:"合体",minus:"前面型抜き",intersect:"交差",exclude:"中マド"})[op]+"（ブーリアン）"}),childrenD,fill:base.fill,gradient:base.gradient,stroke:base.stroke,strokeWidth:base.strokeWidth,spotFill:base.spotFill,cmykFill:base.cmykFill};
-          c.layer=top.layer;c.board=top.board;
-          state.objects=state.objects.filter(o=>!s.includes(o));state.objects.push(c);state.selected=[c.id];pushHistory();renderAll();toast("パスファインダー（ブーリアン実演算）で処理しました");return;}}
-      if(ok&&op==="intersect"){state.objects=state.objects.filter(o=>!s.includes(o));state.selected=[];pushHistory();renderAll();toast("交差する部分がなかったため、結果は空になりました");return;}
-    }catch(e){/* 失敗時は従来処理へ */}
+    let geos=null;
+    try{geos=s.map(clipPathsOf);}catch(e){geos=null;}
+    if(window.ClipperLib&&geos&&geos.every(g=>g)){
+      let sol=null,failed=false;
+      try{
+        if(op==="unite")sol=clipBool("unite",geos.flat(),null);
+        else if(op==="minus")sol=clipBool("minus",geos[0],geos.slice(1).flat());
+        else{let acc=geos[0];for(let i=1;i<geos.length;i++){acc=clipBool(op,acc,geos[i]);if(!acc)break;}sol=acc;}
+      }catch(e){failed=true;}
+      if(!failed&&sol&&sol.length){
+        const top=s[s.length-1];const base=op==="minus"?s[0]:top;
+        const childrenD=sol.map(p=>"M "+p.map(q=>r2(q.X/PF_SCALE)+" "+r2(q.Y/PF_SCALE)).join(" L ")+" Z");
+        const c={...baseObj("compound",{name:({unite:"合体",minus:"前面型抜き",intersect:"交差",exclude:"中マド"})[op]+"（ブーリアン）"}),childrenD,fill:base.fill,gradient:base.gradient,stroke:base.stroke,strokeWidth:base.strokeWidth,spotFill:base.spotFill,cmykFill:base.cmykFill};
+        c.layer=top.layer;c.board=top.board;
+        state.objects=state.objects.filter(o=>!s.includes(o));state.objects.push(c);state.selected=[c.id];pushHistory();renderAll();toast("パスファインダー（ブーリアン実演算）で処理しました");return;
+      }
+      if(failed){notify("パスファインダーの演算に失敗しました。元の図形はそのまま残しています。形を少しずらしてから、もう一度お試しください。");return;}
+      notify(({unite:"合体できる図形がありませんでした",minus:"前面の図形で完全に切り取られてしまうため、実行しませんでした",intersect:"重なっている部分がないため、交差を作成できませんでした",exclude:"中マドの結果が空になる（図形同士が完全に重なっている等）ため、実行しませんでした"})[op]+"（元の図形はそのまま残しています）");return;
+    }
   }
   pathfinder(op);
 }
@@ -14777,7 +14985,10 @@ async function traceSelectedImage(mode,vtOpts){const o=selObjs().find(x=>x.type=
 /* ============ FONT OUTLINE（opentype.js・利用者フォントのみ） ============ */
 let _userFont=null;
 $("fontFile").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;e.target.value="";f.arrayBuffer().then(buf=>{try{if(!window.opentype)throw new Error("フォント解析ライブラリが読み込めていません");_userFont=window.opentype.parse(buf);$("fontName").textContent=f.name+"（読み込み済み）";toast("フォントを読み込みました："+f.name);}catch(err){const msg=String(err&&err.message||err);toast(/ttcf/.test(msg)?"TTC形式（.ttc＝複数フォントの詰め合わせファイル）は読み込めません。TTF/OTFの単体フォントファイルをご利用ください":"フォントを読み込めませんでした："+msg);}});});
-function outlineTextWithFontAsk(){if(!_userFont)return toast("先にフォントファイル（TTF/OTF）を読み込んでください");if(!selObjs().some(o=>o.type==="text"))return toast("まず文字オブジェクトを選んでください");askConfirm("フォントでアウトライン化すると、文字はパスに変換され、文字としての編集はできなくなります。（「元に戻す」Ctrl+Z では戻せます）",outlineTextWithFont);}
+function outlineTextWithFontAsk(){const sel=selObjs().filter(o=>o.type==="text");if(!sel.length)return toast("まず文字オブジェクトを選んでください");
+  if(_userFont){askConfirm("フォントでアウトライン化すると、文字はパスに変換され、文字としての編集はできなくなります。（「元に戻す」Ctrl+Z では戻せます）",outlineTextWithFont);return;}
+  /* FB6-Q2: フォント未読み込みでも無反応にせず、表示フォントのトレース方式でそのまま実行できる導線にする */
+  askConfirm("フォントファイルは読み込まれていません。画面に表示されているフォントの形をトレースしてアウトライン化します（このまま実行できます。輪郭は近似になります）。フォントの字形そのままの正確なアウトラインが必要な場合は、先に「フォントファイルを読み込む」からTTF/OTFを読み込んでください。実行しますか？",()=>{outlineTextsByRender(sel).then(news=>{if(!news.length){notify("文字をアウトライン化できませんでした。文字が空か、表示フォントで描画できない文字でした。フォントファイル（TTF/OTF）を読み込んでから、もう一度お試しください。");return;}state.objects=state.objects.filter(o=>!sel.includes(o));state.objects.push(...news);state.selected=news.map(n=>n.id);pushHistory();renderAll();notify("アウトライン化しました（画面表示フォントのトレース方式）。アンカー編集ツールで点の編集ができます。");});});}
 /* N1: アウトライン化の作り直し。旧方式は行全体のパス文字列をサブパスごとに別オブジェクト化していたため、
    ①輪郭の内側（カウンター：日・目・ロ等の穴）が同じ色で塗り潰され文字形が崩れる、
    ②字間（トラッキング）・整列（中央／右揃え）・縦書きが反映されず画面表示と位置・字送りがずれる、という問題があった。
@@ -14813,8 +15024,117 @@ function glyphOutlineObjects(o){
 }
 function outlineTextWithFont(){if(!_userFont)return toast("先にフォントファイル（TTF/OTF）を読み込んでください");const sel=selObjs().filter(o=>o.type==="text");if(!sel.length)return toast("まず文字オブジェクトを選んでください");
   const news=[];sel.forEach(o=>{glyphOutlineObjects(o).forEach(n=>news.push(n));});
-  if(!news.length){toast("アウトライン化できる文字がありませんでした");return;}
+  if(!news.length){notify("読み込んだフォントではアウトライン化できる文字がありませんでした。そのフォントに含まれない文字の可能性があります。別のフォントを読み込むか、フォントを読み込まない状態で実行すると、表示フォントのトレース方式でアウトライン化できます。");return;}
   state.objects=state.objects.filter(o=>!sel.includes(o));state.objects.push(...news);state.selected=news.map(n=>n.id);pushHistory();renderAll();toast(news.length+" 個の文字パスにアウトライン化しました（読み込んだフォント使用）");}
+
+/* ============ FONT OUTLINE（表示フォント・トレース方式／フォントファイル不要） ============ */
+/* FB6-Q2: 実機（スマホ）ではフォントファイルを用意・読み込みできないことが多く、従来は
+   「配置枠の四角形」になるか、ボタンを押しても案内トーストだけで無反応に見えた。
+   端末に表示できているフォントで文字を高解像度に描き、マーチングスクエアで輪郭を抽出して
+   パス化する経路を追加する。英数字・記号・日本語とも、画面に表示できる文字はすべて対象。
+   輪郭はラスタからの近似（アンカーは直線点列）になる点が、フォント実アウトラインとの差 */
+/* マーチングスクエアは斜めの輪郭で部分ループに割れやすく字形が欠けるため、文字専用に
+   ピクセル境界をたどる輪郭抽出（クラック追跡）を用意する。必ず閉じたループが得られ、
+   穴（カウンター）も独立したループとして返る。失敗時はマーチングスクエア＋縫合にフォールバック */
+function traceContours(imgd,th){
+  const w=imgd.width,h=imgd.height,data=imgd.data;
+  const inside=(x,y)=>{if(x<0||y<0||x>=w||y>=h)return false;const i=(y*w+x)*4;const lum=0.299*data[i]+0.587*data[i+1]+0.114*data[i+2];return data[i+3]>10&&lum<th;};
+  const edges=new Map();
+  const addEdge=(x1,y1,x2,y2)=>{const k=x1+","+y1;if(!edges.has(k))edges.set(k,[]);edges.get(k).push({x1,y1,x2,y2,used:false});};
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){if(!inside(x,y))continue;
+    if(!inside(x,y-1))addEdge(x,y,x+1,y);
+    if(!inside(x+1,y))addEdge(x+1,y,x+1,y+1);
+    if(!inside(x,y+1))addEdge(x+1,y+1,x,y+1);
+    if(!inside(x-1,y))addEdge(x,y+1,x,y);}
+  const loops=[];
+  edges.forEach(list=>{list.forEach(e0=>{
+    if(e0.used)return;
+    const loop=[];let e=e0;let guard=0;const maxSteps=w*h*2+16;
+    while(e&&!e.used&&guard++<maxSteps){e.used=true;loop.push({x:e.x1,y:e.y1});
+      const outs=edges.get(e.x2+","+e.y2)||[];
+      const dx=e.x2-e.x1,dy=e.y2-e.y1;
+      const prefs=[[-dy,dx],[dx,dy],[dy,-dx],[dx,dy]];
+      let next=null;
+      for(const pr of prefs){next=outs.find(o=>!o.used&&(o.x2-o.x1)===pr[0]&&(o.y2-o.y1)===pr[1]);if(next)break;}
+      if(!next)next=outs.find(o=>!o.used);
+      e=next;}
+    if(loop.length>3)loops.push(loop);
+  });});
+  return loops;
+}
+/* マーチングスクエアは鞍点セルで輪郭が途切れ、1つの字形が複数の部分ループに割れることがある。
+   端点同士が近い（数px以内）ループをつなぎ直してから使う（小さな破片ループは面積フィルタで除去される） */
+function joinLoops(loops){
+  const list=loops.map(lp=>lp.slice()).filter(lp=>lp.length>1);
+  const D=3.0;
+  let merged=true;
+  while(merged){merged=false;
+    outer:
+    for(let i=0;i<list.length;i++){const a=list[i];
+      if(Math.hypot(a[0].x-a[a.length-1].x,a[0].y-a[a.length-1].y)<0.01)continue;
+      for(let j=0;j<list.length;j++){if(j===i)continue;const b=list[j];
+        const combos=[
+          [a[a.length-1],b[0],(x,y)=>x.concat(y)],
+          [a[a.length-1],b[b.length-1],(x,y)=>x.concat(y.slice().reverse())],
+          [a[0],b[b.length-1],(x,y)=>y.concat(x)],
+          [a[0],b[0],(x,y)=>y.slice().reverse().concat(x)]];
+        for(const c of combos){if(Math.hypot(c[0].x-c[1].x,c[0].y-c[1].y)<=D){list[i]=c[2](a,b);list.splice(j,1);merged=true;break outer;}}}}}
+  return list;
+}
+function textOutlineLoops(o){
+  const fs=o.fontSize||36,lh=fs*(o.leading||1.2),raw=o.text||"";
+  if(!raw.trim())return null;
+  const lines=raw.split("\n");
+  const mc=document.createElement("canvas").getContext("2d");
+  const fontStr=`${o.italic?"italic ":""}${o.fontWeight||400} ${fs}px ${o.fontFamily||"sans-serif"}`;
+  mc.font=fontStr;
+  const trk=o.tracking||0;
+  const lineW=ln=>mc.measureText(ln).width+Math.abs(trk)*Math.max(0,[...ln].length-1);
+  let docW,docH;
+  if(o.vertical){docW=lh*lines.length;docH=fs*Math.max(1,...lines.map(l=>[...l].length));}
+  else{docW=Math.max(10,...lines.map(lineW));docH=lh*lines.length;}
+  const pad=fs*0.45;
+  const ox=(o.vertical?o.x:(o.align==="middle"?o.x-docW/2:o.align==="end"?o.x-docW:o.x))-pad;
+  const oy=o.y-pad;
+  let K=Math.max(3,Math.min(14,Math.round(320/fs)));
+  K=Math.min(K,2000/Math.max(1,docW+2*pad),2000/Math.max(1,docH+2*pad));if(K<1)K=1;
+  const W=Math.max(2,Math.ceil((docW+2*pad)*K)),H=Math.max(2,Math.ceil((docH+2*pad)*K));
+  const cv=document.createElement("canvas");cv.width=W;cv.height=H;const ctx=cv.getContext("2d");
+  ctx.fillStyle="#ffffff";ctx.fillRect(0,0,W,H);ctx.fillStyle="#000000";
+  ctx.setTransform(K,0,0,K,-ox*K,-oy*K);ctx.font=fontStr;ctx.textBaseline="alphabetic";
+  if(o.vertical){ctx.textAlign="center";lines.forEach((ln,li)=>{const colX=o.x+(lines.length-1-li)*lh+fs*0.5;[...ln].forEach((ch,ci)=>ctx.fillText(ch,colX,o.y+fs+ci*fs));});}
+  else{lines.forEach((ln,i)=>{const baseY=o.y+fs+i*lh;
+    if(trk){let cx0=o.x;const w=lineW(ln);if(o.align==="middle")cx0=o.x-w/2;else if(o.align==="end")cx0=o.x-w;ctx.textAlign="left";[...ln].forEach(ch=>{ctx.fillText(ch,cx0,baseY);cx0+=mc.measureText(ch).width+trk;});}
+    else{ctx.textAlign=o.align==="middle"?"center":o.align==="end"?"right":"left";ctx.fillText(ln,o.x,baseY);}});}
+  const imgd=ctx.getImageData(0,0,W,H);
+  let loops=traceContours(imgd,140);
+  if(!loops.length)loops=joinLoops(marchingSquares(imgd,140));
+  return loops.map(loop=>loop.map(p=>({x:ox+p.x/K,y:oy+p.y/K}))).filter(lp=>lp.length>3);
+}
+function outlineLoopArea(lp){let a=0;for(let i=0,j=lp.length-1;i<lp.length;j=i++)a+=(lp[j].x*lp[i].y-lp[i].x*lp[j].y);return a/2;}
+function loopsToOutlineObjects(loops,o){
+  const fill=o.fill==="none"?"#111111":o.fill;
+  const items=loops.map(pts=>{let sm=pts;
+      if(window.simplify&&pts.length>24){try{sm=window.simplify(pts,0.45,true);}catch(e){sm=pts;}}
+      return{pts:sm,area:Math.abs(outlineLoopArea(sm))};}).filter(it=>it.pts.length>2&&it.area>0.9);
+  if(!items.length)return[];
+  items.forEach(it=>{it.depth=0;items.forEach(o2=>{if(o2!==it&&o2.area>it.area&&pointInPoly(it.pts[0],o2.pts))it.depth++;});});
+  const outers=items.filter(it=>it.depth%2===0);outers.forEach(ot=>ot.holes=[]);
+  items.filter(it=>it.depth%2===1).forEach(h=>{let best=null;items.forEach(c=>{if(c!==h&&c.depth===h.depth-1&&c.area>h.area&&pointInPoly(h.pts[0],c.pts)){if(!best||c.area<best.area)best=c;}});if(best&&best.holes)best.holes.push(h);});
+  const news=[];
+  outers.forEach(out=>{
+    if(!out.holes.length){const n=baseObj("path",{anchors:out.pts.map(p=>({x:r2(p.x),y:r2(p.y)})),closed:true,fill,stroke:"none",strokeWidth:0,name:"アウトライン（文字）"});n.layer=o.layer;n.board=o.board;n.gradient=o.gradient;news.push(n);}
+    else{const subs=[{anchors:out.pts,closed:true},...out.holes.map(h=>({anchors:h.pts,closed:true}))];const n=baseObj("compound",{childrenD:subs.map(sp=>segmentsToD([sp])),fill,stroke:"none",strokeWidth:0,name:"アウトライン（文字）"});n.layer=o.layer;n.board=o.board;n.gradient=o.gradient;news.push(n);}
+  });
+  if(o.rotation||o.shear||(o.scaleX||1)!==1||(o.scaleY||1)!==1)news.forEach(n=>{if(n.type==="compound")n.childrenD=n.childrenD.map(d=>xformD(d,(x,y)=>xformPt(o,x,y)));else n.anchors=bakeAnchors(o,n.anchors);});
+  return news;
+}
+async function outlineTextsByRender(texts){
+  try{if(document.fonts&&document.fonts.ready)await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,800))]);}catch(e){}
+  const news=[];
+  texts.forEach(o=>{try{const loops=textOutlineLoops(o);if(loops&&loops.length)loopsToOutlineObjects(loops,o).forEach(n=>news.push(n));}catch(e){}});
+  return news;
+}
 
 /* ============ FABRICATION（レーザー／ステッカー／検査／試し切り） ============ */
 function exportLaserSVG(){if(!requireLicense("レーザー用SVG書き出し"))return;saveExpMem({kind:"laser"});const b=state.boards.find(x=>x.id===state.activeBoard)||state.boards[0];
