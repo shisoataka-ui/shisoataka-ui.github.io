@@ -4,7 +4,15 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="color-scheme" content="light dark"/>
+<meta name="theme-color" content="#14101f"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="カーヴェリア"/>
+<meta name="application-name" content="カーヴェリア（CURVELIA）"/>
 <link rel="icon" href="data:,"/>
+<link rel="manifest" href="manifest.webmanifest"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
 <title>カーヴェリア（CURVELIA）— Illustrator風ベクター編集アプリ</title>
 <style>
 :root{--bg:#eef1f5;--panel:#fff;--line:#d9dee6;--ink:#1f2937;--mut:#64748b;--acc:#2563eb;--acc2:#0ea5e9;--sel:#2563eb;--radius:10px}
@@ -138,6 +146,13 @@ body.is-phone .statusbar .sb-zbtn{display:none}
 body.is-phone .statusbar .sb-panel{display:none}
 body.is-phone .statusbar input[type=range]{flex:1 1 50px;width:auto;min-width:44px}
 body.is-phone .statusbar .btn{padding:4px 9px;font-size:12px;min-height:32px;white-space:nowrap}
+/* 監査指摘対応：スマホのステータスバーは overflow:hidden で「全体表示」ボタンが画面外に切れて押せなかった。
+   横スクロール可能にして全コントロールへ到達できるようにし、「ズーム：」の文言を省いて収まりも改善する */
+body.is-phone .statusbar{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+body.is-phone .statusbar::-webkit-scrollbar{display:none}
+body.is-phone .statusbar .sb-zoomtxt{display:none}
+body.is-phone .statusbar>*{flex:none}
+body.is-phone .statusbar input[type=range]{flex:1 1 44px}
 body.is-tablet .statusbar .sb-panel{display:none}
 body.is-phone .tabs button{padding:12px 2px;font-size:13px}
 body.is-phone .swatches{grid-template-columns:repeat(6,1fr)}
@@ -314,7 +329,7 @@ html[data-theme="dark"] .board-chip.active{background:rgba(37,99,235,.92);color:
 .theme-check{font-weight:800;color:var(--acc);min-width:14px;text-align:right}
 /* ===== 監査ラウンド2：状態の見える化・ゆったり・横向き・右クリック等 ===== */
 .toast{display:flex;align-items:center;gap:10px;justify-content:center}
-.toast-btn{background:#fff;color:#111827;border:0;border-radius:999px;padding:5px 13px;font-weight:800;min-height:30px;flex:none}
+.toast-btn{background:#fff;color:#111827;border:0;border-radius:999px;padding:5px 13px;font-weight:800;min-height:30px;flex:none;pointer-events:auto} /* G10: トースト本体は pointer-events:none のため、ボタン側で明示的に有効化（従来は案内が出ても押せなかった） */
 body.is-phone #stSave{display:inline;font-size:10px;white-space:nowrap}
 .fab-panel{transition:transform .18s ease,opacity .18s ease}
 /* 選択中・ドラッグ中も「押せる」見た目を保つ：薄くして無効化に見せるのではなく、少し小さくするだけに留め、不透明度と影は維持する */
@@ -382,6 +397,58 @@ body.is-tablet.is-landscape .tabs button{padding:7px 2px}
 body.is-tablet.is-landscape.panel-open #panelShade{display:none!important}
 body.is-tablet.is-landscape.panel-open .fab-panel{display:none!important}
 body.is-tablet.is-landscape .fab-panel{bottom:14px}
+/* ===== 監査ラウンド3（A〜L）：操作性・遅延・比率・安全・初回フロー ===== */
+/* D1 スマホでは入力欄16px（iOSのフォーカス時自動ズーム防止を phone 判定でも保証） */
+body.is-phone input:not([type=range]):not([type=color]):not([type=checkbox]):not([type=radio]),body.is-phone select,body.is-phone textarea{font-size:16px}
+/* D2 スマホ下部ツールバー：両端フェードで「まだスクロールできる」ことを示す */
+body.is-phone .toolbar{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 16px,#000 calc(100% - 16px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 16px,#000 calc(100% - 16px),transparent 100%)}
+/* D3 スマホのタップ目標拡大：上部メニュー40px／スウォッチ36px／ズーム・Undo系 40×44px */
+body.is-phone .menu>button{min-height:40px}
+body.is-phone .sw{min-height:36px}
+body.is-phone .statusbar .sb-zbtn{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:40px}
+body.is-phone .sb-undo{min-width:44px;min-height:40px}
+body.is-phone .statusbar .btn{min-height:40px}
+/* K2 スマホのパネルは画面の約2/3までのシートにし、上にキャンバスを残す。頭部は下スワイプで閉じられる */
+body.is-phone .panel{height:66dvh;max-height:66dvh}
+body.is-phone.is-landscape .panel{width:min(400px,72vw)}
+.panel-grab{display:none}
+body.is-phone .panel-grab{display:block;width:44px;height:5px;border-radius:99px;background:#c3cad4;margin:2px auto 0;flex:none}
+.panel-head{touch-action:none}
+/* E10 PCパネル幅リサイザー（ドラッグで可変・記憶） */
+#panelResizer{display:none}
+body.is-desktop #panelResizer,body.is-tablet.is-landscape #panelResizer{display:block;position:absolute;left:-4px;top:0;bottom:0;width:9px;cursor:ew-resize;z-index:8;touch-action:none}
+body.is-desktop .panel,body.is-tablet.is-landscape .panel{position:relative}
+/* E10 狭幅PC（1200px以下）では右パネルをオーバーレイ化する */
+@media(max-width:1200px){
+  body.is-desktop .panel{position:fixed;right:0;top:0;bottom:0;z-index:60;width:min(360px,92vw)!important;box-shadow:-12px 0 32px rgba(0,0,0,.22);transform:translateX(105%);transition:transform .22s ease}
+  body.is-desktop .panel.open{transform:none}
+  body.is-desktop .panel-head{display:flex}
+  body.is-desktop.panel-open #panelShade{display:block}
+  body.is-desktop #panelResizer{display:none}
+}
+/* I ダイアログ固定✕（JSで配置。スクロールしても常に右上に残る） */
+.dlg-x{position:fixed;z-index:1000;width:44px;height:44px;min-height:44px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-size:17px;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(15,23,42,.25);cursor:pointer;padding:0}
+.dlg-x:active{transform:scale(.94)}
+dialog{padding-right:52px}
+/* L スプラッシュ／アプリロック／初回フロー */
+#splash{position:fixed;inset:0;z-index:900;background:#14101f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#fff;transition:opacity .35s ease;padding:24px;text-align:center}
+#splash.hide{opacity:0;pointer-events:none}
+#splash .sp-name{font-size:30px;font-weight:800;letter-spacing:.06em}
+#splash .sp-sub{font-size:13px;color:#b9b3d6;letter-spacing:.28em;font-weight:700}
+#splash .sp-bar{width:120px;height:3px;border-radius:99px;background:rgba(255,255,255,.18);overflow:hidden}
+#splash .sp-bar i{display:block;height:100%;width:40%;border-radius:99px;background:linear-gradient(90deg,#6C4CF1,#00A8A0);animation:spSlide 0.9s ease-in-out infinite alternate}
+@keyframes spSlide{from{transform:translateX(-30%)}to{transform:translateX(190%)}}
+@media(prefers-reduced-motion:reduce){#splash .sp-bar i{animation:none}}
+#lockScreen{position:fixed;inset:0;z-index:890;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center}
+#lockScreen.show{display:flex}
+#lockScreen .lk-card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px 22px;max-width:min(400px,92vw);width:100%;box-shadow:0 18px 44px rgba(15,23,42,.18)}
+#lockScreen input{font-size:20px;text-align:center;letter-spacing:.4em;width:200px;padding:10px}
+.agree-scroll{max-height:52dvh;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:12.5px;line-height:1.9;text-align:left}
+.agree-scroll h4{margin:10px 0 4px;font-size:13px}
+.agree-scroll h4:first-child{margin-top:0}
+/* C4 ペンホバーのハイライト（画面座標オーバーレイ） */
+#penHoverRing{position:fixed;z-index:65;width:26px;height:26px;margin:-13px 0 0 -13px;border:2px solid #00A8A0;border-radius:50%;pointer-events:none;display:none;box-shadow:0 0 0 3px rgba(0,168,160,.18)}
+#hoverBox{position:fixed;z-index:64;border:1.5px dashed rgba(108,76,241,.75);border-radius:3px;pointer-events:none;display:none}
 </style>
 <script>try{var _tm0=localStorage.getItem("vectorKobo.theme")||"system";var _dk0=_tm0==="dark"||(_tm0==="system"&&window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=_dk0?"dark":"light";document.documentElement.dataset.themeMode=_tm0;}catch(e){document.documentElement.dataset.theme="light";}</script>
 </head>
@@ -421,7 +488,9 @@ body.is-tablet.is-landscape .fab-panel{bottom:14px}
       <button onclick="undo()">元に戻す <kbd>Ctrl+Z</kbd></button>
       <button onclick="redo()">やり直し <kbd>Ctrl+Shift+Z</kbd></button>
       <button onclick="copySel()">コピー <kbd>Ctrl+C</kbd></button>
+      <button onclick="cutSel()">切り取り <kbd>Ctrl+X</kbd></button>
       <button onclick="pasteSel()">ペースト <kbd>Ctrl+V</kbd></button>
+      <button onclick="pasteSel(true)">同じ位置にペースト <kbd>Ctrl+Shift+V</kbd></button>
       <button onclick="duplicateSel()">複製 <kbd>Alt+ドラッグ / Ctrl+D</kbd></button>
       <button onclick="deleteSel()">削除 <kbd>Delete</kbd></button>
       <button onclick="selectAll()">すべて選択 <kbd>Ctrl+A</kbd></button>
@@ -434,8 +503,10 @@ body.is-tablet.is-landscape .fab-panel{bottom:14px}
       <button onclick="releaseClip()">クリッピングマスクを解除</button>
       <button onclick="makeCompound()">複合パスを作成</button>
       <button onclick="outlineSel()">アウトライン化（図形・文字→パス）</button>
-      <button onclick="bringToFront()">最前面へ</button>
-      <button onclick="sendToBack()">最背面へ</button>
+      <button onclick="bringToFront()">最前面へ <kbd>Ctrl+Shift+]</kbd></button>
+      <button onclick="sendToBack()">最背面へ <kbd>Ctrl+Shift+[</kbd></button>
+      <button onclick="stepForward()">1つ前面へ <kbd>Ctrl+]</kbd></button>
+      <button onclick="stepBackward()">1つ背面へ <kbd>Ctrl+[</kbd></button>
       <button onclick="blendSel()">ブレンドを作成（2つ選択）</button>
       <button onclick="textOnPath()">パス上テキストにする</button>
     </div></div>
@@ -453,6 +524,10 @@ body.is-tablet.is-landscape .fab-panel{bottom:14px}
       <button onclick="startTutorial()">チュートリアル（初回ガイド）</button>
       <button onclick="openTab('print')">印刷・互換パネルを開く</button>
       <button onclick="document.getElementById('productDlg').showModal()">製品情報</button>
+      <button onclick="openLicenseDialog()">🔑 ライセンス登録</button>
+      <button onclick="openAgreement(false)">ライセンス条件（同意書）を表示</button>
+      <button onclick="openLockSettings()">アプリロック設定（PIN／生体認証）</button>
+      <button data-install-btn onclick="openInstall()">📱 アプリ化する（ホーム画面に追加／インストール）</button>
       <button onclick="showTouchHint()">タッチ操作のヒントを表示</button>
       <button onclick="toggleFullscreenMode()">全画面モード（キャンバスだけ表示）</button>
     </div></div>
@@ -488,6 +563,7 @@ body.is-tablet.is-landscape .fab-panel{bottom:14px}
       <button class="tool" data-tool="lasso" title="なげなわツール（Q）— 線で囲んだ範囲のオブジェクトと、範囲内のアンカーポイント（点単位）を選択します"><span class="ic">◌</span><span class="lbl">なげなわ</span></button>
       <button class="tool" data-tool="wand" title="自動選択ツール（Y）— クリックしたオブジェクトと同じ塗り色のものを全部選びます"><span class="ic">✦</span><span class="lbl">自動選択</span></button>
       <button class="tool" data-tool="artboard" title="アートボードツール（Shift+O）— ボードの移動と、辺・角のドラッグでのサイズ変更ができます"><span class="ic">▦</span><span class="lbl">アートボード</span></button>
+      <button class="tool" data-tool="hand" title="手のひらツール（H）— ドラッグで画面を移動（斜めにも滑らせられます）"><span class="ic">✋</span><span class="lbl">手のひら</span></button>
       <div class="tgroup">描く</div>
       <button class="tool" data-tool="pen" title="ペンツール（P）— クリックで直線、ドラッグで曲線（ベジェ）。始点をクリックで閉じます"><span class="ic">✒</span><span class="lbl">ペン</span></button>
       <button class="tool" data-tool="curve" title="曲線ツール（Shift+`）— クリックするだけで、なめらかな曲線が自動でできます"><span class="ic">⌒</span><span class="lbl">曲線</span></button>
@@ -517,7 +593,6 @@ body.is-tablet.is-landscape .fab-panel{bottom:14px}
       <button class="tool" data-adv="1" data-tool="shear" title="シアーツール — ドラッグで斜めに傾けます"><span class="ic">▱</span><span class="lbl">傾ける</span></button>
       <button class="tool" data-adv="1" data-tool="width" title="線幅ツール（Shift+W）— 線の上をドラッグして太さを変えます"><span class="ic">∿</span><span class="lbl">線幅</span></button>
       <button class="tool" data-tool="measure" title="ものさしツール — ドラッグした距離（px／mm）を測ります"><span class="ic">📏</span><span class="lbl">ものさし</span></button>
-      <button class="tool" data-tool="hand" title="手のひらツール（H）— ドラッグで画面を移動"><span class="ic">✋</span><span class="lbl">手のひら</span></button>
       <button class="tool" data-tool="zoom" title="ズームツール（Z）— クリックで拡大、Alt+クリックで縮小"><span class="ic">🔍</span><span class="lbl">ズーム</span></button>
     </nav>
 
@@ -573,6 +648,8 @@ body.is-tablet.is-landscape .fab-panel{bottom:14px}
 
     <!-- ======= RIGHT PANEL ======= -->
     <aside class="panel open" id="panel">
+      <div id="panelResizer" title="ドラッグでパネルの幅を変更" aria-hidden="true"></div>
+      <div class="panel-grab" aria-hidden="true"></div>
       <div class="panel-head"><b>設定パネル</b><span style="font-size:11px;color:var(--mut)" id="panelDeviceNote"></span><button onclick="togglePanel()" aria-label="パネルを閉じる">✕</button></div>
       <div class="tabs">
         <button class="active" data-tab="props">見た目</button>
@@ -701,6 +778,7 @@ body.is-tablet.is-landscape .fab-panel{bottom:14px}
       <!-- ARRANGE -->
       <div class="tabpage" id="tab-arrange">
         <h3>↔ 整列（2つ以上選択で有効）</h3>
+        <div class="row"><label class="small">整列の基準 <select id="alignBasis"><option value="selection">選択範囲（全体の外枠）</option><option value="board">アートボード</option><option value="key">キーオブジェクト（最後に選んだもの）</option></select></label></div>
         <div class="grid3">
           <button onclick="alignSel('left')">左揃え</button><button onclick="alignSel('hcenter')">左右中央</button><button onclick="alignSel('right')">右揃え</button>
           <button onclick="alignSel('top')">上揃え</button><button onclick="alignSel('vcenter')">上下中央</button><button onclick="alignSel('bottom')">下揃え</button>
@@ -791,6 +869,7 @@ body.is-tablet.is-landscape .fab-panel{bottom:14px}
           <button onclick="exportFile('jpg')">JPG（写真風）</button>
           <button onclick="copySvgCode()">SVGコードをコピー</button><button onclick="saveProject()">プロジェクト保存</button>
         </div>
+        <div class="row"><label class="small">書き出し対象 <select id="expScope"><option value="active">選択中のボード</option><option value="all">全ボード（1ボードずつファイルに分けて書き出し）</option></select></label></div>
         <label class="small" style="margin-top:8px">PNG/JPG 書き出し倍率 <select id="exportScale"><option value="1">1倍</option><option value="2" selected>2倍</option><option value="3">3倍</option></select></label>
         <div class="row"><label class="small">実寸の幅 <input type="number" id="expMmW" placeholder="mm（空欄=倍率）" style="width:120px"></label><label class="small">解像度 <select id="expDpi"><option value="0">指定なし</option><option value="150">150 dpi</option><option value="300" selected>300 dpi（印刷・レーザー推奨）</option><option value="600">600 dpi</option></select></label></div>
         <p class="perf-note">実寸（mm）を入れると、SVGはmm単位で正確なサイズに、PNG/JPGは選んだdpiで高解像度に書き出されます。レーザーカッター等で使う場合は「実寸の幅」を指定し、先に「アウトライン化」してからSVGで書き出すのがおすすめです。</p>
@@ -798,6 +877,8 @@ body.is-tablet.is-landscape .fab-panel{bottom:14px}
         <h3>📂 開く</h3>
         <div class="grid2"><button onclick="document.getElementById('loadProj').click()">プロジェクトを開く</button><button onclick="document.getElementById('importSvgEdit').click()">SVGを開く（編集可能）</button>
         <button onclick="document.getElementById('importImg').click()">画像を配置</button><button onclick="document.getElementById('importPsd').click()">PSDを開く（合成画像）</button><button onclick="loadStarter()">サンプル作品を読み込む</button></div>
+        <label class="small" style="margin-top:6px"><input type="checkbox" id="imgOrigSize"> 画像を原寸のまま読み込む（通常は長辺2048pxに縮小して軽くします。印刷用の大きな画像だけONにしてください）</label>
+        <p class="perf-note">読み込むファイルは、取り込み時に <b>Aegis（簡易検査）</b> がチェックし、スクリプトや外部参照などの危険な要素を取り除きます。結果は必ず画面に表示します（端末内で完結する検査で、サーバー側のウイルススキャンではありません）。</p>
         <h3>📏 定規・ガイド・グリッド</h3>
         <div class="grid2"><button onclick="toggleGrid()">グリッド 切替</button><button onclick="clearGuides()">ガイドを全て消す</button>
         <button onclick="toggleSnap()">スナップ 切替</button><button onclick="toggleOutline()">輪郭だけ表示 切替</button></div>
@@ -942,7 +1023,7 @@ body.is-tablet.is-landscape .fab-panel{bottom:14px}
   <p style="font-size:12.5px;line-height:1.8">ご購入ありがとうございます。購入時にお渡しした<b>購入ID（ライセンスキー）</b>を入力してください。登録情報はこの端末のブラウザ内にだけ保存されます。</p>
   <p style="font-size:12.5px;line-height:1.8"><b>1ライセンスで端末2台まで登録できます。</b>登録すると、この端末が下記の端末IDでライセンスに紐付きます。登録した端末は、月1回のオンライン確認を行います（確認予定日は「登録端末の管理」で確認できます）。</p>
   <div class="dlg-form">
-    <label>購入ID <input type="text" id="licKey" placeholder="VK-XXXX-XXXX-XXXX-X" style="width:210px;text-transform:uppercase"></label>
+    <label>購入ID <input type="text" id="licKey" placeholder="VK-XXXX-XXXX-XXXX-X（VK-FBxxでも可）" style="width:230px;text-transform:uppercase"></label>
     <label>購入者名（任意） <input type="text" id="licName" placeholder="例：山田太郎" style="width:210px"></label>
     <label>この端末の名前 <input type="text" id="licDevName" placeholder="例：自宅のPC" style="width:210px"></label>
   </div>
@@ -1002,17 +1083,110 @@ body.is-tablet.is-landscape .fab-panel{bottom:14px}
       <li>SVG／PNG／JPG書き出し（実寸mm・dpi指定対応）、SVG・画像・プロジェクト読み込み</li>
       <li>印刷・互換：ベクターPDF書き出し（CMYK／塗り足し／トンボ／特色／オーバープリント対応）、EPS書き出し、PDF・AI（PDF互換）・EPS・SVGの読み込み、PSDの合成画像読み込み（レイヤー名を保持）、pdf-libによるPDFのページ情報取得・再保存、CMYK値の保持、特色の名前登録方式</li>
     </ul>
-    <p><b>安定性：</b>作業内容はこの端末のブラウザ内に自動保存され、閉じても下書きから復元できます。Undo/Redoは最大80ステップまで対応します。多数のオブジェクトでも操作が重くなりにくいよう、描画の最適化を行っています。</p>
+    <p><b>安定性：</b>作業内容はこの端末のブラウザ内に自動保存され、閉じても下書きから復元できます。Undo/Redoは最大120ステップ（最低30回分を保証）まで対応します。多数のオブジェクトでも操作が重くなりにくいよう、描画の最適化を行っています。</p>
     <p><b>買い切り・完全オフライン：</b>カーヴェリアは買い切り型で、<b>完全オフラインで動作し、データが外部に送信されることはありません</b>。払い続けなくても、手元のファイルが開けなくなることはありません。</p>
     <p><b>ライセンス登録制：</b>購入者専用サポートとアップデートは正規購入者のみを対象とします。<b>1ライセンスで端末2台まで登録可</b>（登録端末は月1回のオンライン確認を行います）。<span id="licStatus">現在の登録状況：未登録（試用モード）</span> <button class="btn" onclick="document.getElementById('productDlg').close();openLicenseDialog()">ライセンス登録</button> <button class="btn" onclick="document.getElementById('productDlg').close();openDeviceManager()">登録端末の管理</button></p>
     <p style="font-size:12px;color:var(--mut)">書き出すSVGとプロジェクトファイルには、購入者IDがメタデータとして自動で記録されます（流出時の追跡用です）。未登録（試用）では、書き出し・プロジェクト保存・印刷はできません（編集とブラウザ内への自動保存は使えます）。</p>
+    <p><b>読み込み時の安全検査（Aegis）：</b>読み込むファイル（SVG／PDF／EPS／PSD／画像）は、取り込み時に <b>Aegis</b> が端末内で検査し、スクリプト・イベント属性・外部参照などの危険な要素を取り除いてから取り込みます。検査結果は必ず画面に表示します。これは端末内で完結する簡易検査であり、サーバー側のウイルススキャン（ClamAV等）ではありません。</p>
     <p><b>購入者専用Athena（別売り予定）：</b>カーヴェリアの使い方に加え、レーザー加工・印刷入稿の相談に特化した専用Athenaを、購入者向け追加オプションとして提供予定です（本体の最終版完成後に提供）。</p>
+    <p><button class="btn" data-install-btn onclick="openInstall()">📱 アプリ化する（ホーム画面に追加／インストール）</button> <span style="font-size:12px;color:var(--mut)">ホーム画面に追加すると、ブラウザのバーのない単独アプリとして起動できます。</span></p>
     <p><button class="btn" onclick="document.getElementById('ossDlg').showModal()">オープンソースライセンス表記</button></p>
     <p><b>Illustratorとの互換（要点）：</b>SVG開く／保存 ◎（レイヤー名・ID保持）／PDFで保存 ◎（ベクター・CMYK・塗り足し・トンボ）／複数のアートボード ◎／.aiを開く ○（PDF互換で保存された.aiのみ）／PDFを開いて編集 ○／CMYKで作る ○／特色 ○（名前登録方式）／.epsで保存 ○／.epsを開く ○（簡易）／<b>.aiで保存 ×</b>（代替手段あり：PDF＋SVGの二重書き出し。大手代替ソフトでも.ai保存はほぼ不可が共通認識です）。詳しい互換表は右パネル「印刷・互換」にあります。</p>
     <p style="color:var(--mut);font-size:12px">正直なお知らせ：パスファインダーの合体・型抜き・交差・中マドはブーリアン演算ライブラリによる実演算ですが、「分割／トリム」は近似表現です。画像トレースの高品質モード（VTracer）はWebAssemblyを使うため、対応ブラウザでのみ動作します（使えない環境では簡易モードに切り替わります）。PSDは合成画像（フラット画像）としてのみ読み込めます（レイヤー分離・再編集はできず、レイヤー名のみ保持します。合成画像のないPSDは開けません）。ライセンスの端末登録（2台まで）と月1回のオンライン確認は、現在はこの端末内の記録で判定しており、端末数のサーバー側カウントはライセンスサーバー接続後に有効になります。PDF/X-1a等の厳密な規格準拠や本格分版プレビューは対象外です。Adobe、IllustratorはAdobe Inc.の商標であり、本製品はAdobeとは関係のない独立したソフトです。</p>
   </div>
   <button class="btn primary" onclick="document.getElementById('productDlg').close()" style="margin-top:10px">閉じる</button>
 </dialog>
+<!-- ===== M アプリ化 ===== -->
+<dialog id="installDlg">
+  <h3 style="margin-top:0">📱 アプリ化（ホーム画面に追加／インストール）</h3>
+  <p style="font-size:13px;line-height:1.9">ホーム画面に追加すると、ブラウザのアドレスバー等のない<b>単独アプリ</b>として起動でき、全画面で広く使えます。データは今のブラウザ内データ（下書き・ライセンス登録）をそのまま引き継ぎます。</p>
+  <div id="installHow" style="font-size:13px;line-height:1.9"></div>
+  <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end;flex-wrap:wrap">
+    <button class="btn" onclick="document.getElementById('installDlg').close()">閉じる</button>
+    <button class="btn primary" id="installGoBtn" data-install-btn onclick="doInstall()">📱 アプリ化する</button>
+  </div>
+</dialog>
+<!-- ===== L1 スプラッシュ ===== -->
+<div id="splash" aria-hidden="true">
+  <svg width="92" height="92" viewBox="0 0 100 100" role="img" aria-label="CURVELIA ロゴ"><path d="M72 20 C 40 8, 14 34, 22 60 C 28 80, 52 90, 74 80" fill="none" stroke="#6C4CF1" stroke-width="9" stroke-linecap="round"/><path d="M82 34 C 60 24, 38 38, 42 58 C 45 72, 60 80, 76 74" fill="none" stroke="#00A8A0" stroke-width="9" stroke-linecap="round"/></svg>
+  <div><div class="sp-name">カーヴェリア</div><div class="sp-sub">CURVELIA</div></div>
+  <div class="sp-bar"><i></i></div>
+</div>
+<!-- ===== L2 アプリロック画面 ===== -->
+<div id="lockScreen" role="dialog" aria-label="アプリロック">
+  <div class="lk-card">
+    <svg width="52" height="52" viewBox="0 0 100 100" aria-hidden="true"><path d="M72 20 C 40 8, 14 34, 22 60 C 28 80, 52 90, 74 80" fill="none" stroke="#6C4CF1" stroke-width="9" stroke-linecap="round"/><path d="M82 34 C 60 24, 38 38, 42 58 C 45 72, 60 80, 76 74" fill="none" stroke="#00A8A0" stroke-width="9" stroke-linecap="round"/></svg>
+    <h3 style="margin:8px 0 4px">🔒 ロックされています</h3>
+    <p style="font-size:12.5px;color:var(--mut);line-height:1.7;margin:4px 0 12px">カーヴェリアを開くには、ロックを解除してください。</p>
+    <div id="lockPinArea">
+      <input type="password" id="lockPinInput" inputmode="numeric" autocomplete="off" placeholder="PIN（4〜6桁）" aria-label="PINを入力">
+      <div style="margin-top:10px"><button class="btn primary" id="lockPinBtn" style="min-width:160px">ロックを解除</button></div>
+      <p id="lockMsg" style="font-size:12px;min-height:18px;color:#b91c1c"></p>
+    </div>
+    <div id="lockBioArea" style="margin-top:6px"><button class="btn" id="lockBioBtn">🪪 生体認証／パスキーで解除</button></div>
+    <p style="font-size:12px;margin-top:14px"><button class="btn" id="lockForgotBtn" style="font-size:12px">PINを忘れた場合（ライセンスコードでリセット）</button></p>
+    <div id="lockResetArea" hidden>
+      <p style="font-size:12px;line-height:1.7">購入時のライセンスコード（フィードバック用コード VK-FBxx でも可）を入力すると、アプリロックの設定をリセットできます。</p>
+      <input type="text" id="lockResetCode" placeholder="VK-…" style="letter-spacing:.08em;width:220px;text-transform:uppercase" aria-label="ライセンスコード">
+      <div style="margin-top:8px"><button class="btn" id="lockResetBtn">ロックをリセット</button></div>
+      <p id="lockResetMsg" style="font-size:12px;min-height:18px"></p>
+    </div>
+  </div>
+</div>
+<!-- ===== J 同意書（初回は✕なし・同意必須） ===== -->
+<dialog id="agreeDlg" data-no-x="1">
+  <h3 style="margin-top:0">ライセンス条件への同意</h3>
+  <p style="font-size:12.5px;line-height:1.8">カーヴェリア（CURVELIA）をご利用いただく前に、以下のライセンス条件をお読みください。「同意する」を押すと、同意した日時がこの端末内に記録されます（2回目以降は表示されません）。</p>
+  <div class="agree-scroll" id="agreeText">
+    <h4>第1条（利用できる人）</h4>
+    <p>本ソフトウェアを利用できるのは、購入者ご本人のみです。購入者1名につき1ライセンスとし、登録できる端末は2台までです。登録端末は月1回のオンライン確認を行います。</p>
+    <h4>第2条（禁止事項）</h4>
+    <p>次の行為を禁止します。①本ソフトウェアおよび購入ID（ライセンスキー）の第三者への譲渡・貸与・転売 ②本ソフトウェアの再配布、インターネット上へのアップロード、不特定多数との共有 ③購入IDの公開・共有 ④リバースエンジニアリング等によるライセンス制限の回避。</p>
+    <h4>第3条（購入者識別IDと追跡）</h4>
+    <p>書き出すSVG・プロジェクトファイルには、購入者ごとの識別IDがメタデータとして自動で埋め込まれます。不正な流出が確認された場合、この識別IDにより流出元を追跡することがあります。</p>
+    <h4>第4条（サポートとアップデート）</h4>
+    <p>購入者専用サポート、アップデート、および購入者専用Athena（別売り予定）は、正規購入者のみを対象とします。</p>
+    <h4>第5条（料金）</h4>
+    <p>本ソフトウェアは買い切り型です。月額料金はかかりません。</p>
+    <h4>第6条（データの取り扱い）</h4>
+    <p>作品データ・下書きは、この端末のブラウザ内にだけ保存され、外部に送信されることはありません。読み込むファイルは、取り込み時に端末内で簡易検査（Aegis）を行います。</p>
+    <h4>第7条（免責）</h4>
+    <p>ブラウザのデータ削除等により下書きが失われる場合があります。正式な保存には「プロジェクト保存」をご利用ください。本ソフトウェアの利用により生じた損害について、販売者は故意・重過失の場合を除き責任を負いません。</p>
+  </div>
+  <p id="agreeDenyMsg" style="font-size:12.5px;line-height:1.8;color:#b91c1c;min-height:20px"></p>
+  <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end;flex-wrap:wrap">
+    <button class="btn" id="agreeDenyBtn">同意しない</button>
+    <button class="btn primary" id="agreeOkBtn">同意する</button>
+  </div>
+</dialog>
+<!-- ===== G9 初回ライセンス選択 ===== -->
+<dialog id="firstLicDlg" data-no-x="1">
+  <h3 style="margin-top:0">ようこそ、カーヴェリアへ</h3>
+  <p style="font-size:13px;line-height:1.9">はじめに、ライセンスについて教えてください。購入済みの方はライセンスコードを入力すると、書き出しを含む全機能が使えるようになり、この端末がライセンスに登録されます（端末登録は2台まで）。</p>
+  <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+    <button class="btn primary" id="firstLicCode" style="min-height:52px;font-size:14px">🔑 ライセンスコードを入力する</button>
+    <button class="btn" id="firstLicTrial" style="min-height:52px;font-size:14px">試用として始める（編集は自由・書き出しは登録後）</button>
+  </div>
+  <p style="font-size:12px;color:var(--mut);line-height:1.8;margin-top:12px">フィードバック用コード（VK-FB01 のような形式）でも登録できます。後から登録・変更する場合は、上部メニュー「表示」→「ライセンス登録」からいつでもできます。</p>
+</dialog>
+<!-- ===== L2 アプリロック設定 ===== -->
+<dialog id="lockSetDlg">
+  <h3 style="margin-top:0">アプリロック設定</h3>
+  <p style="font-size:12.5px;line-height:1.8">アプリを開くときに、PINまたは生体認証（パスキー）でロックをかける機能です。<b>これは端末内の簡易ロック（プライバシー保護用）です。</b>サーバー認証やライセンス管理とは別物で、設定はこの端末のブラウザ内にだけ保存されます。ブラウザのデータを削除するとロック設定も消えます。</p>
+  <div class="dlg-form">
+    <label>アプリロック <select id="lockEnabled"><option value="off">オフ</option><option value="on">オン（起動時にロック）</option></select></label>
+    <label>新しいPIN（4〜6桁の数字） <input type="password" id="lockNewPin" inputmode="numeric" autocomplete="new-password" placeholder="未入力なら変更しません" style="width:170px"></label>
+    <label>新しいPIN（確認） <input type="password" id="lockNewPin2" inputmode="numeric" autocomplete="new-password" style="width:170px"></label>
+  </div>
+  <p id="lockSetMsg" style="font-size:12px;min-height:18px"></p>
+  <div class="row"><button class="btn" id="lockSaveBtn" style="flex:1">PINとオン／オフを保存</button></div>
+  <h4 style="margin:14px 0 6px;font-size:13px">生体認証／パスキー（WebAuthn）</h4>
+  <p id="passkeyNote" style="font-size:12px;line-height:1.8;color:var(--mut)"></p>
+  <div class="row"><button class="btn" id="passkeyRegBtn">この端末の生体認証／パスキーを登録</button><button class="btn" id="passkeyDelBtn">パスキー登録を削除</button></div>
+  <p style="font-size:12px;line-height:1.8;color:var(--mut)">PINを忘れた場合は、ロック画面の「PINを忘れた場合」から、ライセンスコードの再入力でロックをリセットできます。</p>
+  <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end"><button class="btn primary" onclick="document.getElementById('lockSetDlg').close()">閉じる</button></div>
+</dialog>
+<div id="penHoverRing" aria-hidden="true"></div><div id="hoverBox" aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button class="toast-btn" id="toastBtn" hidden>元に戻す</button></div>
 <div class="tut-card" id="tutCard" role="dialog" aria-label="チュートリアル">
   <h3 id="tutTitle"></h3>
@@ -12162,9 +12336,13 @@ artboard:"<b>アートボード</b>：ボードの中をドラッグで移動、
 let swatchColors=["#111827","#ffffff","#ef4444","#f97316","#f59e0b","#84cc16","#22c55e","#14b8a6","#06b6d4","#3b82f6","#6366f1","#a855f7","#ec4899","#78350f","#92400e","#64748b","#fde68a","#bbf7d0","#bfdbfe","#fbcfe8","#00000000"];
 
 /* ============ HISTORY ============ */
-function snapshot(){return JSON.stringify({boards:state.boards,layers:state.layers,objects:state.objects,guides:state.guides,uid});}
-function pushHistory(){const snap=snapshot();if(state.history[state.hIndex]===snap){saveDraftSoon();return;}state.history=state.history.slice(0,state.hIndex+1);state.history.push(snap);if(state.history.length>80)state.history.shift();let _hb=0;state.history.forEach(s=>_hb+=s?s.length:0);while(_hb>6000000&&state.history.length>10){_hb-=state.history[0]?state.history[0].length:0;state.history.shift();}state.hIndex=state.history.length-1;updateUndoBtns();saveDraftSoon();}
-function restore(s){try{const d=JSON.parse(s);if(!d||!Array.isArray(d.boards)||!Array.isArray(d.layers)||!Array.isArray(d.objects))return;state.boards=d.boards;state.layers=d.layers;state.objects=d.objects;state.guides=Array.isArray(d.guides)?d.guides:[];uid=d.uid||uid;state.selected=[];state.lassoAnchors=[];updateUndoBtns();renderAll();}catch(e){/* 壊れた履歴は無視して現在のデータを保持する */}}
+/* E11: 履歴スナップショットでは、大きな data URL（配置画像）や読み込みSVG文字列を参照に置き換え、履歴へ複製しない（履歴肥大＝戻れる回数の減少を防ぐ） */
+const _bigStrCache=new Map();
+function _bigRef(v){let h=0;for(let i=0;i<v.length;i+=97)h=(Math.imul(h,31)+v.charCodeAt(i))>>>0;const k="B"+v.length+"_"+h.toString(36);if(!_bigStrCache.has(k))_bigStrCache.set(k,v);return "⟦"+k+"⟧";}
+function _bigUnref(v){if(typeof v==="string"&&v.length>2&&v.charCodeAt(0)===0x27E6&&v.charCodeAt(v.length-1)===0x27E7){const r=_bigStrCache.get(v.slice(1,-1));if(r!==undefined)return r;}return v;}
+function snapshot(){return JSON.stringify({boards:state.boards,layers:state.layers,objects:state.objects,guides:state.guides,uid},(k,v)=>(typeof v==="string"&&v.length>4000&&(k==="href"||k==="svgInner"))?_bigRef(v):v);}
+function pushHistory(){const snap=snapshot();if(state.history[state.hIndex]===snap){saveDraftSoon();return;}state.history=state.history.slice(0,state.hIndex+1);state.history.push(snap);if(state.history.length>120)state.history.shift();let _hb=0;state.history.forEach(s=>_hb+=s?s.length:0);while(_hb>6000000&&state.history.length>30){_hb-=state.history[0]?state.history[0].length:0;state.history.shift();}state.hIndex=state.history.length-1;updateUndoBtns();saveDraftSoon();}
+function restore(s){try{const d=JSON.parse(s,(k,v)=>_bigUnref(v));if(!d||!Array.isArray(d.boards)||!Array.isArray(d.layers)||!Array.isArray(d.objects))return;state.boards=d.boards;state.layers=d.layers;state.objects=d.objects;state.guides=Array.isArray(d.guides)?d.guides:[];uid=d.uid||uid;state.selected=[];state.lassoAnchors=[];updateUndoBtns();renderAll();}catch(e){/* 壊れた履歴は無視して現在のデータを保持する */}}
 function updateUndoBtns(){const u=$("btnUndo"),r=$("btnRedo");if(u)u.disabled=state.hIndex<=0;if(r)r.disabled=state.hIndex>=state.history.length-1;document.querySelectorAll("[data-undobtn]").forEach(b=>{b.disabled=state.hIndex<=0;b.title="元に戻す（あと"+Math.max(0,state.hIndex)+"回）";});document.querySelectorAll("[data-redobtn]").forEach(b=>b.disabled=state.hIndex>=state.history.length-1);if(u)u.title="元に戻す（あと"+Math.max(0,state.hIndex)+"回）";const h=$("stHist");if(h)h.textContent=state.hIndex>0?("履歴：あと"+state.hIndex+"回戻せます"):"";}
 function undo(){if(state.hIndex>0){state.hIndex--;restore(state.history[state.hIndex]);}}
 function redo(){if(state.hIndex<state.history.length-1){state.hIndex++;restore(state.history[state.hIndex]);}}
@@ -12211,9 +12389,15 @@ function polyPoints(cx,cy,rx,ry,sides,inner){
 /* ============ RENDER ============ */
 function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);(parent||stage).appendChild(e);return e;}
 let LIGHT=false,_lastRender=0,_trailingRaf=0,_renderMs=0;
+/* A1: 間引きは「表示フレーム」単位に同期する。16ms固定（実質60fps上限）を廃止し、120Hz端末では120fps・60Hz端末では60fpsに追従する */
+let _frameNo=0,_lastLightFrame=-1;
+(function _frameTick(){_frameNo++;requestAnimationFrame(_frameTick);})();
 function renderAll(){
   const _now=performance.now();
-  if(LIGHT&&_now-_lastRender<16){if(!_trailingRaf)_trailingRaf=requestAnimationFrame(()=>{_trailingRaf=0;_lastRender=0;renderAll();});return;}
+  if(LIGHT){
+    if(_lastLightFrame===_frameNo){if(!_trailingRaf)_trailingRaf=requestAnimationFrame(()=>{_trailingRaf=0;_lastLightFrame=-1;renderAll();});return;}
+    _lastLightFrame=_frameNo;
+  }
   _lastRender=_now;const _t0=_now;
   stage.innerHTML="";
   const W=Math.max(2400,...state.boards.map(b=>b.x+b.w+200)),H=Math.max(1800,...state.boards.map(b=>b.y+b.h+200));
@@ -12291,6 +12475,30 @@ function renderAll(){
   if(!LIGHT){renderLayers();renderBoards();updatePropsFromSel();drawRulers();}
   _renderMs=_renderMs*0.7+(performance.now()-_t0)*0.3;
 }
+/* A2: ドラッグ中の部分更新。対象オブジェクトのDOM（transform／pathのd／図形属性）だけを書き換え、SVG全体の再構築を避ける。対応できない型は false を返し、呼び出し側が全体再描画にフォールバックする */
+function objEl(o){return stage.querySelector('g[data-id="'+CSS.escape(o.id)+'"]');}
+function syncObjEl(o){
+  const g=objEl(o);if(!g)return false;
+  const c=center(o);
+  g.setAttribute("transform",`translate(${c.x} ${c.y}) rotate(${o.rotation||0}) skewX(${o.shear||0}) scale(${o.scaleX||1} ${o.scaleY||1}) translate(${-c.x} ${-c.y})`);
+  const main=g.firstElementChild;if(!main)return false;
+  try{
+    if(o.type==="rect"){main.setAttribute("x",o.x);main.setAttribute("y",o.y);main.setAttribute("width",o.w);main.setAttribute("height",o.h);main.setAttribute("rx",o.radius||0);}
+    else if(o.type==="ellipse"){main.setAttribute("cx",o.x+o.w/2);main.setAttribute("cy",o.y+o.h/2);main.setAttribute("rx",Math.abs(o.w/2));main.setAttribute("ry",Math.abs(o.h/2));}
+    else if(o.type==="polygon"){main.setAttribute("points",polyPoints(o.x+o.w/2,o.y+o.h/2,Math.abs(o.w)/2,Math.abs(o.h)/2,o.sides||6,false));}
+    else if(o.type==="star"){main.setAttribute("points",polyPoints(o.x+o.w/2,o.y+o.h/2,Math.abs(o.w)/2,Math.abs(o.h)/2,o.points||5,true));}
+    else if(o.type==="line"){main.setAttribute("x1",o.x);main.setAttribute("y1",o.y);main.setAttribute("x2",o.x2);main.setAttribute("y2",o.y2);}
+    else if(o.type==="arc"){const r=Math.hypot(o.x2-o.x,o.y2-o.y);main.setAttribute("d",`M ${o.x} ${o.y} A ${r} ${r} 0 0 1 ${o.x2} ${o.y2}`);}
+    else if(o.type==="path"||o.type==="pencil"||o.type==="brush"){main.setAttribute("d",pathD(o));
+      if(o.type==="brush"&&o.customD){main.setAttribute("fill",o.fill&&o.fill!=="none"?o.fill:"#000");main.setAttribute("stroke","none");}}
+    else if(o.type==="image"){main.setAttribute("x",o.x);main.setAttribute("y",o.y);main.setAttribute("width",o.w);main.setAttribute("height",o.h);}
+    else return false;
+  }catch(e){return false;}
+  return true;
+}
+function lightRender(objs){let ok=true;(objs||[]).forEach(o=>{if(o&&!syncObjEl(o))ok=false;});
+  if(!ok){renderAll();return;}
+  renderSelection();updateStatus();}
 function renderTextEl(o,g,common){
   const fs=o.fontSize||36,lh=fs*(o.leading||1.2);
   if(o.vertical){const lines=(o.text||"テキスト").split("\n");let maxLen=1;
@@ -12308,11 +12516,13 @@ function renderSelection(){
   const ui=el("g",{class:"sel-ui"});
   if(state.tool==="artboard"){renderBoardUI(ui);return;}
   if(state.tool==="direct"||state.tool==="addAnchor"||state.tool==="delAnchor"||state.tool==="anchor"){
+    const _hitA=(document.body.classList.contains("is-coarse")?44:38)/state.zoom; // C1: アンカー／ハンドルに画面上38〜44px相当（ズーム非連動）の透明ヒット領域
     selObjs().forEach(o=>{if(o.anchors){o.anchors.forEach((a,i)=>{
-      if(a.hIn) {el("line",{x1:a.x,y1:a.y,x2:a.hIn.x,y2:a.hIn.y,class:"ctrl-line"},ui);el("circle",{cx:a.hIn.x,cy:a.hIn.y,r:5/state.zoom+3,class:"handle","data-handle":"hin-"+i,"data-oid":o.id},ui);}
-      if(a.hOut){el("line",{x1:a.x,y1:a.y,x2:a.hOut.x,y2:a.hOut.y,class:"ctrl-line"},ui);el("circle",{cx:a.hOut.x,cy:a.hOut.y,r:5/state.zoom+3,class:"handle","data-handle":"hout-"+i,"data-oid":o.id},ui);}
+      if(a.hIn) {el("line",{x1:a.x,y1:a.y,x2:a.hIn.x,y2:a.hIn.y,class:"ctrl-line"},ui);el("circle",{cx:a.hIn.x,cy:a.hIn.y,r:_hitA/2,fill:"transparent","data-handle":"hin-"+i,"data-oid":o.id},ui);el("circle",{cx:a.hIn.x,cy:a.hIn.y,r:5/state.zoom+3,class:"handle","data-handle":"hin-"+i,"data-oid":o.id},ui);}
+      if(a.hOut){el("line",{x1:a.x,y1:a.y,x2:a.hOut.x,y2:a.hOut.y,class:"ctrl-line"},ui);el("circle",{cx:a.hOut.x,cy:a.hOut.y,r:_hitA/2,fill:"transparent","data-handle":"hout-"+i,"data-oid":o.id},ui);el("circle",{cx:a.hOut.x,cy:a.hOut.y,r:5/state.zoom+3,class:"handle","data-handle":"hout-"+i,"data-oid":o.id},ui);}
+      el("rect",{x:a.x-_hitA/2,y:a.y-_hitA/2,width:_hitA,height:_hitA,fill:"transparent","data-anchor":i,"data-oid":o.id},ui);
       el("rect",{x:a.x-5/state.zoom-2,y:a.y-5/state.zoom-2,width:10/state.zoom+4,height:10/state.zoom+4,class:"anchor"+(((state.lassoAnchors||[]).some(en=>en.oid===o.id&&en.idx===i)||i===0)?" sel":""),"data-anchor":i,"data-oid":o.id},ui);});}
-      else {const d=shapePathD(o);if(d){const anchors=pathAnchorsFromD(o);o.anchors=anchors;o.type="path";o.closed=true;renderSelection();}}});
+      else {const d=shapePathD(o);if(d){const wl=o.type==="line";const anchors=anchorsForShape(o);o.anchors=anchors;o.type="path";o.closed=!wl;renderSelection();}}} /* K3: 多角形・星・楕円を四角形パスに化けさせない */);
     return;
   }
   if((state.tool==="select"||state.tool==="lasso")&&state.lassoAnchors&&state.lassoAnchors.length){
@@ -12320,14 +12530,44 @@ function renderSelection(){
     state.lassoAnchors.forEach(en=>{const o=state.objects.find(x=>x.id===en.oid);if(!o||!o.anchors||!o.anchors[en.idx])return;const a=o.anchors[en.idx];const s=13/state.zoom+5;
       el("rect",{x:a.x-s/2,y:a.y-s/2,width:s,height:s,class:"anchor sel",style:"cursor:move"},ui);});
   }
+  /* G2: ペン／曲線で描画中のパスはアンカーを表示し、始点は緑の二重リングで区別する（閉じる位置が分かるように） */
+  if((state.tool==="pen"||state.tool==="curve")&&typeof penDraft!=="undefined"&&penDraft&&penDraft.anchors&&penDraft.anchors.length){
+    penDraft.anchors.forEach((a,i)=>{
+      if(a.hIn){el("line",{x1:a.x,y1:a.y,x2:a.hIn.x,y2:a.hIn.y,class:"ctrl-line"},ui);el("circle",{cx:a.hIn.x,cy:a.hIn.y,r:5/state.zoom+3,class:"handle"},ui);}
+      if(a.hOut){el("line",{x1:a.x,y1:a.y,x2:a.hOut.x,y2:a.hOut.y,class:"ctrl-line"},ui);el("circle",{cx:a.hOut.x,cy:a.hOut.y,r:5/state.zoom+3,class:"handle"},ui);}
+      if(i===0){el("circle",{cx:a.x,cy:a.y,r:10/state.zoom+4,fill:"none",stroke:"#16a34a","stroke-width":2.2/state.zoom},ui);el("circle",{cx:a.x,cy:a.y,r:4.5/state.zoom+1.5,fill:"#16a34a",stroke:"#fff","stroke-width":1.5/state.zoom},ui);}
+      else el("rect",{x:a.x-5/state.zoom-2,y:a.y-5/state.zoom-2,width:10/state.zoom+4,height:10/state.zoom+4,class:"anchor"},ui);});
+  }
+  /* G2: 鉛筆／ブラシ描画中も始点マーカーを出す */
+  if((state.tool==="pencil"||state.tool==="brush")&&typeof freeDraft!=="undefined"&&freeDraft&&freeDraft.anchors&&freeDraft.anchors.length){
+    const a=freeDraft.anchors[0];el("circle",{cx:a.x,cy:a.y,r:10/state.zoom+4,fill:"none",stroke:"#16a34a","stroke-width":2.2/state.zoom},ui);el("circle",{cx:a.x,cy:a.y,r:4.5/state.zoom+1.5,fill:"#16a34a",stroke:"#fff","stroke-width":1.5/state.zoom},ui);
+  }
+  /* G3: なげなわ確定後の選択も、オブジェクトの外枠をはっきり表示する（ハンドルは付けない） */
+  if(state.tool==="lasso"){
+    selObjs().forEach(o=>{const b=bbox(o);if(!b.w&&!b.h)return;el("rect",{x:b.x-4,y:b.y-4,width:b.w+8,height:b.h+8,fill:"rgba(37,99,235,.06)",stroke:"#2563eb","stroke-width":1.8/state.zoom,"stroke-dasharray":"6 4"},ui);});
+    return;
+  }
   if(state.tool!=="select"&&state.tool!=="rotate"&&state.tool!=="scale"&&state.tool!=="shear"&&state.tool!=="reflect")return;
+  /* G5: 複数選択時は個別ハンドルを出さず、全体の外接枠＋全体用ハンドルだけにする（個別拡縮に化けないように） */
+  if(state.tool==="select"&&selObjs().length>1){
+    const bs=selObjs().map(bbox);const X1=Math.min(...bs.map(b=>b.x)),Y1=Math.min(...bs.map(b=>b.y)),X2=Math.max(...bs.map(b=>b.x+b.w)),Y2=Math.max(...bs.map(b=>b.y+b.h));
+    const ub={x:X1-4,y:Y1-4,w:(X2-X1)+8,h:(Y2-Y1)+8};
+    el("rect",{x:ub.x,y:ub.y,width:ub.w,height:ub.h,fill:"none",stroke:"#2563eb","stroke-width":1.8/state.zoom,"stroke-dasharray":"6 4"},ui);
+    bs.forEach(b=>el("rect",{x:b.x-2,y:b.y-2,width:b.w+4,height:b.h+4,fill:"none",stroke:"rgba(37,99,235,.45)","stroke-width":1/state.zoom},ui));
+    const hs=[["nw",ub.x,ub.y],["n",ub.x+ub.w/2,ub.y],["ne",ub.x+ub.w,ub.y],["e",ub.x+ub.w,ub.y+ub.h/2],["se",ub.x+ub.w,ub.y+ub.h],["s",ub.x+ub.w/2,ub.y+ub.h],["sw",ub.x,ub.y+ub.h],["w",ub.x,ub.y+ub.h/2]];
+    const _hit=(document.body.classList.contains("is-coarse")?42:14)/state.zoom,_vis=10/state.zoom+4;
+    hs.forEach(([k,x,y])=>{el("rect",{x:x-_hit/2,y:y-_hit/2,width:_hit,height:_hit,fill:"transparent",style:"cursor:pointer","data-gresize":k},ui);el("rect",{x:x-_vis/2,y:y-_vis/2,width:_vis,height:_vis,class:"handle","data-gresize":k},ui);});
+    return;
+  }
   selObjs().forEach(o=>{const b=bbox(o);if(!b.w&&!b.h)return;
-    el("rect",{x:b.x-4,y:b.y-4,width:b.w+8,height:b.h+8,fill:"none",stroke:"#2563eb","stroke-width":1.5/state.zoom,"stroke-dasharray":"6 4"},ui);
+    /* G6: 選択枠はオブジェクト本体と同じ変形（回転・シアー・拡縮）を適用して描く。従来は軸平行の外接枠だったため、回転したオブジェクトで枠と実物がずれていた */
+    const c=center(o);const ui2=el("g",{transform:`translate(${c.x} ${c.y}) rotate(${o.rotation||0}) skewX(${o.shear||0}) scale(${o.scaleX||1} ${o.scaleY||1}) translate(${-c.x} ${-c.y})`},ui);
+    el("rect",{x:b.x-4,y:b.y-4,width:b.w+8,height:b.h+8,fill:"none",stroke:"#2563eb","stroke-width":1.5/state.zoom,"stroke-dasharray":"6 4"},ui2);
     const hs=[["nw",b.x-4,b.y-4],["n",b.x+b.w/2,b.y-4],["ne",b.x+b.w+4,b.y-4],["e",b.x+b.w+4,b.y+b.h/2],["se",b.x+b.w+4,b.y+b.h+4],["s",b.x+b.w/2,b.y+b.h+4],["sw",b.x-4,b.y+b.h+4],["w",b.x-4,b.y+b.h/2]];
     const _hit=(document.body.classList.contains("is-coarse")?42:14)/state.zoom,_vis=10/state.zoom+4;
-    hs.forEach(([k,x,y])=>{el("rect",{x:x-_hit/2,y:y-_hit/2,width:_hit,height:_hit,fill:"transparent",style:"cursor:pointer","data-resize":k,"data-oid":o.id},ui);el("rect",{x:x-_vis/2,y:y-_vis/2,width:_vis,height:_vis,class:"handle","data-resize":k,"data-oid":o.id},ui);});
-    el("circle",{cx:b.x+b.w/2,cy:b.y-26/state.zoom-14,r:7/state.zoom+3,class:"handle","data-rotate":o.id},ui);
-    el("line",{x1:b.x+b.w/2,y1:b.y-4,x2:b.x+b.w/2,y2:b.y-26/state.zoom-14,stroke:"#2563eb","stroke-width":1/state.zoom},ui);
+    hs.forEach(([k,x,y])=>{el("rect",{x:x-_hit/2,y:y-_hit/2,width:_hit,height:_hit,fill:"transparent",style:"cursor:pointer","data-resize":k,"data-oid":o.id},ui2);el("rect",{x:x-_vis/2,y:y-_vis/2,width:_vis,height:_vis,class:"handle","data-resize":k,"data-oid":o.id},ui2);});
+    el("circle",{cx:b.x+b.w/2,cy:b.y-26/state.zoom-14,r:7/state.zoom+3,class:"handle","data-rotate":o.id},ui2);
+    el("line",{x1:b.x+b.w/2,y1:b.y-4,x2:b.x+b.w/2,y2:b.y-26/state.zoom-14,stroke:"#2563eb","stroke-width":1/state.zoom},ui2);
   });
 }
 function pathAnchorsFromD(o){const b=bbox(o);return[{x:b.x,y:b.y},{x:b.x+b.w,y:b.y},{x:b.x+b.w,y:b.y+b.h},{x:b.x,y:b.y+b.h}];}
@@ -12353,6 +12593,11 @@ function hitObject(p){
         if(o.type==="line"||o.type==="arc")near=true;
         if(!near&&!o.closed)continue;
       }
+      if((o.fill==="none"||o.fill==null)&&!o.gradient&&!o.pattern&&["rect","ellipse","polygon","star"].includes(o.type)){
+        /* E6: 塗りなし図形は bbox 全体でなく線の近傍のみヒットさせる（内側の空き領域は下のオブジェクトへクリックを透過する。楕円は外接枠の縮小で近似） */
+        const tol=(o.strokeWidth||2)/2+8/state.zoom;
+        if(p.x>b.x+tol&&p.x<b.x+b.w-tol&&p.y>b.y+tol&&p.y<b.y+b.h-tol)continue;
+      }
       return o;}}
   return null;
 }
@@ -12363,12 +12608,18 @@ function selectObj(o,additive){state.lassoAnchors=[];if(!o){if(!additive)state.s
 /* ============ POINTER INTERACTION ============ */
 let drag=null, penDraft=null, freeDraft=null, shapeDraft=null, spaceDown=false;
 /* パン専用の軽量描画：ズームが変わらない移動ではSVG全体を再構築せず、変換とDOMチップ／FABだけを更新する（パン中のカクつき・横成分の取りこぼし防止） */
-function panRender(){stage.style.transform=`translate(${state.pan.x}px,${state.pan.y}px) scale(${state.zoom})`;stage.style.transformOrigin="0 0";try{updateBoardLabels();}catch(e){}try{layoutFab();}catch(e){}}
+let _panFxRaf=0;
+function panRender(){stage.style.transform=`translate(${state.pan.x}px,${state.pan.y}px) scale(${state.zoom})`;stage.style.transformOrigin="0 0";
+  /* A5: ラベル／FABのレイアウト実測はパン中は1フレーム1回に間引き、パン終了時（renderAll）に確定させる */
+  if(!_panFxRaf)_panFxRaf=requestAnimationFrame(()=>{_panFxRaf=0;try{updateBoardLabels();}catch(e){}try{layoutFab();}catch(e){}});}
 /* 画面座標でそのまま滑らせる（軸固定なし：渡した dx/dy を両軸そのまま適用し、斜め移動も可能にする） */
 function panByScreen(dx,dy){if(!dx&&!dy)return;_viewMoved=true;state.pan.x+=dx;state.pan.y+=dy;panRender();}
 vp.addEventListener("pointerdown",e=>{
   if(e.target.closest("button"))return;
+  /* C2: 掌など接触面積の大きい touch（目安40px超）は描画開始から除外する（パームリジェクション） */
+  if(e.pointerType==="touch"&&(e.width>=40||e.height>=40)){try{_palmIds.add(e.pointerId);}catch(err){}return;}
   if(e.pointerType==="pen"){
+    try{_penSeen=true;}catch(err){}
     /* ペン優先（パームリジェクション）：掌・指が先に触れて始まったドラッグやピンチ判定があると、従来はペンの pointerdown が丸ごと弾かれて「ペンが使い物にならない」状態になっていた。
        ペンが置かれたら指側の進行中ジェスチャーを解除し、ペンを必ず通す */
     if(_pinch||_gestureLock||drag){try{cancelGestureDrag();}catch(err){drag=null;} _pinch=null;_gestureLock=false;LIGHT=false;}
@@ -12377,6 +12628,8 @@ vp.addEventListener("pointerdown",e=>{
     if(_pinch||_gestureLock)return;
     if(e.pointerType==="touch"&&_penDown)return; // パームリジェクション相当：ペンで描いている間、触れた指では描かない（ピンチは別系統で処理）
     if(e.pointerType!=="mouse"&&_pointers.size>=1)return;
+    /* C2: ペンを一度使ったセッションでは、指での「描画開始」を抑止する（選択・移動・手のひら・ピンチは従来どおり可能） */
+    if(e.pointerType==="touch"&&typeof _penSeen!=="undefined"&&_penSeen&&["pen","curve","pencil","brush","rect","ellipse","polygon","star","line","arc","eraser","shapebuilder"].includes(state.tool))return;
   }
   const _rb=$("restoreBar");if(_rb&&!_rb.hidden){_rb.hidden=true;try{maybeShowLicenseBar();}catch(e){}}
   toggleZoomMenu(false);
@@ -12392,6 +12645,11 @@ vp.addEventListener("pointerdown",e=>{
     if(hitL){drag={kind:"lassoMove",start:p0,orig:origL,moved:false};vp.setPointerCapture(e.pointerId);return;}
   }
   // handles first
+  const gz=e.target.getAttribute&&e.target.getAttribute("data-gresize");
+  if(gz){ // G5: 複数選択の全体リサイズ（全体の外接枠を基準に、選択全員を比例拡縮する）
+    const bs=selObjs().map(bbox);const ub={x:Math.min(...bs.map(b=>b.x)),y:Math.min(...bs.map(b=>b.y))};ub.w=Math.max(...bs.map(b=>b.x+b.w))-ub.x;ub.h=Math.max(...bs.map(b=>b.y+b.h))-ub.y;
+    const orig={};selObjs().forEach(s=>orig[s.id]=JSON.parse(JSON.stringify(s)));
+    drag={kind:"gresize",dir:gz,start:p0,orig,ub,moved:false};vp.setPointerCapture(e.pointerId);return;}
   const bz=e.target.getAttribute&&e.target.getAttribute("data-bresize");
   if(bz){const b=state.boards.find(x=>x.id===e.target.getAttribute("data-boid"));if(b){state.activeBoard=b.id;drag={kind:"bresize",dir:bz,bid:b.id,start:p0,orig:{x:b.x,y:b.y,w:b.w,h:b.h}};vp.setPointerCapture(e.pointerId);renderAll();}return;}
   const rz=e.target.getAttribute&&e.target.getAttribute("data-resize");
@@ -12421,7 +12679,7 @@ vp.addEventListener("pointerdown",e=>{
   if(t==="measure"){drag={kind:"measure",start:p0,cur:p0};vp.setPointerCapture(e.pointerId);return;}
   if(t==="addAnchor"){const o=hitObject(p);if(o&&o.anchors){let bi=0,bd=1e9;o.anchors.forEach((a,i)=>{const d=Math.hypot(a.x-p.x,a.y-p.y);if(d<bd){bd=d;bi=i;}});o.anchors.splice(bi+1,0,{x:p.x,y:p.y});state.selected=[o.id];pushHistory();renderAll();}return;}
   if(t==="delAnchor"){const o=hitObject(p);if(o&&o.anchors){let bi=-1,bd=18/state.zoom+8;o.anchors.forEach((a,i)=>{const d=Math.hypot(a.x-p.x,a.y-p.y);if(d<bd){bd=d;bi=i;}});if(bi>=0)o.anchors.splice(bi,1);pushHistory();renderAll();}return;}
-  if(t==="anchor"){const o=hitObject(p);if(o){state.selected=[o.id];if(!o.anchors){o.anchors=pathAnchorsFromD(o);o.customD=null;o.type="path";o.closed=true;}drag={kind:"anchorConvert",oid:o.id,start:p0};vp.setPointerCapture(e.pointerId);renderAll();}return;}
+  if(t==="anchor"){const o=hitObject(p);if(o){state.selected=[o.id];if(!o.anchors){const wl=o.type==="line";o.anchors=anchorsForShape(o);o.customD=null;o.type="path";o.closed=!wl;}drag={kind:"anchorConvert",oid:o.id,start:p0};vp.setPointerCapture(e.pointerId);renderAll();}return;} /* K3 */
   if(t==="pencil"||t==="brush"){ // フリーハンドはスナップした点ではなく生の座標を使う（スナップの軸ごとの吸着が斜め線を階段状にしていた）
     freeDraft=baseObj(t,{anchors:[{x:p0.x,y:p0.y,p:(typeof e.pressure==="number"&&e.pressure>0)?e.pressure:undefined}],closed:false,fill:"none",strokeWidth:t==="brush"?parseFloat($("brushSize").value)||10:parseFloat($("pStrokeW").value)||2,name:t==="brush"?"ブラシ":"鉛筆"});
     freeDraft.linecap="round";freeDraft._raw=[{x:p0.x,y:p0.y,p:(typeof e.pressure==="number"&&e.pressure>0)?e.pressure:undefined}];
@@ -12444,15 +12702,21 @@ vp.addEventListener("pointerdown",e=>{
   if(t==="width"){const o=hitObject(p);if(o){o.strokeWidth=Math.min(80,(o.strokeWidth||2)+2);pushHistory();renderAll();}return;}
   if(t==="rotate"||t==="scale"||t==="shear"){const o=hitObject(p);if(o&&!state.selected.includes(o.id))state.selected=[o.id];
     if(selObjs().length){drag={kind:t,start:p0,c:center(selObjs()[0]),r0:selObjs()[0].rotation||0,s0:selObjs()[0].scaleX||1,sh0:selObjs()[0].shear||0,d0:Math.max(10,Math.hypot(p0.x-center(selObjs()[0]).x,p0.y-center(selObjs()[0]).y))};vp.setPointerCapture(e.pointerId);}return;}
-  if(t==="direct"){const o=hitObject(p);if(o){state.selected=[o.id];if(!o.anchors&&o.type!=="text"){o.anchors=pathAnchorsFromD(o);o.type="path";o.closed=true;o.customD=null;}renderAll();}else state.selected=[];renderAll();return;}
+  if(t==="direct"){const o=hitObject(p);if(o){state.selected=[o.id];if(!o.anchors&&o.type!=="text"){const wl=o.type==="line";o.anchors=anchorsForShape(o);o.type="path";o.closed=!wl;o.customD=null;}renderAll();}else state.selected=[];renderAll();return;} /* K3: アンカー編集で多角形が四角形に化ける不具合の修正 */
   if(t==="lasso"){state.lassoAnchors=[];drag={kind:"lasso",start:p0,cur:p0,pts:[{x:p0.x,y:p0.y}]};vp.setPointerCapture(e.pointerId);return;}
   // select tool
   const o=hitObject(p0);
   if(o){if(layerLocked(o)){selectObj(o,e.shiftKey);return;}
     const wasSel=state.selected.includes(o.id);
-    if(e.shiftKey)selectObj(o,true);else if(!wasSel)state.selected=[o.id];
+    if(e.shiftKey)selectObj(o,true);
+    else if(!wasSel){ /* G4: グループ化したオブジェクトはグループ単位で選ぶ。従来は group を保存するだけで選択・移動のどこにも使われておらず、単体だけが動いて「勝手に解除された」ように見えたのが原因 */
+      if(o.group){const members=state.objects.filter(x=>x.group===o.group).map(x=>x.id);state.selected=members.length>1?members:[o.id];}
+      else state.selected=[o.id];}
     const orig={};selObjs().forEach(s=>orig[s.id]=JSON.parse(JSON.stringify(s)));
-    drag={kind:e.altKey?"duplicate":"move",start:p0,orig,moved:false,duplicated:false};
+    /* E6: Alt+クリック（動かさなかった場合）の循環選択用に、その点で重なっているオブジェクト列（前面→背面）を記録しておく */
+    let altStack=null,altTopId=null;
+    if(e.altKey){const lo={};state.layers.forEach((l,i)=>lo[l.id]=i);altStack=state.objects.filter(x=>x.visible!==false).filter(x=>{const b=bbox(x);return p0.x>=b.x-2&&p0.x<=b.x+b.w+2&&p0.y>=b.y-2&&p0.y<=b.y+b.h+2;}).sort((a,b)=>((lo[a.layer]??0)-(lo[b.layer]??0))||(state.objects.indexOf(a)-state.objects.indexOf(b))).reverse();altTopId=o.id;}
+    drag={kind:e.altKey?"duplicate":"move",start:p0,orig,moved:false,duplicated:false,altStack,altTopId};
     vp.setPointerCapture(e.pointerId);renderAll();
   }else{if(!e.shiftKey)state.selected=[];drag={kind:"marquee",start:p0,cur:p0};vp.setPointerCapture(e.pointerId);renderAll();}
 });
@@ -12462,38 +12726,43 @@ vp.addEventListener("pointermove",e=>{
   if(!drag)return;
   if(drag.kind==="pan"){state.pan.x=drag.px+(e.clientX-drag.sx);state.pan.y=drag.py+(e.clientY-drag.sy);_viewMoved=true;panRender();return;}
   if(drag.kind==="guide"){const gd=state.guides[drag.idx];if(gd)gd.pos=gd.axis==="x"?p0.x:p0.y;renderAll();return;}
-  if(drag.kind==="penHandle"&&penDraft){if(state.tool==="curve"){renderAll();return;}const a=penDraft.anchors[drag.idx];const dx=p0.x-a.x,dy=p0.y-a.y;if(Math.hypot(dx,dy)>3){a.hOut={x:a.x+dx,y:a.y+dy};a.hIn={x:a.x-dx,y:a.y-dy};}renderAll();return;}
+  if(drag.kind==="penHandle"&&penDraft){if(state.tool==="curve"){lightRender([penDraft]);return;}const a=penDraft.anchors[drag.idx];const dx=p0.x-a.x,dy=p0.y-a.y;if(Math.hypot(dx,dy)>3){a.hOut={x:a.x+dx,y:a.y+dy};a.hIn={x:a.x-dx,y:a.y-dy};}lightRender([penDraft]);return;}
   if(drag.kind==="shapebuilder"){drag.pts.push(p0);renderAll();const ui=stage.querySelector(".sel-ui")||el("g",{class:"sel-ui"});el("path",{d:"M "+drag.pts.map(q=>q.x+" "+q.y).join(" L "),fill:"none",stroke:"#f59e0b","stroke-width":2/state.zoom,"stroke-dasharray":"5 3"},ui);return;}
   if(drag.kind==="measure"){drag.cur=p0;renderAll();const ui=stage.querySelector(".sel-ui")||el("g",{class:"sel-ui"});el("line",{x1:drag.start.x,y1:drag.start.y,x2:p0.x,y2:p0.y,stroke:"#dc2626","stroke-width":1.5/state.zoom},ui);const d=Math.hypot(p0.x-drag.start.x,p0.y-drag.start.y);$("stPos").textContent="距離: "+Math.round(d)+" px（約 "+(d*25.4/96).toFixed(1)+" mm）";return;}
   if(drag.kind==="free"&&freeDraft){ // 細かく拾って（画面上で約2px間隔）その場で曲線近似する。粗い間引き＋直線つなぎが斜め線のカクつきの原因だった
     if(!freeDraft._raw)freeDraft._raw=freeDraft.anchors.map(a=>({x:a.x,y:a.y,p:a.p}));
     const raw=freeDraft._raw;const minScr=freeDraft.type==="brush"?3:2;const minD=minScr/state.zoom;
     const evs=(e.getCoalescedEvents&&e.getCoalescedEvents().length)?e.getCoalescedEvents():[e];
-    evs.forEach(ev=>{const q=toSVG(ev);const last=raw[raw.length-1];if(!last||Math.hypot(q.x-last.x,q.y-last.y)>minD)raw.push({x:q.x,y:q.y,p:(typeof ev.pressure==="number"&&ev.pressure>0)?ev.pressure:undefined});});
-    freeDraft.anchors=catmullAnchors(jitterSmooth(raw));renderAll();return;}
+    let added=false;
+    evs.forEach(ev=>{const q=toSVG(ev);const last=raw[raw.length-1];if(!last||Math.hypot(q.x-last.x,q.y-last.y)>minD){let pv=(typeof ev.pressure==="number"&&ev.pressure>0)?ev.pressure:undefined;
+      if(pv!==undefined&&last&&typeof last.p==="number")pv=last.p+(pv-last.p)*0.45; // A3: 筆圧にも平滑化をかけ、太さの段差・スパイクを消す
+      raw.push({x:q.x,y:q.y,p:pv});added=true;}});
+    if(added&&!drag._freeRaf){ // A3/G7: 増分計算＋部分描画は表示フレームに同期（1フレーム1回）。点の取り込み自体は毎イベント行う
+      drag._freeRaf=requestAnimationFrame(()=>{if(drag)drag._freeRaf=0;if(freeDraft){freeExtend(freeDraft);freeSyncEl(freeDraft);}});}
+    return;}
   if(drag.kind==="lassoMove"){const dx=p0.x-drag.start.x,dy=p0.y-drag.start.y;if(Math.abs(dx)+Math.abs(dy)>0.5)drag.moved=true;
-    (state.lassoAnchors||[]).forEach(en=>{const or=drag.orig[en.oid+":"+en.idx];if(!or)return;const o=state.objects.find(x=>x.id===en.oid);if(!o||!o.anchors||!o.anchors[en.idx])return;const a=o.anchors[en.idx];a.x=or.x+dx;a.y=or.y+dy;if(or.hIn)a.hIn={x:or.hIn.x+dx,y:or.hIn.y+dy};if(or.hOut)a.hOut={x:or.hOut.x+dx,y:or.hOut.y+dy};});renderAll();return;}
+    (state.lassoAnchors||[]).forEach(en=>{const or=drag.orig[en.oid+":"+en.idx];if(!or)return;const o=state.objects.find(x=>x.id===en.oid);if(!o||!o.anchors||!o.anchors[en.idx])return;const a=o.anchors[en.idx];a.x=or.x+dx;a.y=or.y+dy;if(or.hIn)a.hIn={x:or.hIn.x+dx,y:or.hIn.y+dy};if(or.hOut)a.hOut={x:or.hOut.x+dx,y:or.hOut.y+dy};});lightRender(state.objects.filter(o=>(state.lassoAnchors||[]).some(en=>en.oid===o.id)));return;}
   if(drag.kind==="shape"&&shapeDraft){const s=drag.start;let w=p0.x-s.x,h=p0.y-s.y;if(e.shiftKey){const m=Math.max(Math.abs(w),Math.abs(h));w=Math.sign(w||1)*m;h=Math.sign(h||1)*m;}
     if(shapeDraft.type==="polygon"){const m=Math.max(Math.abs(w),Math.abs(h));w=Math.sign(w||1)*m;h=Math.sign(h||1)*m;} // 正多角形：外接する正方形に内接させる（横長・縦長に潰れた多角形にしない）
     if(shapeDraft.type==="line"||shapeDraft.type==="arc"){shapeDraft.x2=s.x+w;shapeDraft.y2=s.y+h;}
-    else{shapeDraft.x=Math.min(s.x,s.x+w);shapeDraft.y=Math.min(s.y,s.y+h);shapeDraft.w=Math.abs(w);shapeDraft.h=Math.abs(h);}renderAll();return;}
+    else{shapeDraft.x=Math.min(s.x,s.x+w);shapeDraft.y=Math.min(s.y,s.y+h);shapeDraft.w=Math.abs(w);shapeDraft.h=Math.abs(h);}lightRender([shapeDraft]);return;}
   if(drag.kind==="erase"){eraseAt(p0);return;}
   if(drag.kind==="marquee"){drag.cur=p0;renderAll();drawMarquee(drag);return;}
   if(drag.kind==="lasso"){drag.cur=p0;if(!drag.pts)drag.pts=[drag.start];const lp=drag.pts[drag.pts.length-1];if(Math.hypot(p0.x-lp.x,p0.y-lp.y)>2.5/state.zoom)drag.pts.push({x:p0.x,y:p0.y});renderAll();drawMarquee(drag);return;}
   if(drag.kind==="anchor"){const o=state.objects.find(x=>x.id===drag.oid);const a=o.anchors[drag.idx];a.x=drag.orig.x+(p0.x-drag.start.x);a.y=drag.orig.y+(p0.y-drag.start.y);
-    if(a.hIn){a.hIn.x+=p0.x-(drag.px||drag.start.x);a.hIn.y+=p0.y-(drag.py||drag.start.y);}if(a.hOut){a.hOut.x+=p0.x-(drag.px||drag.start.x);a.hOut.y+=p0.y-(drag.py||drag.start.y);}drag.px=p0.x;drag.py=p0.y;renderAll();return;}
+    if(a.hIn){a.hIn.x+=p0.x-(drag.px||drag.start.x);a.hIn.y+=p0.y-(drag.py||drag.start.y);}if(a.hOut){a.hOut.x+=p0.x-(drag.px||drag.start.x);a.hOut.y+=p0.y-(drag.py||drag.start.y);}drag.px=p0.x;drag.py=p0.y;lightRender([o]);return;}
   if(drag.kind==="handle"){const o=state.objects.find(x=>x.id===drag.oid);const a=o.anchors[drag.idx];const key=drag.which==="hin"?"hIn":"hOut";a[key]={x:p0.x,y:p0.y};
-    if(e.altKey===false&&a.hIn&&a.hOut){const other=key==="hIn"?"hOut":"hIn";const len=Math.hypot(a[other].x-a.x,a[other].y-a.y);const ang=Math.atan2(a[key].y-a.y,a[key].x-a.x)+Math.PI;a[other]={x:a.x+len*Math.cos(ang),y:a.y+len*Math.sin(ang)};}renderAll();return;}
-  if(drag.kind==="anchorConvert"){const o=state.objects.find(x=>x.id===drag.oid);let bi=0,bd=1e9;o.anchors.forEach((a,i)=>{const d=Math.hypot(a.x-p0.x,a.y-p0.y);if(d<bd){bd=d;bi=i;}});const a=o.anchors[bi];a.hOut={x:a.x+(p0.x-drag.start.x),y:a.y+(p0.y-drag.start.y)};a.hIn={x:a.x-(p0.x-drag.start.x),y:a.y-(p0.y-drag.start.y)};renderAll();return;}
-  if(drag.kind==="rotate"){const o=selObjs()[0];if(o){const c=drag.c||center(o);const target=drag.oid?state.objects.find(x=>x.id===drag.oid):o;const ang=Math.atan2(p0.y-c.y,p0.x-c.x)-(drag.a0||0);target.rotation=(drag.r0||0)+ang*180/Math.PI;if(e.shiftKey)target.rotation=Math.round(target.rotation/15)*15;renderAll();}return;}
-  if(drag.kind==="scale"){const o=selObjs()[0];if(o){const d=Math.hypot(p0.x-drag.c.x,p0.y-drag.c.y);const f=d/drag.d0;o.scaleX=(drag.s0||1)*f;o.scaleY=(drag.s0||1)*f;renderAll();}return;}
-  if(drag.kind==="shear"){const o=selObjs()[0];if(o){o.shear=(drag.sh0||0)+(p0.x-drag.start.x)*0.2;renderAll();}return;}
+    if(e.altKey===false&&a.hIn&&a.hOut){const other=key==="hIn"?"hOut":"hIn";const len=Math.hypot(a[other].x-a.x,a[other].y-a.y);const ang=Math.atan2(a[key].y-a.y,a[key].x-a.x)+Math.PI;a[other]={x:a.x+len*Math.cos(ang),y:a.y+len*Math.sin(ang)};}lightRender([o]);return;}
+  if(drag.kind==="anchorConvert"){const o=state.objects.find(x=>x.id===drag.oid);let bi=0,bd=1e9;o.anchors.forEach((a,i)=>{const d=Math.hypot(a.x-p0.x,a.y-p0.y);if(d<bd){bd=d;bi=i;}});const a=o.anchors[bi];a.hOut={x:a.x+(p0.x-drag.start.x),y:a.y+(p0.y-drag.start.y)};a.hIn={x:a.x-(p0.x-drag.start.x),y:a.y-(p0.y-drag.start.y)};lightRender([o]);return;}
+  if(drag.kind==="rotate"){const o=selObjs()[0];if(o){const c=drag.c||center(o);const target=drag.oid?state.objects.find(x=>x.id===drag.oid):o;const ang=Math.atan2(p0.y-c.y,p0.x-c.x)-(drag.a0||0);target.rotation=(drag.r0||0)+ang*180/Math.PI;if(e.shiftKey)target.rotation=Math.round(target.rotation/15)*15;lightRender([target]);}return;}
+  if(drag.kind==="scale"){const o=selObjs()[0];if(o){const d=Math.hypot(p0.x-drag.c.x,p0.y-drag.c.y);const f=d/drag.d0;o.scaleX=(drag.s0||1)*f;o.scaleY=(drag.s0||1)*f;lightRender([o]);}return;}
+  if(drag.kind==="shear"){const o=selObjs()[0];if(o){o.shear=(drag.sh0||0)+(p0.x-drag.start.x)*0.2;lightRender([o]);}return;}
   if(drag.kind==="resize"){const o=state.objects.find(x=>x.id===drag.oid);const or=drag.orig;const dx=p0.x-drag.start.x,dy=p0.y-drag.start.y;const b=bbox(or);
     let nx=b.x,ny=b.y,nw=b.w,nh=b.h;
     if(drag.dir.includes("e"))nw=b.w+dx;if(drag.dir.includes("s"))nh=b.h+dy;
     if(drag.dir.includes("w")){nx=b.x+dx;nw=b.w-dx;}if(drag.dir.includes("n")){ny=b.y+dy;nh=b.h-dy;}
     if(e.shiftKey&&b.w&&b.h){const f=Math.max(Math.abs(nw/b.w),Math.abs(nh/b.h));nw=b.w*f*(nw<0?-1:1);nh=b.h*f*(nh<0?-1:1);if(drag.dir.includes("w"))nx=b.x+b.w-nw;if(drag.dir.includes("n"))ny=b.y+b.h-nh;}
-    applyBox(o,{x:nx,y:ny,w:Math.max(2,nw),h:Math.max(2,nh)},or);renderAll();return;}
+    applyBox(o,{x:nx,y:ny,w:Math.max(2,nw),h:Math.max(2,nh)},or);lightRender([o]);return;}
   if(drag.kind==="bresize"||drag.kind==="bmove"){const b=state.boards.find(x=>x.id===drag.bid);if(!b){renderAll();return;}
     const o=drag.orig,dx=p0.x-drag.start.x,dy=p0.y-drag.start.y;const th=9/state.zoom;
     const xs=[],ys=[];state.boards.filter(x=>x.id!==b.id).forEach(x=>{xs.push(x.x,x.x+x.w/2,x.x+x.w);ys.push(x.y,x.y+x.h/2,x.y+x.h);});
@@ -12516,12 +12785,21 @@ vp.addEventListener("pointermove",e=>{
       if(drag.dir.includes("w")){const s=snapEdge(nx,xs);if(s!==null){nw=nx+nw-s;nx=s;drag.guideX=s;}}
       if(drag.dir.includes("s")){const s=snapEdge(ny+nh,ys);if(s!==null){nh=s-ny;drag.guideY=s;}}
       if(drag.dir.includes("n")){const s=snapEdge(ny,ys);if(s!==null){nh=ny+nh-s;ny=s;drag.guideY=s;}}
-      b.x=nx;b.y=ny;b.w=Math.max(10,nw);b.h=Math.max(10,nh);}
+      b.x=nx;b.y=ny;b.w=Math.min(10000,Math.max(10,nw));b.h=Math.min(10000,Math.max(10,nh));}
     renderAll();return;}
+  if(drag.kind==="gresize"){ // G5: 全体の外接枠を新しい枠へ写し、選択全員を同じ比率で拡縮する
+    const ub=drag.ub,dx=p0.x-drag.start.x,dy=p0.y-drag.start.y;
+    let nx=ub.x,ny=ub.y,nw=ub.w,nh=ub.h;
+    if(drag.dir.includes("e"))nw=ub.w+dx;if(drag.dir.includes("s"))nh=ub.h+dy;
+    if(drag.dir.includes("w")){nx=ub.x+dx;nw=ub.w-dx;}if(drag.dir.includes("n")){ny=ub.y+dy;nh=ub.h-dy;}
+    if(e.shiftKey&&ub.w&&ub.h){const f=Math.max(Math.abs(nw/ub.w),Math.abs(nh/ub.h));nw=ub.w*f*(nw<0?-1:1);nh=ub.h*f*(nh<0?-1:1);if(drag.dir.includes("w"))nx=ub.x+ub.w-nw;if(drag.dir.includes("n"))ny=ub.y+ub.h-nh;}
+    nw=Math.max(4,nw);nh=Math.max(4,nh);const fx=nw/ub.w,fy=nh/ub.h;drag.moved=true;
+    selObjs().forEach(s=>{const or=drag.orig[s.id];if(!or)return;const ob=bbox(or);if(!ob.w||!ob.h)return;applyBox(s,{x:nx+(ob.x-ub.x)*fx,y:ny+(ob.y-ub.y)*fy,w:ob.w*fx,h:ob.h*fy},or);});
+    lightRender(selObjs());return;}
   if(drag.kind==="move"||drag.kind==="duplicate"){
     if(drag.kind==="duplicate"&&!drag.duplicated){duplicateSel(0,0);drag.duplicated=true;drag.orig={};selObjs().forEach(s=>drag.orig[s.id]=JSON.parse(JSON.stringify(s)));drag.start=p0;}
     const dx=p0.x-drag.start.x,dy=p0.y-drag.start.y;if(Math.abs(dx)+Math.abs(dy)>1)drag.moved=true;
-    selObjs().forEach(s=>{const or=drag.orig[s.id];if(!or)return;moveObjTo(s,or,dx,dy);});renderAll();return;}
+    selObjs().forEach(s=>{const or=drag.orig[s.id];if(!or)return;moveObjTo(s,or,dx,dy);});lightRender(selObjs());return;}
 });
 function moveObjTo(s,or,dx,dy){
   if(s.anchors){s.anchors=or.anchors.map(a=>({x:a.x+dx,y:a.y+dy,hIn:a.hIn?{x:a.hIn.x+dx,y:a.hIn.y+dy}:undefined,hOut:a.hOut?{x:a.hOut.x+dx,y:a.hOut.y+dy}:undefined}));}
@@ -12533,7 +12811,12 @@ function applyBox(o,nb,or){const ob=bbox(or);if(!ob.w||!ob.h)return;const fx=nb.
   else{o.x=nb.x;o.y=nb.y;o.w=nb.w;o.h=nb.h;}
 }
 function drawMarquee(d){const ui=stage.querySelector(".sel-ui")||el("g",{class:"sel-ui"});
-  if(d.kind==="lasso"&&d.pts&&d.pts.length>1){const pts=d.pts.concat([d.cur]);el("path",{d:"M "+pts.map(q=>q.x+" "+q.y).join(" L ")+" Z",fill:"rgba(37,99,235,.07)",stroke:"#2563eb","stroke-width":1.5/state.zoom,"stroke-dasharray":"6 4","stroke-linejoin":"round"},ui);return;}
+  if(d.kind==="lasso"&&d.pts&&d.pts.length>1){const pts=d.pts.concat([d.cur]);el("path",{d:"M "+pts.map(q=>q.x+" "+q.y).join(" L ")+" Z",fill:"rgba(37,99,235,.07)",stroke:"#2563eb","stroke-width":1.5/state.zoom,"stroke-dasharray":"6 4","stroke-linejoin":"round"},ui);
+    /* G3: 囲んでいる途中から「どれが選択されるか」を先行ハイライトする（対象オブジェクト＝橙の破線枠、範囲内の点＝橙丸） */
+    if(d.pts.length>=3){const poly=pts;
+      state.objects.filter(o=>o.visible!==false&&!o._isClipSrc).forEach(o=>{const b=bbox(o);if(polyHitsBBox(poly,b))el("rect",{x:b.x-3,y:b.y-3,width:b.w+6,height:b.h+6,fill:"rgba(245,158,11,.10)",stroke:"#f59e0b","stroke-width":1.6/state.zoom,"stroke-dasharray":"5 3"},ui);});
+      state.objects.filter(o=>o.visible!==false&&!o._isClipSrc).forEach(o=>{effAnchors(o).forEach(a=>{if(pointInPoly(a,poly))el("circle",{cx:a.x,cy:a.y,r:5/state.zoom+2,fill:"#f59e0b",stroke:"#fff","stroke-width":1.5/state.zoom},ui);});});}
+    return;}
   const x=Math.min(d.start.x,d.cur.x),y=Math.min(d.start.y,d.cur.y);el("rect",{x,y,width:Math.abs(d.cur.x-d.start.x),height:Math.abs(d.cur.y-d.start.y),class:"sel-box"},ui);}
 /* なげなわ（点単位選択）用ヘルパー */
 function pointInPoly(pt,poly){let inside=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const xi=poly[i].x,yi=poly[i].y,xj=poly[j].x,yj=poly[j].y;if(((yi>pt.y)!==(yj>pt.y))&&(pt.x<(xj-xi)*(pt.y-yi)/(yj-yi)+xi))inside=!inside;}return inside;}
@@ -12577,8 +12860,10 @@ vp.addEventListener("pointerup",e=>{
     else if(freeDraft.type==="pencil"&&freeDraft.anchors.length>3){ // 確定時：近似で点数を間引きつつ曲線ハンドルを付け直し、滑らかさと軽さを両立
       try{let pts=freeDraft.anchors.map(a=>({x:a.x,y:a.y}));if(typeof window.simplify==="function")pts=window.simplify(pts,0.55,true);if(pts&&pts.length>2)freeDraft.anchors=catmullAnchors(pts);}catch(e){}}
     if(freeDraft)delete freeDraft._raw;freeDraft=null;pushHistory();}
-  if(drag.kind==="shape"&&shapeDraft){if((shapeDraft.w<3&&shapeDraft.h<3)&&(shapeDraft.type!=="line"&&shapeDraft.type!=="arc")){state.objects=state.objects.filter(o=>o.id!==shapeDraft.id);}else{pushHistory();const _sd=shapeDraft;setTimeout(()=>{if(state.objects.some(o=>o.id===_sd.id))toastAction("図形を作成しました。大きさは数値でも指定できます","サイズを数値入力",()=>{state.selected=[_sd.id];openTab("props");renderAll();const tw=$("tW");if(tw){tw.focus();tw.select();}});},60);}shapeDraft=null;}
-  if(["move","resize","rotate","scale","shear","anchor","handle","anchorConvert","guide","bresize","bmove","lassoMove"].includes(drag.kind)&&drag.moved!==false)pushHistory();
+  if(drag.kind==="shape"&&shapeDraft){if((shapeDraft.w<3&&shapeDraft.h<3)&&(shapeDraft.type!=="line"&&shapeDraft.type!=="arc")){state.objects=state.objects.filter(o=>o.id!==shapeDraft.id);}else{pushHistory();const _sd=shapeDraft;setTimeout(()=>{if(state.objects.some(o=>o.id===_sd.id))toastAction("図形を作成しました。大きさを数値で指定することもできます","サイズを数値で指定",()=>{state.selected=[_sd.id];openTab("props");renderAll();const tw=$("tW");if(tw){tw.focus();tw.select();}});},60);}shapeDraft=null;}
+  if(drag.kind==="duplicate"&&drag.altStack&&drag.altStack.length>1&&!drag.duplicated&&!drag.moved){ // E6: Alt+クリック（ドラッグしなかった）＝複製ではなく重なり循環選択
+    const idx=drag.altStack.findIndex(x=>x.id===drag.altTopId);const next=drag.altStack[(idx+1)%drag.altStack.length];if(next){state.selected=[next.id];toast("重なっているオブジェクトを切り替えました（"+(idx+2>drag.altStack.length?1:idx+2)+"/"+drag.altStack.length+"）");}}
+  if(["move","resize","gresize","rotate","scale","shear","anchor","handle","anchorConvert","guide","bresize","bmove","lassoMove"].includes(drag.kind)&&drag.moved!==false)pushHistory();
   drag=null;LIGHT=false;renderAll();
 });
 /* モバイルではブラウザのジェスチャー割り込み等で pointerup ではなく pointercancel が来ることがある。
@@ -12589,15 +12874,55 @@ vp.addEventListener("touchmove",e=>{if(drag||_pinch)e.preventDefault();},{passiv
 vp.addEventListener("dblclick",e=>{const p=toSVG(e);
   const ge=e.target.getAttribute&&e.target.getAttribute("data-guide");if(ge!==null&&ge!==undefined){state.guides.splice(+ge,1);pushHistory();renderAll();return;}
   const o=hitObject(p);if(o&&o.type==="text"){askText(o.text,txt=>{if(txt!==null){o.text=txt;$("textEdit").value=txt;pushHistory();renderAll();}});}});
+/* A1: ホイール／トラックパッドは rAF に集約し、1フレームに1回だけビューを更新する（連続イベントでの再描画の暴走を防ぎ、120Hzでも滑らかにする） */
+let _wheelQ=null,_wheelRaf=0;
 vp.addEventListener("wheel",e=>{e.preventDefault();
   const unit=e.deltaMode===1?16:(e.deltaMode===2?Math.max(120,vp.clientHeight):1);
   const dx=(e.deltaX||0)*unit,dy=(e.deltaY||0)*unit;
-  if(e.ctrlKey){zoomBy(dy<0?1.1:0.9,toSVG(e));return;} // トラックパッドのピンチ／Ctrl+ホイールはズーム
-  if(e.shiftKey){const d=Math.abs(dx)>=Math.abs(dy)?dx:dy;panByScreen(-d,0);return;} // Shift+ホイール＝左右スライド
-  if(dx!==0&&Math.abs(dx)>=Math.abs(dy)){panByScreen(-dx,-dy);return;} // 横方向が主成分のスワイプは両軸そのままスライド（斜め可）
-  zoomBy(e.deltaY<0?1.1:0.9,toSVG(e));},{passive:false});
+  if(!_wheelQ)_wheelQ={dx:0,dy:0,ctrl:false,shift:false,x:e.clientX,y:e.clientY};
+  _wheelQ.dx+=dx;_wheelQ.dy+=dy;_wheelQ.ctrl=_wheelQ.ctrl||e.ctrlKey;_wheelQ.shift=_wheelQ.shift||e.shiftKey;_wheelQ.x=e.clientX;_wheelQ.y=e.clientY;
+  if(!_wheelRaf)_wheelRaf=requestAnimationFrame(_flushWheel);
+},{passive:false});
+function _flushWheel(){_wheelRaf=0;const q=_wheelQ;_wheelQ=null;if(!q)return;
+  const pt=toSVG({clientX:q.x,clientY:q.y});
+  if(q.ctrl){zoomBy(q.dy<0?1.1:0.9,pt);return;} // トラックパッドのピンチ／Ctrl+ホイールはズーム
+  if(q.shift){const d=Math.abs(q.dx)>=Math.abs(q.dy)?q.dx:q.dy;panByScreen(-d,0);return;} // Shift+ホイール＝左右スライド
+  if(q.dx!==0&&Math.abs(q.dx)>=Math.abs(q.dy)){panByScreen(-q.dx,-q.dy);return;} // 横方向が主成分のスワイプは両軸そのままスライド（斜め可）
+  const steps=Math.max(1,Math.min(4,Math.round(Math.abs(q.dy)/100)));
+  zoomBy(Math.pow(q.dy<0?1.1:0.9,steps),pt);}
 /* キャンバス上の右クリックは独自メニュー（入力欄など他の場所では標準メニューを残す） */
-vp.addEventListener("contextmenu",e=>{e.preventDefault();const m=$("ctxMenu");if(!m)return;const sw=vp.closest(".stage-wrap").getBoundingClientRect();m.style.left=Math.max(4,Math.min(e.clientX-sw.left,sw.width-196))+"px";m.style.top=Math.max(4,Math.min(e.clientY-sw.top,sw.height-280))+"px";m.classList.add("show");});
+function showCtxMenu(cx,cy){const m=$("ctxMenu");if(!m)return;const sw=vp.closest(".stage-wrap").getBoundingClientRect();m.style.left=Math.max(4,Math.min(cx-sw.left,sw.width-196))+"px";m.style.top=Math.max(4,Math.min(cy-sw.top,sw.height-280))+"px";m.classList.add("show");}
+vp.addEventListener("contextmenu",e=>{e.preventDefault();showCtxMenu(e.clientX,e.clientY);});
+/* C4: ペン／タッチ共通の長押し（約500ms・ほぼ動かない）で文脈メニューを開く */
+let _lpTimer=null,_lpInfo=null;
+function _lpClear(){if(_lpTimer){clearTimeout(_lpTimer);_lpTimer=null;}_lpInfo=null;}
+vp.addEventListener("pointerdown",e=>{
+  if(e.pointerType!=="touch"&&e.pointerType!=="pen")return;
+  _lpClear();
+  _lpInfo={id:e.pointerId,x:e.clientX,y:e.clientY};
+  _lpTimer=setTimeout(()=>{_lpTimer=null;
+    if(drag&&(drag.kind==="move"||drag.kind==="marquee")&&!drag.moved){drag=null;LIGHT=false;renderAll();showCtxMenu(_lpInfo?_lpInfo.x:e.clientX,_lpInfo?_lpInfo.y:e.clientY);}
+    else if(!drag){showCtxMenu(_lpInfo?_lpInfo.x:e.clientX,_lpInfo?_lpInfo.y:e.clientY);}
+    _lpInfo=null;},500);
+});
+vp.addEventListener("pointermove",e=>{if(_lpInfo&&Math.hypot(e.clientX-_lpInfo.x,e.clientY-_lpInfo.y)>12)_lpClear();});
+vp.addEventListener("pointerup",()=>_lpClear());vp.addEventListener("pointercancel",()=>_lpClear());
+/* C4: ペンのホバーで、最近傍のアンカー／ハンドル（選択中オブジェクト）やオブジェクトを軽くハイライトする */
+let _hoverRaf=0;
+vp.addEventListener("pointermove",e=>{
+  const ring=$("penHoverRing"),box=$("hoverBox");
+  if(e.pointerType!=="pen"||e.buttons!==0||drag){if(ring)ring.style.display="none";if(box)box.style.display="none";return;}
+  if(_hoverRaf)return;_hoverRaf=requestAnimationFrame(()=>{_hoverRaf=0;penHoverAt(e);});
+});
+function penHoverAt(e){const ring=$("penHoverRing"),box=$("hoverBox");if(!ring||!box)return;
+  const p0=toSVG(e);let best=null,bd=28/state.zoom;
+  selObjs().forEach(o=>{if(!o.anchors)return;o.anchors.forEach(a=>{[a,a.hIn,a.hOut].forEach(q=>{if(!q)return;const d=Math.hypot(q.x-p0.x,q.y-p0.y);if(d<bd){bd=d;best=q;}});});});
+  const vr=vp.getBoundingClientRect();
+  if(best){ring.style.display="block";ring.style.left=(vr.left+best.x*state.zoom+state.pan.x)+"px";ring.style.top=(vr.top+best.y*state.zoom+state.pan.y)+"px";box.style.display="none";return;}
+  ring.style.display="none";
+  const o=hitObject(p0);
+  if(o){const b=bbox(o);box.style.display="block";box.style.left=(vr.left+b.x*state.zoom+state.pan.x-3)+"px";box.style.top=(vr.top+b.y*state.zoom+state.pan.y-3)+"px";box.style.width=(b.w*state.zoom+6)+"px";box.style.height=(b.h*state.zoom+6)+"px";}
+  else box.style.display="none";}
 function ctxAction(a){const m=$("ctxMenu");if(m)m.classList.remove("show");if(a==="fit")zoomFit();else if(a==="100")zoom100();else if(a==="undo")undo();else if(a==="redo")redo();else if(a==="paste")pasteSel();else if(a==="all")selectAll();else if(a==="panel")togglePanel();}
 document.addEventListener("pointerdown",e=>{const m=$("ctxMenu");if(m&&m.classList.contains("show")&&!(e.target.closest&&e.target.closest("#ctxMenu")))m.classList.remove("show");},true);
 function eraseAt(p){const o=hitObject(p);if(o&&!layerLocked(o)){state.objects=state.objects.filter(x=>x.id!==o.id);state.selected=state.selected.filter(id=>id!==o.id);renderAll();}}
@@ -12611,6 +12936,41 @@ function smoothPath(o){ // Catmull-Rom to bezier
 /* フリーハンド用：生の点列→（手ぶれの階段成分をならす移動平均）→ Catmull-Rom ハンドル付きアンカー列。
    点の位置そのものは変えずハンドルだけを付けるので、描いている最中から滑らかな曲線として表示できる */
 function jitterSmooth(pts){if(!pts||pts.length<3)return (pts||[]).map(q=>({x:q.x,y:q.y,p:q.p}));return pts.map((q,i)=>{if(i===0||i===pts.length-1)return{x:q.x,y:q.y,p:q.p};const a=pts[i-1],b=pts[i+1];return{x:(a.x+2*q.x+b.x)/4,y:(a.y+2*q.y+b.y)/4,p:q.p};});}
+/* A3/G7: フリーハンドの増分処理。全点再計算をやめ、末尾区間だけを更新する（先行分は確定済みとして凍結）。
+   滑らか化した点 i は生点 i±1 だけで決まり、アンカー i のハンドルは点 i+2 までで決まるため、末尾数点の再計算で全体と等価になる */
+function freeExtend(o){
+  const raw=o._raw;if(!raw||!raw.length)return;if(!o._sm)o._sm=[];
+  const sm=o._sm;
+  for(let i=Math.max(0,raw.length-3);i<raw.length;i++){const q=raw[i];
+    if(i===0||i===raw.length-1)sm[i]={x:q.x,y:q.y,p:q.p};
+    else{const a=raw[i-1],b=raw[i+1];sm[i]={x:(a.x+2*q.x+b.x)/4,y:(a.y+2*q.y+b.y)/4,p:q.p};}}
+  if(o.type==="brush"){ // ブラシは中心線をそのまま保持し（perfect-freehand側が streamline を持つ）、輪郭プレビューを逐次更新する
+    o.anchors=sm.map(q=>{const r={x:q.x,y:q.y};if(typeof q.p==="number")r.p=q.p;return r;});
+    brushPreview(o);
+  }else{ // 鉛筆：末尾6点だけ Catmull-Rom を付け直す
+    const s0=Math.max(0,sm.length-6);const tail=catmullAnchors(sm.slice(s0));
+    o.anchors=(o.anchors||[]).slice(0,s0).concat(tail);
+  }
+}
+/* ブラシの描画中プレビュー：perfect-freehand の輪郭をその場で作り、離した瞬間に形が変わらないよう、確定時と全く同じ計算（last:true＋同じ simplify）で作る */
+function brushPreview(o){
+  if(typeof window.getStroke!=="function")return;
+  try{const hasPres=o.anchors.some(a=>typeof a.p==="number");const pts=o.anchors.map(a=>[a.x,a.y,typeof a.p==="number"?a.p:0.5]);
+    let outline=window.getStroke(pts,{size:(parseFloat($("brushSize").value)||10)*1.7,thinning:0.5,smoothing:0.65,streamline:0.55,simulatePressure:!hasPres,last:true});
+    if(outline&&outline.length>3){if(typeof window.simplify==="function")outline=window.simplify(outline.map(p=>({x:p[0],y:p[1]})),0.7,true).map(p=>[p.x,p.y]);
+      o.customD="M "+outline.map(p=>r2(p[0])+" "+r2(p[1])).join(" L ")+" Z";
+      if(o.fill==="none"||!o.fill||o._pvFill!==o.stroke){o.fill=o.stroke;o._pvFill=o.stroke;}
+      o.closed=true;}
+  }catch(e){}
+}
+/* フリーハンド描画中はドラフトの path だけを書き換える（全体再構築なし） */
+function freeSyncEl(o){
+  const g=objEl(o);const path=g?g.querySelector(":scope > path"):null;
+  if(!path){renderAll();return;}
+  path.setAttribute("d",pathD(o));
+  if(o.type==="brush"&&o.customD){path.setAttribute("fill",o.fill&&o.fill!=="none"?o.fill:"#000");path.setAttribute("stroke","none");path.setAttribute("stroke-width",0);}
+  renderSelection();
+}
 function catmullAnchors(pts){if(!pts||!pts.length)return[];if(pts.length<3)return pts.map(q=>{const r={x:q.x,y:q.y};if(typeof q.p==="number")r.p=q.p;return r;});
   const na=pts.map(q=>{const r={x:q.x,y:q.y};if(typeof q.p==="number")r.p=q.p;return r;});
   for(let i=0;i<na.length;i++){const p0=pts[Math.max(0,i-1)],p1=pts[i],p2=pts[Math.min(pts.length-1,i+1)],p3=pts[Math.min(pts.length-1,i+2)];
@@ -12706,6 +13066,8 @@ function computeFit(){const b=state.boards.find(x=>x.id===state.activeBoard)||st
   try{const fab=$("fabPanel");if(fab){if(fab.style.bottom)fab.style.bottom="";const fcs=getComputedStyle(fab);if(fcs.display!=="none"&&fcs.visibility!=="hidden"){const fr2=fab.getBoundingClientRect(),vr2=vp.getBoundingClientRect();if(fr2.height>0&&vr2.height>0)padB=Math.max(padB,Math.ceil(vr2.bottom-fr2.top)+10);}}}catch(e){}
   // ビューポート上部に重なって食い込む要素（ヒントバー・選択バー等）の実高さを測り、その分だけ上余白を広げて枠の上辺が隠れないようにする
   try{const vr=vp.getBoundingClientRect();["touchHint","ctxBar","fsExit"].forEach(id=>{const e=document.getElementById(id);if(!e)return;const cs=getComputedStyle(e);if(cs.display==="none"||cs.visibility==="hidden")return;const r=e.getBoundingClientRect();if(r.height>0&&r.top<vr.top&&r.bottom>vr.top)padT=Math.max(padT,Math.ceil(r.bottom-vr.top)+10);});}catch(e){}
+  if(eff==="phone"){ /* D5: 上下バーの占有に比率キャップ（固定px余白が画面を圧迫しないように） */
+    padT=Math.min(padT,Math.round(vh*0.20));padB=Math.min(padB,Math.round(vh*0.30));}
   const aw=Math.max(40,vw-padL-padR),ah=Math.max(40,vh-padT-padB);
   const z=clampZoom(Math.min(aw/b.w,ah/b.h)*0.98);
   return{zoom:z,pan:{x:padL+(aw-b.w*z)/2-b.x*z,y:padT+(ah-b.h*z)/2-b.y*z},board:b};}
@@ -12717,7 +13079,10 @@ function toggleZoomMenu(force){const m=$("zoomMenu");if(!m)return;const show=for
 function zoomMenuGo(v){toggleZoomMenu(false);if(v==="fit"){zoomFit();return;}zoomAtScreen(vp.clientWidth/2,vp.clientHeight/2,v);}
 
 /* ============ TOOL SWITCH ============ */
-function setTool(t){state.tool=t;document.querySelectorAll(".tool").forEach(b=>b.classList.toggle("active",b.dataset.tool===t));$("stTool").textContent=TOOLNAMES[t]||t;$("toolHelp").innerHTML=TOOLHELP[t]||(" <b>"+TOOLNAMES[t]+"</b>");if(t!=="pen"&&t!=="curve"&&penDraft){state.objects=state.objects.filter(o=>o.id!==penDraft.id);penDraft=null;}renderAll();}
+function setTool(t){const prev=state.tool;state.tool=t;document.querySelectorAll(".tool").forEach(b=>b.classList.toggle("active",b.dataset.tool===t));$("stTool").textContent=TOOLNAMES[t]||t;$("toolHelp").innerHTML=TOOLHELP[t]||(" <b>"+TOOLNAMES[t]+"</b>");let discarded=false;if(t!=="pen"&&t!=="curve"&&penDraft){state.objects=state.objects.filter(o=>o.id!==penDraft.id);penDraft=null;discarded=true;}
+  /* A4: 末尾の無条件 renderAll をやめ、下書き破棄・選択UIが変わるツール間の切替・選択中オブジェクトがある場合だけ再描画する（ツール切替の体感遅延をなくす） */
+  const uiTools=["direct","anchor","addAnchor","delAnchor","artboard","lasso","rotate","scale","shear","reflect"];
+  if(discarded||state.selected.length||(state.lassoAnchors&&state.lassoAnchors.length)||uiTools.includes(t)||uiTools.includes(prev))renderAll();}
 document.querySelectorAll(".tool").forEach(b=>b.addEventListener("click",()=>setTool(b.dataset.tool)));
 document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".tabpage").forEach(p=>p.classList.remove("active"));$("tab-"+b.dataset.tab).classList.add("active");}));
 /* ドロップダウンを画面（visualViewport）内に必ず収める：右にはみ出す場合は内側へ寄せ、縦はCSSの max-height＋内部スクロールで最後まで辿れる */
@@ -12735,6 +13100,21 @@ document.addEventListener("click",()=>document.querySelectorAll(".dropdown").for
 /* タブレット横向きのドック開閉でキャンバス幅が変わるため、フィット表示中なら追従して再フィットする（手動で動かした表示はそのまま。ラベルとルーラーだけ追従させる） */
 function refitDockSoon(){try{if(!currentDevice||currentDevice.effective!=="tablet"||currentDevice.orientation!=="landscape")return;requestAnimationFrame(()=>{try{drawRulers();updateBoardLabels();layoutFab();if(!_viewMoved)zoomFit();}catch(e){}});}catch(e){}}
 function togglePanel(){$("panel").classList.toggle("open");document.body.classList.toggle("panel-open",$("panel").classList.contains("open"));syncFabLabel();refitDockSoon();}
+/* E10: PC／タブレット横向きドック時の右パネル幅をドラッグで可変にし、幅を記憶する */
+try{const pw=parseInt(localStorage.getItem("vectorKobo.panelW")||"");if(pw>=240&&pw<=560)$("panel").style.width=pw+"px";}catch(e){}
+(function(){const rz=$("panelResizer"),pn=$("panel");if(!rz||!pn)return;
+  rz.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();const x0=e.clientX,w0=pn.getBoundingClientRect().width;try{rz.setPointerCapture(e.pointerId);}catch(err){}
+    const mv=ev=>{pn.style.width=Math.min(560,Math.max(240,w0+(x0-ev.clientX)))+"px";};
+    const up=()=>{rz.removeEventListener("pointermove",mv);rz.removeEventListener("pointerup",up);rz.removeEventListener("pointercancel",up);
+      try{localStorage.setItem("vectorKobo.panelW",String(Math.round(pn.getBoundingClientRect().width)));}catch(err){}
+      try{drawRulers();updateBoardLabels();layoutFab();}catch(err){}};
+    rz.addEventListener("pointermove",mv);rz.addEventListener("pointerup",up);rz.addEventListener("pointercancel",up);});})();
+/* K2: スマホではパネルの頭部を下スワイプしても閉じられるようにする（✕／外側タップと併用） */
+(function(){const head=document.querySelector(".panel-head");if(!head)return;let sy=0,dy=0,tr=false;
+  head.addEventListener("pointerdown",e=>{sy=e.clientY;dy=0;tr=true;});
+  head.addEventListener("pointermove",e=>{if(tr)dy=e.clientY-sy;});
+  const end=()=>{if(tr&&dy>56&&document.body.classList.contains("is-phone")&&$("panel").classList.contains("open"))togglePanel();tr=false;};
+  head.addEventListener("pointerup",end);head.addEventListener("pointercancel",()=>{tr=false;});})();
 function syncFabLabel(){const f=$("fabPanel");if(!f)return;f.textContent=$("panel").classList.contains("open")?"✕ パネルを閉じる":"⚙ パネル";}
 
 /* ============ STYLE UI SYNC ============ */
@@ -12825,7 +13205,10 @@ function addLayer(){const l={id:"l"+Date.now(),name:"レイヤー "+(state.layer
 function deleteLayer(){if(state.layers.length<=1)return notify("レイヤーは最低1つ必要です");state.objects=state.objects.filter(o=>o.layer!==state.activeLayer);state.layers=state.layers.filter(l=>l.id!==state.activeLayer);state.activeLayer=state.layers[0].id;pushHistory();renderAll();}
 function notify(m){const d=document.createElement("dialog");d.innerHTML=`<p>${m}</p><button class="btn primary" onclick="this.closest('dialog').close()">OK</button>`;document.body.appendChild(d);d.showModal();}
 let _toastTimer=null;
-function toast(m){const t=$("toast");if(!t)return;const s=$("toastMsg");if(s)s.textContent=m;else t.textContent=m;const b=$("toastBtn");if(b)b.hidden=true;t.classList.add("show");clearTimeout(_toastTimer);_toastTimer=setTimeout(()=>t.classList.remove("show"),2200);}
+function toast(m){const t=$("toast");if(!t)return;const s=$("toastMsg");if(s)s.textContent=m;else t.textContent=m;const b=$("toastBtn");if(b)b.hidden=true;t.classList.add("show");clearTimeout(_toastTimer);
+  /* D4: 表示時間は文字数に応じて伸ばし、数値を含む結果は少し長めに残す */
+  const dur=Math.min(6000,2200+Math.max(0,String(m).length-18)*90+(/\d/.test(m)?600:0));
+  _toastTimer=setTimeout(()=>t.classList.remove("show"),dur);}
 function toastAction(m,label,fn,ms){const t=$("toast");if(!t)return;const s=$("toastMsg");if(s)s.textContent=m;const b=$("toastBtn");if(b){b.hidden=false;b.textContent=label;b.onclick=()=>{clearTimeout(_toastTimer);t.classList.remove("show");if(fn)fn();};}t.classList.add("show");clearTimeout(_toastTimer);_toastTimer=setTimeout(()=>t.classList.remove("show"),ms||5000);}
 function askConfirm(m,cb){const d=document.createElement("dialog");d.innerHTML=`<p style="line-height:1.7">${esc(m)}</p><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" data-a="no">キャンセル</button><button class="btn primary" data-a="ok">OK</button></div>`;document.body.appendChild(d);d.querySelector('[data-a="no"]').addEventListener("click",()=>d.close());d.querySelector('[data-a="ok"]').addEventListener("click",()=>{d.close();if(cb)cb();});d.addEventListener("close",()=>d.remove());d.showModal();}
 function clearSelection(){state.selected=[];renderAll();}
@@ -12836,7 +13219,8 @@ const DRAFT_KEY="vectorKobo.draft.v1";let _draftTimer=null;
 function saveDraftSoon(){clearTimeout(_draftTimer);_draftTimer=setTimeout(saveDraft,700);}
 function stripHistForDraft(data){if(!data)return blankDocData();const c=JSON.parse(JSON.stringify(data));c.history=[];c.hIndex=-1;return c;}
 let _emgAt=0;
-function rotateEmergency(str){const now=Date.now();if(now-_emgAt<60000)return;_emgAt=now;try{const e1=localStorage.getItem("vectorKobo.emg.1");if(e1)localStorage.setItem("vectorKobo.emg.2",e1);const e0=localStorage.getItem("vectorKobo.emg.0");if(e0)localStorage.setItem("vectorKobo.emg.1",e0);localStorage.setItem("vectorKobo.emg.0",str);}catch(e){}}
+let _emgHoldUntil=0; // B2: 下書きを破棄しても、緊急バックアップはしばらく（10分）上書きしない
+function rotateEmergency(str){const now=Date.now();if(now<_emgHoldUntil)return;if(now-_emgAt<60000)return;_emgAt=now;try{const e1=localStorage.getItem("vectorKobo.emg.1");if(e1)localStorage.setItem("vectorKobo.emg.2",e1);const e0=localStorage.getItem("vectorKobo.emg.0");if(e0)localStorage.setItem("vectorKobo.emg.1",e0);localStorage.setItem("vectorKobo.emg.0",str);}catch(e){}}
 function saveDraft(){const el=$("stSave");try{const cur=docs.find(d=>d.id===activeDocId);if(cur)cur.data=captureDocData();
   const pack={v:1,savedAt:Date.now(),activeDocId,docs:docs.map(d=>({id:d.id,name:d.name,data:stripHistForDraft(d.data)}))};
   const str=JSON.stringify(pack);const tm=new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
@@ -12863,8 +13247,10 @@ function restoreDraft(){try{const d=JSON.parse(localStorage.getItem(DRAFT_KEY)||
   const target=docs.find(x=>x.id===act)||docs[docs.length-1];
   activeDocId=target.id;applyDocData(target.data);
   $("restoreBar").hidden=true;renderDocTabs();fitIfMobile();toast(docs.length+"件のドキュメントを復元しました");maybeShowLicenseBar();}catch(e){toast("下書きを復元できませんでした");}}
-function discardDraft(){try{localStorage.removeItem(DRAFT_KEY);}catch(e){}$("restoreBar").hidden=true;saveDraftSoon();maybeShowLicenseBar();}
+function discardDraft(){ // B2: 破棄には確認を挟み、緊急バックアップは即座に上書きしない
+  askConfirm("前回の作業（下書き）を破棄しますか？破棄すると、この下書きからは復元できなくなります。",()=>{try{localStorage.removeItem(DRAFT_KEY);}catch(e){}_emgHoldUntil=Date.now()+10*60000;$("restoreBar").hidden=true;saveDraftSoon();maybeShowLicenseBar();toast("下書きを破棄しました");});}
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveDraft();});
+window.addEventListener("pagehide",()=>{try{saveDraft();}catch(e){}}); // B3: ページを閉じる／離れる直前にも下書き保存する
 
 /* ============ MULTIPLE DOCUMENTS（Illustrator風に複数ドキュメントをタブで同時オープン） ============ */
 let docs=[],activeDocId=null,docSeq=0,_tabSig="";
@@ -12974,11 +13360,14 @@ function resizeArtboard(){const b=state.boards.find(x=>x.id===state.activeBoard)
   const nx=parseDim($("abX").value,b.x),ny=parseDim($("abY").value,b.y);
   let nw=Math.max(10,parseDim($("abW").value,b.w)),nh=Math.max(10,parseDim($("abH").value,b.h));
   if(abLockOn())nh=nw/(b.w/b.h);
-  b.x=nx;b.y=ny;b.w=nw;b.h=nh;pushHistory();renderAll();syncBoardInputs();toast(`アートボードを ${Math.round(nw)} × ${Math.round(nh)} px にしました`);}
-function resizeActiveBoardTo(w,h){const b=state.boards.find(x=>x.id===state.activeBoard);if(!b)return;b.w=w;b.h=h;pushHistory();renderAll();syncBoardInputs();toast(`「${b.name}」を ${w} × ${h} px に変更しました`);}
+  let clamped=false;if(nw>10000){nw=10000;clamped=true;}if(nh>10000){nh=10000;clamped=true;} /* B4: 上限10000px */
+  b.x=nx;b.y=ny;b.w=nw;b.h=nh;pushHistory();renderAll();syncBoardInputs();
+  if(clamped)toast("アートボードの上限は 10000px です（"+Math.round(nw)+" × "+Math.round(nh)+" px に収めました）");
+  else toast(`アートボードを ${Math.round(nw)} × ${Math.round(nh)} px にしました`);}
+function resizeActiveBoardTo(w,h){const b=state.boards.find(x=>x.id===state.activeBoard);if(!b)return;w=Math.min(10000,Math.max(10,w));h=Math.min(10000,Math.max(10,h));b.w=w;b.h=h;pushHistory();renderAll();syncBoardInputs();toast(`「${b.name}」を ${w} × ${h} px に変更しました`);}
 function addArtboardFromPreset(){const s=$("abPresetAdd");if(!s)return;const pr=s.value.split("x").map(Number);if(pr.length===2&&pr[0]>0&&pr[1]>0)addArtboardPreset(pr[0],pr[1]);}
 function abStep(which,dir,ev){const b=state.boards.find(x=>x.id===state.activeBoard);if(!b)return;const r=b.w/b.h;const step=(abUnit()==="mm"?PXMM:1)*((ev&&ev.shiftKey)?10:1)*dir;
-  if(which==="w"){b.w=Math.max(10,b.w+step);if(abLockOn())b.h=b.w/r;}else{b.h=Math.max(10,b.h+step);if(abLockOn())b.w=b.h*r;}
+  if(which==="w"){b.w=Math.min(10000,Math.max(10,b.w+step));if(abLockOn())b.h=b.w/r;}else{b.h=Math.min(10000,Math.max(10,b.h+step));if(abLockOn())b.w=b.h*r;}
   pushHistory();renderAll();syncBoardInputs();}
 const _abUnitEl=$("abUnit");if(_abUnitEl)_abUnitEl.addEventListener("change",syncBoardInputs);
 
@@ -12986,7 +13375,8 @@ const _abUnitEl=$("abUnit");if(_abUnitEl)_abUnitEl.addEventListener("change",syn
 function deleteSel(){const before=state.objects.length;state.objects=state.objects.filter(o=>!state.selected.includes(o.id)||layerLocked(o));const n=before-state.objects.length;state.selected=[];pushHistory();renderAll();if(n>0)toastAction(n+" 個のオブジェクトを削除しました","元に戻す",()=>undo());}
 function selectAll(){state.selected=state.objects.map(o=>o.id);renderAll();}
 function copySel(){state.clipboard=selObjs().map(o=>JSON.parse(JSON.stringify(o)));}
-function pasteSel(){const news=state.clipboard.map(o=>{const n=JSON.parse(JSON.stringify(o));n.id=nid();if(n.anchors)n.anchors.forEach(a=>{});offsetObj(n,24,24);return n;});state.objects.push(...news);state.selected=news.map(o=>o.id);pushHistory();renderAll();}
+function pasteSel(inPlace){const news=state.clipboard.map(o=>{const n=JSON.parse(JSON.stringify(o));n.id=nid();n.layer=state.activeLayer; /* E7: 貼り付け先は常にアクティブレイヤー */ if(!inPlace)offsetObj(n,24,24);return n;});state.objects.push(...news);state.selected=news.map(o=>o.id);pushHistory();renderAll();}
+function cutSel(){if(!selObjs().length)return;copySel();deleteSel();} /* E7: 切り取り（Ctrl+X） */
 function offsetObj(o,dx,dy){if(o.anchors)o.anchors.forEach(a=>{a.x+=dx;a.y+=dy;if(a.hIn){a.hIn.x+=dx;a.hIn.y+=dy;}if(a.hOut){a.hOut.x+=dx;a.hOut.y+=dy;}});else{o.x+=dx;o.y+=dy;if(o.x2!==undefined){o.x2+=dx;o.y2+=dy;}}}
 function duplicateSel(dx,dy){copySel();const off=dx===undefined?16:dx;state.clipboard.forEach(o=>offsetObj(o,off,dy===undefined?16:dy));const news=state.clipboard.map(o=>{o.id=nid();return o;});state.objects.push(...news);state.selected=news.map(o=>o.id);if(dx===undefined){pushHistory();renderAll();}}
 function clearArtboard(){state.objects=state.objects.filter(o=>o.board!==state.activeBoard);state.selected=[];pushHistory();renderAll();}
@@ -13003,7 +13393,12 @@ function toggleHideSel(){selObjs().forEach(o=>o.visible=false);state.selected=[]
 function transformSel(kind){selObjs().forEach(o=>{if(kind==="flipH")o.scaleX=(o.scaleX||1)*-1;if(kind==="flipV")o.scaleY=(o.scaleY||1)*-1;if(kind==="rot90")o.rotation=(o.rotation||0)+90;if(kind==="rot-90")o.rotation=(o.rotation||0)-90;if(kind==="big"){o.scaleX=(o.scaleX||1)*1.2;o.scaleY=(o.scaleY||1)*1.2;}if(kind==="small"){o.scaleX=(o.scaleX||1)*0.8;o.scaleY=(o.scaleY||1)*0.8;}});pushHistory();renderAll();}
 
 /* align / distribute */
-function alignSel(mode){const s=selObjs();if(s.length<2)return;const boxes=s.map(bbox);const X1=Math.min(...boxes.map(b=>b.x)),X2=Math.max(...boxes.map(b=>b.x+b.w)),Y1=Math.min(...boxes.map(b=>b.y)),Y2=Math.max(...boxes.map(b=>b.y+b.h));
+function alignSel(mode){const s=selObjs();if(s.length<2)return;const boxes=s.map(bbox);
+  /* E5: 整列の基準（選択範囲／アートボード／キーオブジェクト＝最後に選んだもの） */
+  const basis=($("alignBasis")||{}).value||"selection";let X1,X2,Y1,Y2;
+  if(basis==="board"){const b=state.boards.find(x=>x.id===state.activeBoard)||state.boards[0];X1=b.x;X2=b.x+b.w;Y1=b.y;Y2=b.y+b.h;}
+  else if(basis==="key"){const key=state.objects.find(o=>o.id===state.selected[state.selected.length-1])||s[s.length-1];const kb=bbox(key);X1=kb.x;X2=kb.x+kb.w;Y1=kb.y;Y2=kb.y+kb.h;}
+  else{X1=Math.min(...boxes.map(b=>b.x));X2=Math.max(...boxes.map(b=>b.x+b.w));Y1=Math.min(...boxes.map(b=>b.y));Y2=Math.max(...boxes.map(b=>b.y+b.h));}
   s.forEach((o,i)=>{const b=boxes[i];let tx=b.x,ty=b.y;
     if(mode==="left")tx=X1;if(mode==="right")tx=X2-b.w;if(mode==="hcenter")tx=(X1+X2)/2-b.w/2;
     if(mode==="top")ty=Y1;if(mode==="bottom")ty=Y2-b.h;if(mode==="vcenter")ty=(Y1+Y2)/2-b.h/2;
@@ -13038,7 +13433,7 @@ function makeClip(){const s=selObjs();if(s.length<2)return notify("マスクに�
 function releaseClip(){selObjs().forEach(o=>o.clipOf=null);state.objects.forEach(o=>{if(state.selected.includes(o.clipOf))o.clipOf=null;});pushHistory();renderAll();}
 function outlineSel(){if(!selObjs().length)return toast("まずオブジェクトを選んでください");askConfirm("アウトライン化すると、文字や図形がアンカーポイントのパスに変換され、文字としての編集はできなくなります。（「元に戻す」Ctrl+Z では戻せます）",doOutlineSel);}
 function doOutlineSel(){selObjs().forEach(o=>{if(o.type==="text"){const b=bbox(o);const c={...o,type:"path",anchors:[{x:b.x,y:b.y},{x:b.x+b.w,y:b.y},{x:b.x+b.w,y:b.y+b.h},{x:b.x,y:b.y+b.h}],closed:true,name:"アウトライン（文字）",customD:null};Object.assign(o,c);}
-  else if(["rect","ellipse","polygon","star","line"].includes(o.type)){o.customD=shapePathD(o);const anchors=pathAnchorsFromD(o);o.anchors=anchors;o.type="path";o.closed=true;}});pushHistory();renderAll();notify("アウトライン化しました。アンカー編集ツールで点の編集ができます。");}
+  else if(["rect","ellipse","polygon","star","line"].includes(o.type)){const wl=o.type==="line";o.anchors=anchorsForShape(o);o.customD=null;o.type="path";o.closed=!wl;}});pushHistory();renderAll();notify("アウトライン化しました。アンカー編集ツールで点の編集ができます。");} /* K3: アウトライン化でも頂点数を保持（多角形→四角形化を防止）。customD を残すと点編集が描画に反映されない問題も同時に解消 */
 function expandSel(){selObjs().forEach(o=>{if(o.gradient){o.fill=o.gradient.stops[0].color;o.gradient=null;}});pushHistory();renderAll();}
 function blendSel(){const s=selObjs();if(s.length!==2)return notify("ブレンドは図形をちょうど2つ選択してください");const [a,b]=s;const steps=parseInt($("blendSteps").value)||8;const ba=bbox(a),bb=bbox(b);const news=[];
   for(let i=1;i<steps;i++){const f=i/steps;const n=JSON.parse(JSON.stringify(a));n.id=nid();n.name="ブレンド "+i+"/"+steps;
@@ -13063,12 +13458,23 @@ function clearGuides(){state.guides=[];pushHistory();renderAll();}
 
 /* ============ SANITIZE ============ */
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
-function sanitizeSvgRoot(root){
-  const bad=new Set(["script","foreignobject","iframe","object","embed","link","meta","style","animate","set"]);
-  const walk=node=>{[...node.children].forEach(ch=>{if(bad.has(ch.tagName.toLowerCase())){ch.remove();return;}
+/* H（Aegisライト）: 取り込み口の構造検査。除去件数を _aegisRemoved に数え、結果は必ず利用者へ表示する */
+let _aegisRemoved=0;
+function sanitizeSvgRoot(root){_aegisRemoved=0;
+  const bad=new Set(["script","foreignobject","iframe","object","embed","link","meta","style","animate","set","animatecolor","animatemotion","animatetransform"]);
+  const walk=node=>{[...node.children].forEach(ch=>{if(bad.has(ch.tagName.toLowerCase())){ch.remove();_aegisRemoved++;return;}
     [...ch.attributes].forEach(at=>{const n=at.name.toLowerCase(),v=(at.value||"").trim().toLowerCase();
-      if(n.startsWith("on")||((n==="href"||n==="xlink:href")&&(v.startsWith("javascript:")||v.startsWith("data:text/html")))||(n==="style"&&(v.includes("javascript:")||v.includes("expression("))))ch.removeAttribute(at.name);});
+      let rm=n.startsWith("on")||(n==="style"&&(v.includes("javascript:")||v.includes("expression(")||v.includes("url(")));
+      if(!rm&&(n==="href"||n==="xlink:href")){ /* 外部参照（http/https/プロトコル相対/file）と危険スキームを除去。#参照と data:image/* の埋め込み画像は残す */
+        if(v.startsWith("javascript:")||v.startsWith("data:text/html")||v.startsWith("http:")||v.startsWith("https:")||v.startsWith("//")||v.startsWith("file:"))rm=true;
+        else if(v.startsWith("data:")&&!v.startsWith("data:image/"))rm=true;}
+      if(rm){ch.removeAttribute(at.name);_aegisRemoved++;}});
     walk(ch);});};walk(root);return root;}
+function aegisReport(removed){ /* H2: 検査結果は必ず表示する（黙って処理しない） */
+  if(removed>0)toast("Aegis検査：危険な要素 "+removed+" 件を除去して取り込みました");
+  else toast("Aegis検査：問題は見つかりませんでした");}
+function checkImportSize(f,label){ /* H3/B1: 異常に大きいファイルは理由を表示して止める（上限20MB） */
+  if(f&&f.size>20*1024*1024){toast(label+"が大きすぎます（"+(f.size/1048576).toFixed(1)+"MB）。上限は20MBです。小さくしてから読み込んでください");return false;}return true;}
 function sanitizeSvgInnerString(s){try{const d=new DOMParser().parseFromString('<svg xmlns="http://www.w3.org/2000/svg">'+(s||"")+"</svg>","image/svg+xml");const r=d.querySelector("svg");sanitizeSvgRoot(r);return r.innerHTML;}catch(e){return "";}}
 /* ============ EXPORT / IMPORT ============ */
 function buildExportSVG(){
@@ -13118,28 +13524,61 @@ function applyExportLockUI(){
 window.addEventListener("beforeprint",()=>{if(!isLicensed()){try{document.documentElement.dataset.lic="trial";}catch(e){}}});
 function download(name,blob){if(!requireLicense("ファイルの保存"))return false;const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);return true;}
 function licenseExportNote(){try{const l=getLicense();if(l&&l.id)return;if(localStorage.getItem("vectorKobo.licenseAsked"))return;localStorage.setItem("vectorKobo.licenseAsked","1");setTimeout(()=>toast("試用モードで書き出しました。気に入ったら「表示」メニューの製品情報からライセンス登録ができます"),900);}catch(e){}}
-function exportFile(kind){if(!requireLicense("書き出し"))return;
-  const b0=state.boards.find(x=>x.id===state.activeBoard);const sizeNote=b0?("実寸 約 "+(b0.w*25.4/96).toFixed(1)+" × "+(b0.h*25.4/96).toFixed(1)+" mm"):"";
-  const svg=buildExportSVG();
-  if(kind==="svg"){download("vector-art.svg",new Blob([svg],{type:"image/svg+xml"}));toast("SVGを書き出しました（"+sizeNote+"／ベクターのまま保存されます）");licenseExportNote();return;}
-  const b=state.boards.find(x=>x.id===state.activeBoard);
+/* E3: 書き出しファイル名は「ドキュメント名_ボード名_YYYYMMDD-HHmm」で自動生成する（全形式・プロジェクト共通） */
+function expFileName(ext,board){const doc=docs.find(d=>d.id===activeDocId);const dn=((doc?doc.name:"無題")||"無題").replace(/[\\/:*?"<>|\s]+/g,"_");
+  const b=board||state.boards.find(x=>x.id===state.activeBoard)||state.boards[0];const bn=((b?b.name:"ボード")||"ボード").replace(/[\\/:*?"<>|\s]+/g,"_");
+  const d=new Date();const p=n=>String(n).padStart(2,"0");const ts=d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+"-"+p(d.getHours())+p(d.getMinutes());
+  return dn+"_"+bn+"_"+ts+"."+ext;}
+function saveExpMem(patch){try{const cur=JSON.parse(localStorage.getItem("vectorKobo.export")||"{}");localStorage.setItem("vectorKobo.export",JSON.stringify(Object.assign(cur,patch)));}catch(e){}} /* E4: 書き出し設定の記憶 */
+function exportFile(kind){if(!requireLicense("書き出し"))return;saveExpMem({kind});
+  if(($("expScope")||{}).value==="all"&&state.boards.length>1){exportAllBoards(kind);return;} /* E4: 全ボード一括書き出し */
+  const b=state.boards.find(x=>x.id===state.activeBoard)||state.boards[0];
+  exportBoardFile(kind,b,buildExportSVG(),false);
+}
+function exportAllBoards(kind){const cur=state.activeBoard;const list=state.boards.slice();let i=0;
+  const next=()=>{if(i>=list.length){state.activeBoard=cur;toast("全ボード（"+list.length+"件）を書き出しました");return;}
+    const b=list[i++];state.activeBoard=b.id;exportBoardFile(kind,b,buildExportSVG(),true);setTimeout(next,400);};
+  next();}
+function exportBoardFile(kind,b,svg,quiet){if(!b)return;
+  const sizeNote="実寸 約 "+(b.w*25.4/96).toFixed(1)+" × "+(b.h*25.4/96).toFixed(1)+" mm";
+  if(kind==="svg"){download(expFileName("svg",b),new Blob([svg],{type:"image/svg+xml"}));if(!quiet){toast("SVGを書き出しました（"+sizeNote+"／ベクターのまま保存されます）");licenseExportNote();}return;}
   const mmW=parseFloat(($("expMmW")||{}).value)||0;const dpi=parseInt(($("expDpi")||{}).value)||0;
   let scale=parseFloat($("exportScale").value)||2;
   if(mmW>0)scale=(mmW/25.4*(dpi||300))/b.w;else if(dpi>0)scale=dpi/96;
   scale=Math.min(scale,12000/Math.max(b.w,b.h));
-  const img=new Image();const url=URL.createObjectURL(new Blob([svg],{type:"image/svg+xml"}));
-  img.onload=()=>{const cv=document.createElement("canvas");cv.width=b.w*scale;cv.height=b.h*scale;const ctx=cv.getContext("2d");if(kind==="jpg"){ctx.fillStyle="#fff";ctx.fillRect(0,0,cv.width,cv.height);}ctx.drawImage(img,0,0,cv.width,cv.height);cv.toBlob(bl=>{download("vector-art."+kind,bl);toast(kind.toUpperCase()+"を書き出しました（"+cv.width+"×"+cv.height+"px／"+sizeNote+"）");licenseExportNote();},"image/"+(kind==="jpg"?"jpeg":"png"),0.92);URL.revokeObjectURL(url);};
-  img.src=url;
+  const outW=Math.max(1,Math.round(b.w*scale)),outH=Math.max(1,Math.round(b.h*scale));
+  const go=()=>{const img=new Image();const url=URL.createObjectURL(new Blob([svg],{type:"image/svg+xml"}));
+    img.onload=()=>{const cv=document.createElement("canvas");cv.width=outW;cv.height=outH;const ctx=cv.getContext("2d");if(kind==="jpg"){ctx.fillStyle="#fff";ctx.fillRect(0,0,cv.width,cv.height);}ctx.drawImage(img,0,0,cv.width,cv.height);cv.toBlob(bl=>{download(expFileName(kind,b),bl);if(!quiet){toast(kind.toUpperCase()+"を書き出しました（"+cv.width+"×"+cv.height+"px／"+sizeNote+"）");licenseExportNote();}},"image/"+(kind==="jpg"?"jpeg":"png"),0.92);URL.revokeObjectURL(url);};
+    img.onerror=()=>toast("書き出しに失敗しました（画像化できませんでした）");
+    img.src=url;};
+  /* B4: 短辺が極端に小さい場合は、書き出す前に px 数を示して確認する */
+  if(Math.min(outW,outH)<240&&!quiet){toastAction("書き出しサイズは "+outW+"×"+outH+" px です。短辺が小さいため、粗く見える場合があります","このまま書き出す",go);return;}
+  go();
 }
 function copySvgCode(){if(!requireLicense("SVGコードのコピー"))return;navigator.clipboard&&navigator.clipboard.writeText(buildExportSVG()).then(()=>notify("SVGコードをコピーしました"));}
 function saveProject(){if(!requireLicense("プロジェクト保存"))return false;download("vector-project.json",new Blob([JSON.stringify({boards:state.boards,layers:state.layers,objects:state.objects,guides:state.guides,uid},null,2)],{type:"application/json"}));return true;}
-$("loadProj").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{let d;try{d=JSON.parse(t);}catch(err){toast("プロジェクトファイルを読み込めませんでした");return;}if(!d||!Array.isArray(d.boards)||!Array.isArray(d.layers)||!Array.isArray(d.objects)){toast("プロジェクトの形式が正しくありません");return;}
+$("loadProj").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;if(!checkImportSize(f,"プロジェクトファイル")){e.target.value="";return;}f.text().then(t=>{let d;try{d=JSON.parse(t);}catch(err){toast("プロジェクトファイルを読み込めませんでした");return;}if(!d||!Array.isArray(d.boards)||!Array.isArray(d.layers)||!Array.isArray(d.objects)){toast("プロジェクトの形式が正しくありません");return;}
   const data=normalizeDocData(d);data.objects.forEach(o=>{if(o.svgInner)o.svgInner=sanitizeSvgInnerString(o.svgInner);});if(d.uid)uid=Math.max(uid,d.uid);
   const doc=createDoc((f.name||"プロジェクト").replace(/\.json$/i,""),data);e.target.value="";toast("「"+doc.name+"」を新しいドキュメントとして開きました");});});
-$("importSvg").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{const doc=new DOMParser().parseFromString(t,"image/svg+xml");const root=doc.querySelector("svg");const vb=(root.getAttribute("viewBox")||"0 0 400 400").split(/\s+/).map(Number);
-  sanitizeSvgRoot(root);const o=baseObj("svgImport",{x:120,y:120,w:vb[2]||400,h:vb[3]||400,scale:1,svgInner:root.innerHTML,name:"読み込んだSVG",fill:"none",stroke:"none"});o.scale=Math.min(600/(vb[2]||400),1);o.w=(vb[2]||400)*o.scale;o.h=(vb[3]||400)*o.scale;
-  state.objects.push(o);state.selected=[o.id];pushHistory();renderAll();});});
-$("importImg").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const sc=Math.min(500/im.width,500/im.height,1);const o=baseObj("image",{x:120,y:120,w:im.width*sc,h:im.height*sc,href:r.result,name:f.name,fill:"none",stroke:"none"});state.objects.push(o);state.selected=[o.id];pushHistory();renderAll();};im.src=r.result;};r.readAsDataURL(f);});
+$("importSvg").addEventListener("change",e=>{const f=e.target.files[0];e.target.value="";if(!f)return;if(!checkImportSize(f,"SVGファイル"))return;f.text().then(t=>{const doc=new DOMParser().parseFromString(t,"image/svg+xml");const root=doc.querySelector("svg");
+  if(!root||doc.querySelector("parsererror")){toast("SVGを読み込めませんでした（ファイルが壊れているか、SVG形式ではありません）");return;} /* B4: 無言失敗をなくす */
+  sanitizeSvgRoot(root);const removed=_aegisRemoved;
+  if(!root.innerHTML.trim()){toast("SVGを読み込めませんでした（中身が空です）");return;}
+  const vb=(root.getAttribute("viewBox")||"0 0 400 400").split(/\s+/).map(Number);
+  const o=baseObj("svgImport",{x:120,y:120,w:vb[2]||400,h:vb[3]||400,scale:1,svgInner:root.innerHTML,name:"読み込んだSVG",fill:"none",stroke:"none"});o.scale=Math.min(600/(vb[2]||400),1);o.w=(vb[2]||400)*o.scale;o.h=(vb[3]||400)*o.scale;
+  state.objects.push(o);state.selected=[o.id];pushHistory();renderAll();aegisReport(removed);});});
+$("importImg").addEventListener("change",e=>{const f=e.target.files[0];e.target.value="";if(!f)return;if(!checkImportSize(f,"画像ファイル"))return;
+  /* B1: 読み込み時に長辺2048pxへリサイズしてから data URL 化する（巨大な写真で下書き・履歴が肥大化するのを防ぐ）。「原寸で読み込む」明示チェック時のみ原寸 */
+  const orig=$("imgOrigSize")&&$("imgOrigSize").checked;
+  const url=URL.createObjectURL(f);const im=new Image();
+  im.onload=()=>{URL.revokeObjectURL(url);
+    const place=(href,w,h,note)=>{const sc=Math.min(500/w,500/h,1);const o=baseObj("image",{x:120,y:120,w:Math.round(w*sc),h:Math.round(h*sc),href,name:f.name,fill:"none",stroke:"none"});state.objects.push(o);state.selected=[o.id];pushHistory();renderAll();toast("画像を配置しました"+(note?"（"+note+"）":""));aegisReport(0);};
+    const maxSide=Math.max(im.width,im.height);
+    if(orig||maxSide<=2048){const r=new FileReader();r.onload=()=>place(r.result,im.width,im.height,orig&&maxSide>2048?"原寸のまま読み込み":"");r.onerror=()=>toast("画像を読み込めませんでした");r.readAsDataURL(f);}
+    else{try{const sc2=2048/maxSide;const cv=document.createElement("canvas");cv.width=Math.round(im.width*sc2);cv.height=Math.round(im.height*sc2);cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);
+      place(cv.toDataURL(/png/i.test(f.type)?"image/png":"image/jpeg",0.92),cv.width,cv.height,"長辺2048pxに縮小しました： "+im.width+"×"+im.height+" → "+cv.width+"×"+cv.height+"px");}catch(err){toast("画像の縮小に失敗しました");}}};
+  im.onerror=()=>{URL.revokeObjectURL(url);toast("画像を読み込めませんでした（対応していない形式か、ファイルが壊れています）");}; /* B4: 失敗を必ず知らせる */
+  im.src=url;});
 
 /* ============ STARTER ============ */
 function loadStarter(){
@@ -13155,18 +13594,22 @@ function loadStarter(){
 }
 
 /* ============ KEYBOARD ============ */
+let _arrowBurst=0;
 window.addEventListener("keydown",e=>{
   const typing=/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
   if(e.key===" "&&!typing){spaceDown=true;e.preventDefault();}
   if(typing)return;
   const mod=e.ctrlKey||e.metaKey;
   if(mod&&e.key.toLowerCase()==="p"&&!isLicensed()){e.preventDefault();requireLicense("印刷");return;}
-  if(mod&&e.key.toLowerCase()==="s"){e.preventDefault();saveDraft();if(saveProject())toast("プロジェクトを保存しました");return;}
+  if(mod&&e.key.toLowerCase()==="s"){e.preventDefault();saveDraft();toast("下書きを保存しました ✓（ファイルとして残す場合は「ファイル」メニューの「プロジェクトを保存」）");return;} /* E2: Ctrl+S は下書き保存のみ。ファイルのダウンロードは明示的なメニュー操作に分離 */
   if(mod&&e.key.toLowerCase()==="n"){e.preventDefault();newDoc();return;}
   if(mod&&e.key.toLowerCase()==="z"){e.preventDefault();e.shiftKey?redo():undo();return;}
   if(mod&&e.key.toLowerCase()==="y"){e.preventDefault();redo();return;}
   if(mod&&e.key.toLowerCase()==="c"){copySel();return;}
-  if(mod&&e.key.toLowerCase()==="v"){pasteSel();return;}
+  if(mod&&e.key.toLowerCase()==="x"){e.preventDefault();cutSel();return;} /* E7: 切り取り */
+  if(mod&&e.key.toLowerCase()==="v"){e.shiftKey?pasteSel(true):pasteSel();return;} /* E7: Ctrl+Shift+V は同じ位置に貼り付け */
+  if(mod&&e.key==="]"){e.preventDefault();e.shiftKey?bringToFront():stepForward();return;} /* E8: Ctrl+] 1つ前面／Ctrl+Shift+] 最前面 */
+  if(mod&&e.key==="["){e.preventDefault();e.shiftKey?sendToBack():stepBackward();return;} /* E8: Ctrl+[ 1つ背面／Ctrl+Shift+[ 最背面 */
   if(mod&&e.key.toLowerCase()==="d"){e.preventDefault();duplicateSel();return;}
   if(mod&&e.key.toLowerCase()==="a"){e.preventDefault();selectAll();return;}
   if(mod&&e.key.toLowerCase()==="g"){e.preventDefault();e.shiftKey?ungroupSel():groupSel();return;}
@@ -13175,7 +13618,12 @@ window.addEventListener("keydown",e=>{
   if(e.key==="Delete"||e.key==="Backspace"){deleteSel();return;}
   if(e.key==="Enter"&&penDraft){if(state.tool==="curve")smoothCurveDraft();penDraft.fill=curStyle().fill;penDraft=null;pushHistory();renderAll();return;}
   if(e.key==="Escape"){if(penDraft){state.objects=state.objects.filter(o=>o.id!==penDraft.id);penDraft=null;renderAll();}state.selected=[];renderAll();return;}
-  if(e.key.startsWith("Arrow")){e.preventDefault();const st=e.shiftKey?10:1;const dx=e.key==="ArrowLeft"?-st:e.key==="ArrowRight"?st:0,dy=e.key==="ArrowUp"?-st:e.key==="ArrowDown"?st:0;selObjs().forEach(o=>{const c=JSON.parse(JSON.stringify(o));moveObjTo(o,c,dx,dy);});renderAll();return;}
+  if(e.key.startsWith("Arrow")){e.preventDefault();const st=e.shiftKey?10:1;const dx=e.key==="ArrowLeft"?-st:e.key==="ArrowRight"?st:0,dy=e.key==="ArrowUp"?-st:e.key==="ArrowDown"?st:0;if(!selObjs().length)return;selObjs().forEach(o=>{const c=JSON.parse(JSON.stringify(o));moveObjTo(o,c,dx,dy);});
+    /* E1: 矢印キーの微調整も Undo 履歴に記録する。連続入力（900ms以内の連打）は1回分にまとめる */
+    const nowA=Date.now();
+    if(_arrowBurst&&nowA-_arrowBurst<900&&state.hIndex>=0){state.history[state.hIndex]=snapshot();updateUndoBtns();saveDraftSoon();}
+    else pushHistory();
+    _arrowBurst=nowA;renderAll();return;}
   const k=e.key.toLowerCase();
   if(!mod&&e.shiftKey&&k==="m"){setTool("shapebuilder");return;}
   if(!mod&&e.shiftKey&&k==="o"){setTool("artboard");return;}
@@ -13207,12 +13655,12 @@ function detectDevice(){
   const isAndroidTablet=isAndroid&&!/Mobile/.test(ua);
   const isMobileUA=isIPhone||isAndroidPhone||/webOS|BlackBerry|IEMobile|Opera Mini/i.test(ua);
   let type="desktop";
-  if(isMobileUA||w<640) type="phone";
-  else if(isIPad||isAndroidTablet||(isTouch&&w<1180)||w<1024) type="tablet";
+  if(isMobileUA) type="phone";
+  else if(isIPad||isAndroidTablet) type="tablet"; /* iPad の Split View 等の狭幅でも phone にはせず、タブレットUIの狭幅版にする */
+  else if(fine) type="desktop"; /* E9: マウス（fine ポインタ）が主入力なら、ウィンドウ幅が狭くても desktop 扱いを維持する */
+  else if(w<640) type="phone";
+  else if(w<1180) type="tablet";
   else type="desktop";
-  // A large touch laptop with a mouse stays desktop
-  if(fine&&w>=1280&&!isIPad&&!isAndroidTablet) type="desktop";
-  if(w>=1024&&fine&&!isMobileUA&&!isIPad&&!isAndroidTablet&&w>=1024&&type==="phone") type="tablet";
   // 境界帯はタブレット寄りに倒し、境界付近では直前の判定を維持する（ヒステリシス：幅が閾値±28px以内なら切替しない）
   if(isTouch&&!isMobileUA&&w>=600&&w<720&&type==="phone") type="tablet";
   const _prevType=window._devTypePrev;
@@ -13289,7 +13737,7 @@ function handleViewportChange(reason){
   const effNow=d.effective;
   if(before!==null&&before!==effNow){
     applyDeviceUI("type-change");
-    requestAnimationFrame(()=>{try{zoomFit();}catch(e){}});
+    if(!_viewMoved)requestAnimationFrame(()=>{try{zoomFit();}catch(e){}}); /* E9: 手動で動かした表示は、種別が変わっても倍率・位置を維持する */
   }
   // On phones, a width change means rotation / a different visible area: re-fit so the whole artboard stays visible.
   // Height-only changes (browser chrome showing/hiding while scrolling) do not trigger a re-fit.
@@ -13315,7 +13763,7 @@ try{
   window.matchMedia("(max-width: 1023px)").addEventListener("change",()=>handleViewportChange("breakpoint"));
 }catch(e){}
 document.addEventListener("DOMContentLoaded",()=>{});
-$("uiModeSelect").addEventListener("change",e=>{uiModeOverride=e.target.value;handleViewportChange("mode-change");requestAnimationFrame(()=>{try{zoomFit();}catch(err){}});});
+$("uiModeSelect").addEventListener("change",e=>{uiModeOverride=e.target.value;handleViewportChange("mode-change");}); /* E9: UIモード変更時はズーム／パンを保持する（再フィットは回転時のみ） */
 
 $("textDlgOk").addEventListener("click",()=>{const v=$("textDlgInput").value;$("textDlg").close();if(_textCb)_textCb(v);_textCb=null;});
 $("textDlgCancel").addEventListener("click",()=>{$("textDlg").close();if(_textCb)_textCb(null);_textCb=null;});
@@ -13328,11 +13776,31 @@ function _bindZoomBtn(id,dir){const b=$(id);if(!b)return;let t1=null,t2=null;con
   ["pointerup","pointerleave","pointercancel"].forEach(ev=>b.addEventListener(ev,clear));}
 _bindZoomBtn("zoomInBtn",1);_bindZoomBtn("zoomOutBtn",-1);
 const _pointers=new Map();let _pinch=null,_gestureLock=false,_lastTap=null,_penDown=false,_mtap=null;
+let _penSeen=false;const _palmIds=new Set();
 function cancelGestureDrag(){if(shapeDraft){state.objects=state.objects.filter(o=>o.id!==shapeDraft.id);shapeDraft=null;}if(freeDraft){state.objects=state.objects.filter(o=>o.id!==freeDraft.id);freeDraft=null;}if(penDraft){state.objects=state.objects.filter(o=>o.id!==penDraft.id);penDraft=null;}drag=null;}
+/* C3/G1: 2本指・3本指ジェスチャーが始まっても、描きかけの下書きは即削除せず「保留」にする。
+   タップと確定した時だけ破棄し、ピンチ等だった場合は下書きを確定（ペンは継続）して残す */
+let _heldDraft=null;
+function holdDraft(){
+  if(freeDraft)_heldDraft={obj:freeDraft,kind:"free"};
+  else if(shapeDraft)_heldDraft={obj:shapeDraft,kind:"shape"};
+  else if(penDraft)_heldDraft={obj:penDraft,kind:"pen"};
+  drag=null;LIGHT=false;
+}
+function commitHeldDraft(){if(!_heldDraft)return;const h=_heldDraft;_heldDraft=null;
+  if(h.kind==="free"){if(freeDraft===h.obj){delete freeDraft._raw;freeDraft=null;}pushHistory();}
+  else if(h.kind==="shape"){if(shapeDraft===h.obj)shapeDraft=null;pushHistory();}
+  renderAll();}
+function discardHeldDraft(){if(!_heldDraft)return;const h=_heldDraft;_heldDraft=null;
+  state.objects=state.objects.filter(o=>o.id!==h.obj.id);
+  if(freeDraft===h.obj)freeDraft=null;if(shapeDraft===h.obj)shapeDraft=null;if(penDraft===h.obj)penDraft=null;
+  renderAll();}
 function _touchPtrs(){return [..._pointers.values()].filter(r=>r.type==="touch");}
 vp.addEventListener("pointerdown",e=>{
+  if(_palmIds.has(e.pointerId))return; // C2: 掌として除外した接触はピンチ／タップ判定にも数えない
   if(e.pointerType==="pen"){
     /* ペン優先：掌・指の追跡とピンチ候補を破棄してペンを単独ポインタとして扱う（指＋ペンを「ピンチ」と誤判定してペンの描画が消える不具合の修正） */
+    _penSeen=true;
     for(const [pid,r] of [..._pointers]){if(r.type==="touch")_pointers.delete(pid);}
     _pinch=null;_mtap=null;if(!drag)_gestureLock=false;
     _pointers.set(e.pointerId,{x:e.clientX,y:e.clientY,t:Date.now(),moved:0,type:"pen"});return;}
@@ -13341,14 +13809,14 @@ vp.addEventListener("pointerdown",e=>{
   if(e.pointerType==="touch"){
     if(!_mtap)_mtap={t:Date.now(),max:0,moved:0};
     _mtap.max=Math.max(_mtap.max,_touchPtrs().length);
-    if(_mtap.max>=3){ // 3本指タップ候補：描画・パン・ピンチと競合させない（進行中の描画は取り消し、ジェスチャーとして占有する）
+    if(_mtap.max>=3){ // 3本指タップ候補：下書きは即削除せず保留し、全指が上がった時点でタップ条件を満たした場合のみ破棄する（C3）
       if(_pinch)_pinch.tapOk=false;
-      cancelGestureDrag();_pinch=null;_gestureLock=true;LIGHT=false;}
+      holdDraft();_pinch=null;_gestureLock=true;LIGHT=false;}
   }
   const _tps=_touchPtrs();
   if(_tps.length===2&&!_penDown){const ps=_tps;const r=vp.getBoundingClientRect();
     const mx=(ps[0].x+ps[1].x)/2-r.left,my=(ps[0].y+ps[1].y)/2-r.top;
-    cancelGestureDrag();
+    holdDraft(); // G1: 描画中に2本目が触れても線を消さない（タップ確定時のみ破棄、それ以外は確定して残す）
     _pinch={d:Math.max(10,Math.hypot(ps[0].x-ps[1].x,ps[0].y-ps[1].y)),zoom:state.zoom,wx:(mx-state.pan.x)/state.zoom,wy:(my-state.pan.y)/state.zoom,t:Date.now(),tapOk:true};
     _gestureLock=true;LIGHT=true;}});
 vp.addEventListener("pointermove",e=>{const rec=_pointers.get(e.pointerId);if(!rec)return;rec.moved+=Math.hypot(e.clientX-rec.x,e.clientY-rec.y);rec.x=e.clientX;rec.y=e.clientY;
@@ -13362,20 +13830,25 @@ vp.addEventListener("pointermove",e=>{const rec=_pointers.get(e.pointerId);if(!r
     state.zoom=nz;state.pan.x=mx-_pinch.wx*nz;state.pan.y=my-_pinch.wy*nz;
     if(nz!==_oz||state.pan.x!==_opx||state.pan.y!==_opy)_viewMoved=true; // ズームだけでなく2本指の平行移動（斜め含む）でも手動移動として記録し、自動フィットに打ち消されないようにする
     renderAll();}});
-const _endPointer=e=>{if(e.pointerType==="pen")_penDown=false;const rec=_pointers.get(e.pointerId);if(rec&&_mtap)_mtap.moved=Math.max(_mtap.moved,rec.moved);_pointers.delete(e.pointerId);
+const _endPointer=e=>{if(e.pointerType==="pen")_penDown=false;_palmIds.delete(e.pointerId);const rec=_pointers.get(e.pointerId);if(rec&&_mtap)_mtap.moved=Math.max(_mtap.moved,rec.moved);_pointers.delete(e.pointerId);
   if(_pinch&&_touchPtrs().length<2){const wasTap=_pinch.tapOk&&(Date.now()-_pinch.t)<300;_pinch=null;LIGHT=false;
     /* ピンチを片指だけ離した場合は、残った指でそのままパンを継続できるようにする（従来は残った指が無反応になり「効いたり効かなかったり」の原因になっていた）。ただし3本指タップの途中ではパンを始めない */
     if(!wasTap&&_touchPtrs().length===1&&!(_mtap&&_mtap.max>=3)){const rem=_touchPtrs()[0];if(rem)drag={kind:"pan",sx:rem.x,sy:rem.y,px:state.pan.x,py:state.pan.y};}
     state.zoom=clampZoom(state.zoom);renderAll();
-    if(wasTap){undo();toast("2本指タップ：元に戻しました");}}
+    if(wasTap){discardHeldDraft();undo();toast("2本指タップ：元に戻しました");} // G1/C3: タップ確定時のみ保留中の下書きを破棄
+    else commitHeldDraft();} // ピンチ（ズーム／移動）だった場合は下書きを確定して残す
   if(_pointers.size===0){_gestureLock=false;
     if(_mtap){const m=_mtap;_mtap=null;
-      /* 3本指タップで取り消し：3本とも短時間（450ms以内）・ほぼ動いていない（16px未満）ときだけ発動し、描画やピンチとは競合しない */
-      if(m.max===3&&(Date.now()-m.t)<450&&m.moved<16){drag=null;undo();toast("3本指タップ：元に戻しました");}}
-    if(rec&&e.pointerType==="touch"&&Date.now()-rec.t<300&&rec.moved<12&&e.clientX){const r=vp.getBoundingClientRect();const sx=e.clientX-r.left,sy=e.clientY-r.top;const now=Date.now();
-      if(_lastTap&&now-_lastTap.t<350&&Math.hypot(sx-_lastTap.x,sy-_lastTap.y)<48){_lastTap=null;const o=hitObject(toSVG(e));if(!(o&&o.type==="text"))toggleFit100(sx,sy);}
+      /* 3本指タップで取り消し：3本とも短時間（450ms以内）・ほぼ動いていない（16px未満）ときだけ発動。満たさなければ保留中の下書きを復元（確定）して継続する（C3） */
+      if(m.max===3&&(Date.now()-m.t)<450&&m.moved<16){drag=null;discardHeldDraft();undo();toast("3本指タップ：元に戻しました");}
+      else commitHeldDraft();}
+    if(rec&&(e.pointerType==="touch"||e.pointerType==="pen")&&Date.now()-rec.t<300&&rec.moved<12&&e.clientX){const r=vp.getBoundingClientRect();const sx=e.clientX-r.left,sy=e.clientY-r.top;const now=Date.now();
+      /* G1: ダブルタップズームは描画系ツール以外（選択系）でのみ有効にし、描画中・下書きがある間は判定自体を無効化する（描いている線が消える／跳ぶ事故の防止）。C4: 判定に pen も加える */
+      const drawTools=["pen","curve","pencil","brush","rect","ellipse","polygon","star","line","arc","text","eraser","scissors","shapebuilder","measure","addAnchor","delAnchor"];
+      if(_lastTap&&now-_lastTap.t<350&&Math.hypot(sx-_lastTap.x,sy-_lastTap.y)<48){_lastTap=null;
+        if(!drawTools.includes(state.tool)&&!penDraft&&!freeDraft&&!shapeDraft){const o=hitObject(toSVG(e));if(!(o&&o.type==="text"))toggleFit100(sx,sy);}}
       else _lastTap={t:now,x:sx,y:sy};}
-    else if(rec&&e.pointerType==="touch")_lastTap=null;}
+    else if(rec&&(e.pointerType==="touch"||e.pointerType==="pen"))_lastTap=null;}
 };
 vp.addEventListener("pointerup",_endPointer);vp.addEventListener("pointercancel",_endPointer);
 ["gesturestart","gesturechange","gestureend"].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
@@ -13635,7 +14108,7 @@ function importParsedSVG(text,srcName){
   walk(root,[1,0,0,1,0,0],baseLayer);
   return{layers,objects};
 }
-$("importSvgEdit").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{
+$("importSvgEdit").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;if(!checkImportSize(f,"SVGファイル")){e.target.value="";return;}f.text().then(t=>{try{
   const{layers,objects}=importParsedSVG(t,f.name);
   if(!objects.length){toast("取り込める図形が見つかりませんでした");return;}
   let minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9;objects.forEach(o=>{const b=bbox(o);minX=Math.min(minX,b.x);minY=Math.min(minY,b.y);maxX=Math.max(maxX,b.x+b.w);maxY=Math.max(maxY,b.y+b.h);});
@@ -13644,7 +14117,7 @@ $("importSvgEdit").addEventListener("change",e=>{const f=e.target.files[0];if(!f
   data.layers=layers.length?layers:data.layers;data.activeLayer=data.layers[0].id;
   const dx=80+20-minX,dy=60+20-minY;objects.forEach(o=>{o.board="b1";if(!data.layers.some(l=>l.id===o.layer))o.layer=data.activeLayer;offsetObj(o,dx,dy);});
   data.objects=objects;
-  const doc=createDoc(f.name.replace(/\.svg$/i,""),data);e.target.value="";toast("SVGを編集可能な形で開きました（"+objects.length+"個のオブジェクト／"+data.layers.length+"レイヤー）");
+  const doc=createDoc(f.name.replace(/\.svg$/i,""),data);e.target.value="";toast("SVGを編集可能な形で開きました（"+objects.length+"個のオブジェクト／"+data.layers.length+"レイヤー）"+(_aegisRemoved>0?"／Aegis検査：危険な要素 "+_aegisRemoved+" 件を除去":"／Aegis検査：問題なし"));
 }catch(err){toast("SVGを開けませんでした："+(err&&err.message||err));}});});
 
 /* ============ PDF EXPORT（ベクター・CMYK・塗り足し・トンボ・特色・オーバープリント） ============ */
@@ -13780,7 +14253,7 @@ async function buildPDF(){
   addP(te.encode(xref));
   return new Blob(parts,{type:"application/pdf"});
 }
-async function exportPDF(){if(!requireLicense("PDF書き出し"))return;toast("PDFを作成中です…");try{const blob=await buildPDF();download("vector-art.pdf",blob);toast("PDFを書き出しました（"+state.boards.length+"ページ／"+(state.colorMode==="cmyk"?"CMYK":"RGB")+"／塗り足し "+state.bleedMm+"mm）");}catch(e){toast("PDFの作成に失敗しました："+(e&&e.message||e));}}
+async function exportPDF(){if(!requireLicense("PDF書き出し"))return;saveExpMem({kind:"pdf"});toast("PDFを作成中です…");try{const blob=await buildPDF();download(expFileName("pdf"),blob);toast("PDFを書き出しました（"+state.boards.length+"ページ／"+(state.colorMode==="cmyk"?"CMYK":"RGB")+"／塗り足し "+state.bleedMm+"mm）");}catch(e){toast("PDFの作成に失敗しました："+(e&&e.message||e));}}
 
 /* ============ PDF / AI IMPORT（ベクター要素を取り込む） ============ */
 async function extractPdfStreams(buf){
@@ -13854,7 +14327,7 @@ function parsePdfContent(txt,pageH,boardX,boardY){
   }
   return{objects,textSeen};
 }
-$("importPdfAi").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;e.target.value="";
+$("importPdfAi").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;e.target.value="";if(!checkImportSize(f,"PDFファイル"))return;
   try{const buf=await f.arrayBuffer();const head=new TextDecoder("latin1").decode(new Uint8Array(buf).slice(0,2048));
     if(!head.includes("%PDF")){if(head.includes("%!PS")){importEpsText(new TextDecoder("latin1").decode(new Uint8Array(buf)),f.name);return;}
       toast("PDF形式として認識できませんでした。.aiは「PDF互換で保存」されたもののみ開けます");return;}
@@ -13876,7 +14349,7 @@ $("importPdfAi").addEventListener("change",async e=>{const f=e.target.files[0];i
   }catch(err){toast("開けませんでした："+(err&&err.message||err));}});
 
 /* ============ EPS EXPORT / IMPORT ============ */
-function exportEPS(){if(!requireLicense("EPS書き出し"))return;
+function exportEPS(){if(!requireLicense("EPS書き出し"))return;saveExpMem({kind:"eps"});
   const b=state.boards.find(x=>x.id===state.activeBoard)||state.boards[0];
   const S=72/96,W=Math.round(b.w*S),H=Math.round(b.h*S);
   const X=x=>(x-b.x)*S,Y=y=>H-(y-b.y)*S;
@@ -13897,7 +14370,7 @@ function exportEPS(){if(!requireLicense("EPS書き出し"))return;
     else if(hasFill)out+=path+setCol(effFillHex(o),o.cmykFill)+"fill\n";
     else if(hasStroke)out+=path+setCol(o.stroke,null)+`${f3((o.strokeWidth??2)*S)} setlinewidth\nstroke\n`;});
   out+="showpage\n%%EOF\n";
-  download("vector-art.eps",new Blob([out],{type:"application/postscript"}));
+  download(expFileName("eps"),new Blob([out],{type:"application/postscript"}));
   toast("EPSを書き出しました"+(skipped?"（文字・画像 "+skipped+" 件はEPS対象外です）":""));
 }
 function importEpsText(text,name){
@@ -13931,7 +14404,7 @@ function importEpsText(text,name){
   data.objects=objects;createDoc((name||"EPS").replace(/\.eps$/i,""),data);
   toast("EPSから "+objects.length+" 個のパスを取り込みました（簡易対応）");
 }
-$("importEps").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;e.target.value="";f.arrayBuffer().then(buf=>{const head=new TextDecoder("latin1").decode(new Uint8Array(buf).slice(0,1024));if(head.includes("%PDF")){toast("このファイルはPDF形式です。「PDF / AI を開く」から開いてください");return;}importEpsText(new TextDecoder("latin1").decode(new Uint8Array(buf)),f.name);});});
+$("importEps").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;e.target.value="";if(!checkImportSize(f,"EPSファイル"))return;f.arrayBuffer().then(buf=>{const head=new TextDecoder("latin1").decode(new Uint8Array(buf).slice(0,1024));if(head.includes("%PDF")){toast("このファイルはPDF形式です。「PDF / AI を開く」から開いてください");return;}importEpsText(new TextDecoder("latin1").decode(new Uint8Array(buf)),f.name);});});
 
 /* ============ PSD IMPORT（合成画像のみ・自前パーサー） ============ */
 function psdNameDecode(bytes){if(!bytes.length)return "";let ascii=true;for(let i=0;i<bytes.length;i++)if(bytes[i]>=0x80){ascii=false;break;}
@@ -13974,17 +14447,14 @@ function parsePsd(buf){const dv=new DataView(buf);const u8=new Uint8Array(buf);
     px[i*4]=r;px[i*4+1]=g;px[i*4+2]=b;px[i*4+3]=alphaCh?alphaCh[i]:255;}
   cx2.putImageData(imgd,0,0);
   return{width:cols,height:rows,layerNames,canvas:cv};}
-$("importPsd").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;e.target.value="";
+$("importPsd").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;e.target.value="";if(!checkImportSize(f,"PSDファイル"))return;
   try{toast("PSDを読み込んでいます…");const buf=await f.arrayBuffer();const psd=parsePsd(buf);
     const url=psd.canvas.toDataURL("image/png");const sc=Math.min(500/psd.width,500/psd.height,1);
     const o=baseObj("image",{x:120,y:120,w:Math.max(1,Math.round(psd.width*sc)),h:Math.max(1,Math.round(psd.height*sc)),href:url,name:f.name,fill:"none",stroke:"none"});
     if(psd.layerNames.length)o.psdLayers=psd.layerNames.slice();
     state.objects.push(o);state.selected=[o.id];pushHistory();renderAll();
-    if(psd.layerNames.length){const d=document.createElement("dialog");d.innerHTML=`<h3 style="margin-top:0">PSDを読み込みました（合成画像）</h3><div style="font-size:13px;line-height:1.9">
-      <p>「${esc(f.name)}」の合成画像（${psd.width}×${psd.height}px）を配置しました。レイヤーを分離して編集することはできませんが、以下のレイヤー名を読み取って画像オブジェクトに保持しました（プロジェクト保存にも含まれます）。</p>
-      <ul style="margin:4px 0;padding-left:18px">${psd.layerNames.map(n=>`<li>${esc(n||"（名称なし）")}</li>`).join("")}</ul></div>
-      <button class="btn primary" onclick="this.closest('dialog').close()">閉じる</button>`;document.body.appendChild(d);d.addEventListener("close",()=>d.remove());d.showModal();}
-    else toast("PSDの合成画像を配置しました");
+    /* K1: 配置のたびに画面中央へモーダルを出すのをやめ、トースト通知にする（レイヤー名は画像オブジェクトに保持され、プロジェクト保存にも含まれる） */
+    toast("PSDの合成画像を配置しました（"+psd.width+"×"+psd.height+"px"+(psd.layerNames.length?"／レイヤー名 "+psd.layerNames.length+" 件を保持":"")+"）");aegisReport(0);
   }catch(err){toast("PSDを開けませんでした："+(err&&err.message||err));}});
 
 /* ============ PDF-LIB（読み込んだPDFの情報取得・再保存） ============ */
@@ -14013,7 +14483,9 @@ function inputDialog(title,fields,cb){const d=document.createElement("dialog");d
 /* ============ LICENSE（購入ID登録・フィンガープリント） ============ */
 const LIC_KEY="vectorKobo.license.v1";
 function licenseChecksum(payload){const chars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";let sum=0;const s="VK"+payload;for(let i=0;i<s.length;i++)sum+=s.charCodeAt(i)*(i+1);return chars[sum%36];}
-function validateLicenseKey(key){const m=/^VK-([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9])$/.exec((key||"").trim().toUpperCase());if(!m)return false;return licenseChecksum(m[1]+m[2]+m[3])===m[4];}
+function validateLicenseKey(key){const k=(key||"").trim().toUpperCase();
+  if(/^VK-FB(0[1-9]|1[0-9]|20)$/.test(k))return true; /* G9: フィードバック用コード（VK-FB01〜VK-FB20）でも登録できる */
+  const m=/^VK-([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9])$/.exec(k);if(!m)return false;return licenseChecksum(m[1]+m[2]+m[3])===m[4];}
 function getLicense(){try{return JSON.parse(localStorage.getItem(LIC_KEY)||"null");}catch(e){return null;}}
 /* ---- 端末登録（1ライセンス2台まで＋月1回オンライン確認） ---- */
 const LIC_MAX_DEVICES=2;
@@ -14036,11 +14508,11 @@ function licenseCheckState(l){if(!l||!l.id||!Array.isArray(l.devices))return nul
   const next=(dev.lastCheckedAt||dev.registeredAt||0)+LIC_CHECK_INTERVAL_DAYS*86400000;return{state:Date.now()>next?"check-needed":"ok",dev,next};}
 function licFmtDate(ts){if(!ts)return "—";const d=new Date(ts);return d.getFullYear()+"/"+(d.getMonth()+1)+"/"+d.getDate();}
 function licenseComment(){const l=getLicense();const id=l&&l.id?l.id:"UNREGISTERED-TRIAL";const nm=l&&l.name?(" / "+String(l.name).replace(/-->/g,"")):"";return `<!-- CURVELIA | Purchaser-ID: ${id}${nm} | Licensed copy. Redistribution is prohibited by the license terms. -->`;}
-function maskLicense(id){if(!id)return"";return id.slice(0,7)+"••••-••••-"+id.slice(-1);}
+function maskLicense(id){if(!id)return"";if(/^VK-FB/i.test(id))return id;return id.slice(0,7)+"••••-••••-"+id.slice(-1);}
 function refreshLicenseUI(){const l=getLicense();if(l&&l.id)ensureLicenseDevices(l);const st=$("licStatus");if(st)st.textContent="現在の登録状況："+(l&&l.id?("登録済み（購入ID: "+maskLicense(l.id)+(l.name?"／"+l.name:"")+"）"+licenseDeviceSummary(l)):"未登録（試用モード）");const bar=$("licenseBar");if(bar&&l&&l.id)bar.hidden=true;try{applyExportLockUI();}catch(e){}}
 function licenseDeviceSummary(l){if(!l||!Array.isArray(l.devices))return "";const cs=licenseCheckState(l);let s="／登録端末 "+l.devices.length+"/"+LIC_MAX_DEVICES+"台";if(cs&&cs.state==="check-needed")s+="・月1回のオンライン確認が必要です";else if(cs&&cs.state==="unregistered-device")s+="・この端末は未登録";return s;}
 function openLicenseDialog(){const l=getLicense();if(l){$("licKey").value=l.id||"";$("licName").value=l.name||"";const mine=(l.devices||[]).find(d=>d.devId===getDeviceId());$("licDevName").value=mine?mine.devName:"";}if(!$("licDevName").value)$("licDevName").value=defaultDeviceName();$("licDevId").textContent=getDeviceId();$("licMsg").textContent="";$("licenseDlg").showModal();}
-$("licSave").addEventListener("click",()=>{const key=$("licKey").value.trim().toUpperCase();if(!validateLicenseKey(key)){$("licMsg").innerHTML="<span style='color:#b91c1c'>購入IDの形式が正しくありません（VK-XXXX-XXXX-XXXX-X の形式で、チェック文字が一致するものだけ登録できます）</span>";return;}
+$("licSave").addEventListener("click",()=>{const key=$("licKey").value.trim().toUpperCase();if(!validateLicenseKey(key)){$("licMsg").innerHTML="<span style='color:#b91c1c'>購入IDの形式が正しくありません（VK-XXXX-XXXX-XXXX-X の形式で、チェック文字が一致するもの／フィードバック用コードは VK-FB01〜VK-FB20）</span>";return;}
   const prev=getLicense();const myId=getDeviceId();const devName=($("licDevName").value||"").trim()||defaultDeviceName();
   let devices=(prev&&prev.id===key&&Array.isArray(prev.devices))?prev.devices.slice():[];
   const mine=devices.find(d=>d.devId===myId);
@@ -14049,7 +14521,7 @@ $("licSave").addEventListener("click",()=>{const key=$("licKey").value.trim().to
   else{mine.devName=devName;mine.lastCheckedAt=Date.now();}
   try{localStorage.setItem(LIC_KEY,JSON.stringify({id:key,name:$("licName").value.trim(),at:(prev&&prev.id===key&&prev.at)?prev.at:Date.now(),devices}));localStorage.setItem("vectorKobo.licenseAsked","1");}catch(e){}
   $("licenseDlg").close();refreshLicenseUI();toast("ライセンスを登録し、この端末を紐付けました（登録端末 "+devices.length+"/"+LIC_MAX_DEVICES+"台）");});
-$("licLater").addEventListener("click",()=>{$("licenseDlg").close();try{localStorage.setItem("vectorKobo.licenseAsked","1");}catch(e){}refreshLicenseUI();});
+$("licLater").addEventListener("click",()=>{$("licenseDlg").close();try{localStorage.setItem("vectorKobo.licenseAsked","1");if(!localStorage.getItem("vectorKobo.licenseChoice"))localStorage.setItem("vectorKobo.licenseChoice","deferred");}catch(e){}refreshLicenseUI();});
 $("licDevicesBtn").addEventListener("click",()=>{$("licenseDlg").close();openDeviceManager();});
 function openDeviceManager(){renderDeviceList();$("deviceDlg").showModal();}
 function renderDeviceList(){const w=$("deviceList");if(!w)return;const l=getLicense();const myId=getDeviceId();const info=$("deviceCheckInfo");
@@ -14076,7 +14548,7 @@ $("deviceCheckBtn").addEventListener("click",()=>{const l=getLicense();if(!l||!l
   if(!dev){toast("この端末はまだ登録されていません");return;}
   dev.lastCheckedAt=Date.now();saveLicense(l);renderDeviceList();refreshLicenseUI();
   toast("確認日を更新しました（ライセンスサーバー未接続のため、端末内の記録として保存しています）");});
-function saveProject(){if(!requireLicense("プロジェクト保存"))return false;const l=getLicense();download("vector-project.json",new Blob([JSON.stringify({app:"カーヴェリア（CURVELIA）",version:"5.0",purchaserId:l&&l.id?l.id:"UNREGISTERED-TRIAL",purchaserName:l&&l.name?l.name:"",exportedAt:new Date().toISOString(),boards:state.boards,layers:state.layers,objects:state.objects,guides:state.guides,uid,colorMode:state.colorMode,spotColors:state.spotColors},null,2)],{type:"application/json"}));toast("プロジェクトを保存しました（購入者IDを記録済み）");return true;}
+function saveProject(){if(!requireLicense("プロジェクト保存"))return false;const l=getLicense();download(expFileName("json"),new Blob([JSON.stringify({app:"カーヴェリア（CURVELIA）",version:"5.0",purchaserId:l&&l.id?l.id:"UNREGISTERED-TRIAL",purchaserName:l&&l.name?l.name:"",exportedAt:new Date().toISOString(),boards:state.boards,layers:state.layers,objects:state.objects,guides:state.guides,uid,colorMode:state.colorMode,spotColors:state.spotColors},null,2)],{type:"application/json"}));toast("プロジェクトを保存しました（購入者IDを記録済み）");return true;}
 
 /* ============ PRINT PANEL（CMYK・特色・オーバープリント） ============ */
 function refreshPrintPanel(){const now=$("cmykNow");if(!now)return;const o=selObjs()[0];const op=$("opOverprint"),warn=$("opWarn");
@@ -14241,11 +14713,11 @@ function outlineTextWithFont(){if(!_userFont)return toast("先にフォントフ
   state.objects=state.objects.filter(o=>!sel.includes(o));state.objects.push(...news);state.selected=news.map(n=>n.id);pushHistory();renderAll();toast(count+" 個の文字パスにアウトライン化しました（読み込んだフォント使用）");}
 
 /* ============ FABRICATION（レーザー／ステッカー／検査／試し切り） ============ */
-function exportLaserSVG(){if(!requireLicense("レーザー用SVG書き出し"))return;const b=state.boards.find(x=>x.id===state.activeBoard)||state.boards[0];
+function exportLaserSVG(){if(!requireLicense("レーザー用SVG書き出し"))return;saveExpMem({kind:"laser"});const b=state.boards.find(x=>x.id===state.activeBoard)||state.boards[0];
   const mmInput=$("expMmW");const prev=mmInput.value;mmInput.value=(b.w*25.4/96).toFixed(2);
   let svg=buildExportSVG();mmInput.value=prev;
   svg=svg.replace(/stroke="(?!none")[^"]*"/g,'stroke="#ff0000"').replace(/stroke-width="[^"]*"/g,'stroke-width="0.1"');
-  download("vector-laser.svg",new Blob([svg],{type:"image/svg+xml"}));toast("レーザー用SVGを書き出しました（mm実寸／赤＝カット線・ヘアライン）");}
+  download(expFileName("svg").replace(/\.svg$/,"-laser.svg"),new Blob([svg],{type:"image/svg+xml"}));toast("レーザー用SVGを書き出しました（mm実寸／赤＝カット線・ヘアライン）");}
 function cutlineLayer(){let l=state.layers.find(x=>x.name==="カットライン");if(!l){l={id:"lcut"+Date.now(),name:"カットライン",visible:true,locked:false};state.layers.push(l);}return l;}
 function createCutline(){const sel=selObjs().filter(o=>o.type!=="text"&&o.type!=="image");if(!sel.length)return toast("まず図形を選んでください");
   inputDialog("ステッカーのカットライン",[{key:"mm",label:"白フチ（オフセット）の幅 mm",def:2.5,min:0,max:20,step:0.5}],v=>{
@@ -14269,7 +14741,7 @@ function checkExport(){const issues=[],warns=[];const seen=new Map();let dup=0;
     </div><button class="btn primary" onclick="this.closest('dialog').close()">閉じる</button>`;document.body.appendChild(d);d.addEventListener("close",()=>d.remove());d.showModal();}
 /* ============ 用途プリセット／用途別セットアップ／最近のドキュメント／ゆったり ============ */
 function syncPrintInputs(){const cm=$("colorModeSel");if(cm)cm.value=state.colorMode;const bm=$("bleedMm");if(bm)bm.value=state.bleedMm;const ck=$("cropMarksChk");if(ck)ck.checked=state.cropMarks;}
-function applyExportPreset(kind){
+function applyExportPreset(kind){saveExpMem({preset:kind});
   if(kind==="sticker"){state.bleedMm=3;state.cropMarks=true;const d=$("expDpi");if(d)d.value="300";syncPrintInputs();saveDraftSoon();toast("ステッカー用に設定しました：塗り足し3mm／トンボあり／300dpi。カットライン（切り取り線）は「印刷・互換」タブで作成できます");}
   else if(kind==="print"){state.colorMode="cmyk";state.bleedMm=3;state.cropMarks=true;const d=$("expDpi");if(d)d.value="300";syncPrintInputs();saveDraftSoon();toast("印刷入稿用に設定しました：CMYK／塗り足し3mm／トンボあり／300dpi");checkPrintImages();}
   else if(kind==="laser"){state.bleedMm=0;state.cropMarks=false;syncPrintInputs();saveDraftSoon();checkLaser();}
@@ -14393,16 +14865,19 @@ function initCompat(){
   $("bleedMm").addEventListener("change",e=>{state.bleedMm=Math.max(0,Math.min(10,parseFloat(e.target.value)||0));saveDraftSoon();});
   $("cropMarksChk").addEventListener("change",e=>{state.cropMarks=e.target.checked;saveDraftSoon();});
   $("opOverprint").addEventListener("change",e=>{selObjs().forEach(o=>o.overprint=e.target.checked);pushHistory();renderAll();refreshPrintPanel();});
-  if(!hasLic&&!asked){ // 初回案内は一本化：復元バー優先、タッチヒント表示中はライセンス案内を後回し（どちらかを閉じたら出す）
-    const rb=$("restoreBar");const th=$("touchHint");const hintOn=th&&th.style.display!=="none";
-    if(!licBarClosed&&(!rb||rb.hidden)&&!hintOn)$("licenseBar").hidden=false;}
-  else if(!tutDone)setTimeout(()=>{try{startTutorial();}catch(e){}},1000);
-  if(hasLic){try{const _l=getLicense();ensureLicenseDevices(_l);const _cs=licenseCheckState(_l);if(_cs&&_cs.state==="check-needed")setTimeout(()=>toast("月1回のオンライン確認が必要です。製品情報の「登録端末の管理」から確認を実行してください"),1600);}catch(e){}}
+  window._postBoot=function(){ /* 起動フロー（同意書→ライセンス選択→ロック）完了後に表示する通常の案内 */
+    if(!hasLic&&!asked){ // 初回案内は一本化：復元バー優先、タッチヒント表示中はライセンス案内を後回し（どちらかを閉じたら出す）
+      const rb=$("restoreBar");const th=$("touchHint");const hintOn=th&&th.style.display!=="none";
+      if(!licBarClosed&&(!rb||rb.hidden)&&!hintOn)$("licenseBar").hidden=false;}
+    else if(!tutDone)setTimeout(()=>{try{startTutorial();}catch(e){}},1000);
+    if(hasLic){try{const _l=getLicense();ensureLicenseDevices(_l);const _cs=licenseCheckState(_l);if(_cs&&_cs.state==="check-needed")setTimeout(()=>toast("月1回のオンライン確認が必要です。製品情報の「登録端末の管理」から確認を実行してください"),1600);}catch(e){}}};
 }
 
 
 /* ============ 数値入力のUX（タップで全選択／Enterで確定しキャンバスへ） ============ */
-document.addEventListener("focusin",e=>{const t=e.target;if(t&&t.matches&&t.matches('input[type="number"],input[data-num]'))setTimeout(()=>{try{t.select();}catch(_){/* noop */}},0);});
+document.addEventListener("focusin",e=>{const t=e.target;if(!t||!t.matches)return;
+  if(t.closest&&t.closest("#panel"))setTimeout(()=>{try{t.scrollIntoView({block:"nearest"});}catch(_){/* noop */}},60); /* C5: パネル内の入力欄は、見える位置までパネル内をスクロールする */
+  if(t.matches('input[type="number"],input[data-num]'))setTimeout(()=>{try{t.select();}catch(_){/* noop */}},0);});
 document.addEventListener("keydown",e=>{if(e.key==="Enter"){const a=document.activeElement;if(a&&/INPUT|SELECT/.test(a.tagName)&&a.type!=="checkbox"&&a.type!=="color")a.blur();}});
 
 /* ============ INIT ============ */
@@ -14418,10 +14893,145 @@ updateUndoBtns();checkDraft();
 requestAnimationFrame(()=>{applyDeviceUI("init");zoomFit();syncFabLabel();});
 /* 書き出し設定（倍率・dpi・実寸幅）を記憶して次回も使う */
 try{const es=JSON.parse(localStorage.getItem("vectorKobo.export")||"null");
-  if(es){if(es.scale&&$("exportScale"))$("exportScale").value=es.scale;if(es.dpi!==undefined&&es.dpi!==null&&$("expDpi"))$("expDpi").value=es.dpi;if(es.mmW&&$("expMmW"))$("expMmW").value=es.mmW;}
-  const saveEs=()=>{try{localStorage.setItem("vectorKobo.export",JSON.stringify({scale:$("exportScale").value,dpi:$("expDpi").value,mmW:$("expMmW").value}));}catch(e){}};
-  ["exportScale","expDpi","expMmW"].forEach(id=>{const ex=$(id);if(ex)ex.addEventListener("change",saveEs);});}catch(e){}
+  if(es){if(es.scale&&$("exportScale"))$("exportScale").value=es.scale;if(es.dpi!==undefined&&es.dpi!==null&&$("expDpi"))$("expDpi").value=es.dpi;if(es.mmW&&$("expMmW"))$("expMmW").value=es.mmW;if(es.scope&&$("expScope"))$("expScope").value=es.scope;}
+  const saveEs=()=>{saveExpMem({scale:$("exportScale").value,dpi:$("expDpi").value,mmW:$("expMmW").value,scope:$("expScope")?$("expScope").value:"active"});};
+  ["exportScale","expDpi","expMmW","expScope"].forEach(id=>{const ex=$(id);if(ex)ex.addEventListener("change",saveEs);});}catch(e){}
+
+/* ============ I: ダイアログの固定✕（スクロールしても右上に残る） ============ */
+function placeDlgX(d){const b=d._dlgX;if(!b)return;const r=d.getBoundingClientRect();b.style.top=Math.max(4,r.top+8)+"px";b.style.left=(r.right-52)+"px";}
+function enhanceDialog(d){if(!d||d._dlgX||d.dataset.noX)return; /* data-no-x（同意書・初回ライセンス選択）は対象外（J4） */
+  const b=document.createElement("button");b.className="dlg-x";b.type="button";b.textContent="✕";b.setAttribute("aria-label","閉じる");b.title="閉じる";
+  /* 確認ダイアログ（はい／いいえ）では、✕は「閉じる＝キャンセル」として扱い、確定側には倒れない（I3） */
+  b.addEventListener("click",()=>{try{d.close();}catch(e){}});
+  document.body.appendChild(b);d._dlgX=b;b.style.display="none";
+  new MutationObserver(()=>{const open=d.open;b.style.display=open?"flex":"none";if(open)requestAnimationFrame(()=>placeDlgX(d));}).observe(d,{attributes:true,attributeFilter:["open"]});}
+function enhanceAllDialogs(){document.querySelectorAll("dialog").forEach(enhanceDialog);}
+new MutationObserver(ms=>{ms.forEach(m=>m.addedNodes.forEach(n=>{if(!n||!n.tagName)return;if(n.tagName==="DIALOG")enhanceDialog(n);if(n.querySelectorAll)n.querySelectorAll("dialog").forEach(enhanceDialog);}));}).observe(document.body,{childList:true,subtree:true});
+window.addEventListener("resize",()=>document.querySelectorAll("dialog[open]").forEach(placeDlgX));
+
+/* ============ L2: アプリロック（端末内の簡易ロック。PINはハッシュのみ保存／パスキーは WebAuthn） ============ */
+const LOCK_KEY="vectorKobo.lock";
+function getLockCfg(){try{return JSON.parse(localStorage.getItem(LOCK_KEY)||"null");}catch(e){return null;}}
+function saveLockCfg(c){try{localStorage.setItem(LOCK_KEY,JSON.stringify(c));}catch(e){}}
+async function hashPin(pin,salt){const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(salt+":"+pin));return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");}
+function b64enc(buf){const u=new Uint8Array(buf);let str="";u.forEach(b=>str+=String.fromCharCode(b));return btoa(str).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");}
+function b64dec(str){str=str.replace(/-/g,"+").replace(/_/g,"/");while(str.length%4)str+="=";const bin=atob(str);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u.buffer;}
+function updatePasskeyNote(cfg){const note=$("passkeyNote");if(!note)return;cfg=cfg||getLockCfg()||{};
+  const hasPK=!!(window.PublicKeyCredential&&navigator.credentials&&navigator.credentials.create);
+  note.textContent=cfg.passkey?"パスキーは登録済みです（この端末の生体認証／画面ロックで解除できます）。":(hasPK?"パスキーは未登録です。":"このブラウザは WebAuthn（パスキー）に対応していないため、生体認証は使えません。PINをご利用ください。");
+  $("passkeyRegBtn").disabled=!hasPK;$("passkeyDelBtn").disabled=!cfg.passkey;
+  if(hasPK&&PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable){PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then(ok=>{if(!ok){note.textContent="この端末にはプラットフォーム認証器（生体認証・画面ロック）が無いため、パスキー登録はできません。PINをご利用ください。";$("passkeyRegBtn").disabled=true;}}).catch(()=>{});}}
+function openLockSettings(){const cfg=getLockCfg()||{};$("lockEnabled").value=cfg.enabled?"on":"off";$("lockNewPin").value="";$("lockNewPin2").value="";$("lockSetMsg").textContent="";updatePasskeyNote(cfg);$("lockSetDlg").showModal();}
+$("lockSaveBtn").addEventListener("click",async ()=>{const cfg=getLockCfg()||{};const en=$("lockEnabled").value==="on";const p1=$("lockNewPin").value.trim(),p2=$("lockNewPin2").value.trim();
+  if(p1||p2){if(!/^\d{4,6}$/.test(p1)){$("lockSetMsg").innerHTML="<span style='color:#b91c1c'>PINは4〜6桁の数字で入力してください</span>";return;}
+    if(p1!==p2){$("lockSetMsg").innerHTML="<span style='color:#b91c1c'>確認用PINが一致しません</span>";return;}
+    if(!cfg.salt)cfg.salt="s"+Math.random().toString(36).slice(2)+Date.now().toString(36);
+    cfg.pinHash=await hashPin(p1,cfg.salt);}
+  if(en&&!cfg.pinHash&&!cfg.passkey){$("lockSetMsg").innerHTML="<span style='color:#b91c1c'>ロックをオンにするには、PINの設定かパスキー登録が必要です</span>";return;}
+  cfg.enabled=en;saveLockCfg(cfg);$("lockSetMsg").innerHTML="<span style='color:#047857'>保存しました"+(en?"（次回起動時からロックがかかります）":"（ロックはオフです）")+"</span>";});
+$("passkeyRegBtn").addEventListener("click",async ()=>{try{
+  const cfg=getLockCfg()||{};
+  const cred=await navigator.credentials.create({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),rp:{id:location.hostname,name:"カーヴェリア（CURVELIA）"},user:{id:crypto.getRandomValues(new Uint8Array(16)),name:"curvelia-user",displayName:"カーヴェリア利用者"},pubKeyCredParams:[{type:"public-key",alg:-7},{type:"public-key",alg:-257}],authenticatorSelection:{authenticatorAttachment:"platform",userVerification:"preferred",residentKey:"preferred"},timeout:60000}});
+  if(!cred)throw new Error("登録がキャンセルされました");
+  cfg.passkey={credId:b64enc(cred.rawId)};saveLockCfg(cfg);updatePasskeyNote(cfg);
+  $("lockSetMsg").innerHTML="<span style='color:#047857'>パスキーを登録しました</span>";
+ }catch(e){$("lockSetMsg").innerHTML="<span style='color:#b91c1c'>パスキー登録に失敗しました："+esc((e&&e.message)||e)+"</span>";}});
+$("passkeyDelBtn").addEventListener("click",()=>{const cfg=getLockCfg()||{};delete cfg.passkey;if(cfg.enabled&&!cfg.pinHash)cfg.enabled=false;saveLockCfg(cfg);updatePasskeyNote(cfg);$("lockSetMsg").textContent="パスキー登録を削除しました";});
+function showLockScreen(cfg){const ls=$("lockScreen");if(!ls)return;ls.classList.add("show");
+  $("lockPinArea").style.display=cfg.pinHash?"block":"none";
+  $("lockBioArea").style.display=cfg.passkey?"block":"none";
+  $("lockMsg").textContent="";$("lockResetArea").hidden=true;$("lockPinInput").value="";
+  setTimeout(()=>{if(cfg.pinHash){const i=$("lockPinInput");if(i)i.focus();}},120);}
+function unlockApp(){const ls=$("lockScreen");if(ls)ls.classList.remove("show");postBootNotices();}
+$("lockPinBtn").addEventListener("click",async ()=>{const cfg=getLockCfg();if(!cfg||!cfg.pinHash)return;
+  const h=await hashPin($("lockPinInput").value.trim(),cfg.salt||"");
+  if(h===cfg.pinHash){$("lockPinInput").value="";unlockApp();}
+  else{$("lockMsg").textContent="PINが違います。もう一度入力してください。";$("lockPinInput").value="";}});
+$("lockPinInput").addEventListener("keydown",e=>{if(e.key==="Enter")$("lockPinBtn").click();});
+$("lockBioBtn").addEventListener("click",async ()=>{const cfg=getLockCfg();if(!cfg||!cfg.passkey)return;
+  try{const res=await navigator.credentials.get({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),rpId:location.hostname,allowCredentials:[{type:"public-key",id:b64dec(cfg.passkey.credId)}],userVerification:"preferred",timeout:60000}});
+    if(res)unlockApp();else $("lockMsg").textContent="認証できませんでした。";}
+  catch(e){$("lockMsg").textContent="認証がキャンセルされたか、失敗しました："+((e&&e.message)||e);}});
+$("lockForgotBtn").addEventListener("click",()=>{$("lockResetArea").hidden=false;$("lockResetMsg").textContent="";setTimeout(()=>$("lockResetCode").focus(),60);});
+$("lockResetBtn").addEventListener("click",()=>{const code=$("lockResetCode").value.trim().toUpperCase();
+  if(validateLicenseKey(code)){try{localStorage.removeItem(LOCK_KEY);}catch(e){}$("lockResetMsg").innerHTML="<span style='color:#047857'>アプリロックをリセットしました</span>";setTimeout(unlockApp,600);}
+  else $("lockResetMsg").innerHTML="<span style='color:#b91c1c'>ライセンスコードが正しくありません</span>";});
+
+/* ============ M: アプリ化（beforeinstallprompt 捕捉／standalone 判定／端末別案内） ============ */
+let _installPrompt=null,_installFn=null;
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();_installPrompt=e;_installFn=e.prompt.bind(e);updateInstallUI();});
+window.addEventListener("appinstalled",()=>{_installPrompt=null;_installFn=null;updateInstallUI();toast("アプリ化されました。ホーム画面／アプリ一覧から起動できます");});
+function isStandalone(){try{return window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true;}catch(e){return false;}}
+function updateInstallUI(){const done=isStandalone();
+  document.querySelectorAll("[data-install-btn]").forEach(b=>{if(done){b.disabled=true;b.textContent="✅ アプリ化済みです（単独アプリとして起動中）";}else{b.disabled=false;if(b.id==="installGoBtn")b.textContent="📱 アプリ化する";}});
+  const how=$("installHow");if(!how)return;
+  if(done){how.innerHTML="この端末では<b>すでにアプリ化済み</b>です。このまま単独アプリとしてお使いください。";return;}
+  const ua=navigator.userAgent||"";const ios=/iPhone|iPad/.test(ua)||(/Macintosh/.test(ua)&&(navigator.maxTouchPoints||0)>1);
+  if(_installPrompt){how.innerHTML="下の「アプリ化する」ボタンを押すと、インストール確認のダイアログが表示されます。";}
+  else if(ios){how.innerHTML="iPhone／iPad では、インストールダイアログを直接出すことができません。Safari で次の手順で追加してください：<br>1. 画面の <b>共有ボタン（四角に上向き矢印）</b> をタップ<br>2. メニューの <b>「ホーム画面に追加」</b> をタップ<br>3. 右上の <b>「追加」</b> をタップ<br>※ Safari 以外のブラウザで開いている場合は、先に Safari でこのページを開き直してください。";}
+  else if(/Android/.test(ua)){how.innerHTML="Android では、ブラウザのメニュー（︙）から <b>「アプリをインストール」</b> または <b>「ホーム画面に追加」</b> を選んでください。対応ブラウザでは、下のボタンから直接インストール確認が出ます。";}
+  else if(/Firefox/.test(ua)){how.innerHTML="Firefox では、アドレスバーの右側のアイコン、またはメニューの「アプリをインストール／ホーム画面に追加」から追加できます。Chrome／Edge では下のボタンから直接インストールできます。";}
+  else{how.innerHTML="PC（Chrome／Edge）ではアドレスバー右端のインストールアイコンからも追加できます。下のボタンが使えない場合は、ブラウザのメニュー →「アプリをインストール」を選んでください。";}}
+function openInstall(){updateInstallUI();$("installDlg").showModal();}
+async function doInstall(){if(isStandalone())return;
+  if(_installFn){try{await _installFn();await _installPrompt.userChoice;_installPrompt=null;_installFn=null;updateInstallUI();}catch(e){}}
+  else toast("この環境では直接ダイアログを出せません。表示されている手順で追加してください");}
+/* apple-touch-icon（単一HTML内で完結させるため、ロゴを canvas で描いて動的に設定） */
+try{const cv=document.createElement("canvas");cv.width=180;cv.height=180;const x=cv.getContext("2d");x.fillStyle="#14101f";x.fillRect(0,0,180,180);x.lineCap="round";x.lineWidth=15;
+  x.strokeStyle="#6C4CF1";x.beginPath();x.moveTo(126,38);x.bezierCurveTo(74,20,30,58,44,102);x.bezierCurveTo(54,134,92,148,128,132);x.stroke();
+  x.strokeStyle="#00A8A0";x.beginPath();x.moveTo(142,60);x.bezierCurveTo(104,44,66,66,72,100);x.bezierCurveTo(77,126,106,140,136,128);x.stroke();
+  const lk=document.createElement("link");lk.rel="apple-touch-icon";lk.href=cv.toDataURL("image/png");document.head.appendChild(lk);}catch(e){}
+
+/* ============ J: 同意書（初回のみ・同意するまで先へ進めない） ============ */
+let _agreeBoot=false;
+function openAgreement(boot){_agreeBoot=!!boot;const d=$("agreeDlg");if(!d)return;
+  $("agreeOkBtn").hidden=!boot;$("agreeDenyBtn").hidden=!boot;$("agreeDenyMsg").textContent="";
+  /* J4: 「閉じる」ボタンは再読時（メニューから開いた場合）にだけ動的に追加する。初回フローでは DOM にも存在させない（同意する以外で閉じられない状態を厳密に保つ） */
+  let rc=$("agreeReadClose");
+  if(boot){if(rc)rc.remove();}
+  else if(!rc){rc=document.createElement("button");rc.className="btn";rc.id="agreeReadClose";rc.type="button";rc.textContent="閉じる";rc.addEventListener("click",()=>$("agreeDlg").close());$("agreeOkBtn").parentNode.insertBefore(rc,$("agreeOkBtn"));}
+  if(!d.open)try{d.showModal();}catch(e){}}
+$("agreeOkBtn").addEventListener("click",()=>{try{localStorage.setItem("vectorKobo.agreedAt",new Date().toISOString());}catch(e){}$("agreeDlg").close();if(_agreeBoot)firstRunFlow();});
+$("agreeDenyBtn").addEventListener("click",()=>{$("agreeDenyMsg").textContent="ライセンス条件に同意いただけない場合、カーヴェリアはご利用いただけません。内容をご確認のうえ「同意する」を押してください。この画面は「同意する」でのみ閉じられます。";});
+$("agreeDlg").addEventListener("cancel",e=>{if(_agreeBoot)e.preventDefault();}); /* 初回フローでは Esc でも閉じられない */
+
+/* ============ G9: 初回ライセンス選択（コード入力／試用で始める） ============ */
+function openFirstLicenseChoice(){const d=$("firstLicDlg");if(!d||d.open)return;try{d.showModal();}catch(e){}}
+$("firstLicDlg").addEventListener("cancel",e=>{e.preventDefault();}); /* どちらか選ぶまで閉じられない */
+$("firstLicTrial").addEventListener("click",()=>{try{localStorage.setItem("vectorKobo.licenseChoice","trial");localStorage.setItem("vectorKobo.licenseAsked","1");}catch(e){}$("firstLicDlg").close();lockGate();});
+$("firstLicCode").addEventListener("click",()=>{$("firstLicDlg").close();openLicenseDialog();
+  const d=$("licenseDlg");const onClose=()=>{d.removeEventListener("close",onClose);try{if(!localStorage.getItem("vectorKobo.licenseChoice"))localStorage.setItem("vectorKobo.licenseChoice",isLicensed()?"registered":"deferred");}catch(e){}lockGate();};
+  d.addEventListener("close",onClose);});
+
+/* ============ L3/J5: 起動フロー（スプラッシュ → 同意書 → ライセンス選択 → ロック → 本編）。端末種別・下書きの有無で順番は変わらない ============ */
+function postBootNotices(){if(window._postBoot)try{window._postBoot();}catch(e){}}
+function lockGate(){const cfg=getLockCfg();
+  if(cfg&&cfg.enabled&&(cfg.pinHash||cfg.passkey))showLockScreen(cfg);
+  else postBootNotices();}
+function firstRunFlow(){
+  let agreed=false,choiceMade=false;
+  try{agreed=!!localStorage.getItem("vectorKobo.agreedAt");choiceMade=!!localStorage.getItem("vectorKobo.licenseChoice");}catch(e){}
+  if(!agreed){openAgreement(true);return;} /* J1: 同意書が最優先（復元バー・他の案内より前） */
+  if(!isLicensed()&&!choiceMade){openFirstLicenseChoice();return;} /* G9補強: 初回は必ず表示。2回目以降は出さない */
+  lockGate();}
+function bootSequence(){const splash=$("splash");
+  setTimeout(()=>{if(splash)splash.classList.add("hide");setTimeout(()=>{if(splash)splash.remove();},500);firstRunFlow();},950); /* L1: 約1秒で自動的に次へ */
+  setTimeout(()=>{const sp=$("splash");if(sp)sp.remove();},4000);} /* 万一の固着防止 */
+try{enhanceAllDialogs();}catch(e){}
+try{updateInstallUI();}catch(e){}
+
 initCompat();
+bootSequence();
+</script>
+<script>
+/* PWA: Service Worker 登録（配布側で sw.js を用意。無い環境では静かに何もしない） */
+try{
+  if(("serviceWorker" in navigator)&&/^https?:$/.test(location.protocol)){
+    window.addEventListener("load",function(){
+      try{navigator.serviceWorker.register("sw.js").catch(function(){});}catch(e){}
+    });
+  }
+}catch(e){}
 </script>
 </body>
 </html>
