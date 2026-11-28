@@ -342,6 +342,44 @@ body.is-phone .sb-zoomtxt{display:none}
 body.is-phone .statusbar>*{flex-shrink:0}
 body.is-phone .statusbar input[type=range]{flex-shrink:1;min-width:36px}
 body.is-phone .toast{bottom:calc(132px + env(safe-area-inset-bottom))}
+/* ===== iPad／タブレット横向き（ランドスケープ）専用：PC寄りドック配置でキャンバスを最大化 ===== */
+/* 上部バー一式を細くする（topbar＋docbar＋statusbar 合計を画面高の15%以内に収める目安） */
+body.is-tablet.is-landscape .app{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+body.is-tablet.is-landscape .topbar{flex-wrap:nowrap;overflow:visible;padding:3px 8px;gap:4px}
+body.is-tablet.is-landscape .topbar button,body.is-tablet.is-landscape .topbar select,body.is-tablet.is-landscape .topbar input{min-height:32px}
+body.is-tablet.is-landscape .logo{font-size:13px;white-space:nowrap;margin-right:2px}
+body.is-tablet.is-landscape .device-badge{display:none}
+body.is-tablet.is-landscape .prod-badge{display:none}
+body.is-tablet.is-landscape .topbar>.btn{display:none}
+body.is-tablet.is-landscape .ui-mode-wrap{display:none}
+body.is-tablet.is-landscape .menu>button{padding:3px 7px;font-size:12.5px;white-space:nowrap}
+body.is-tablet.is-landscape .dropdown{top:36px;max-height:calc(100dvh - 84px)}
+body.is-tablet.is-landscape .search-wrap{min-width:104px;flex:0 1 132px}
+body.is-tablet.is-landscape .search-wrap input{min-height:32px}
+body.is-tablet.is-landscape .top-quick{flex-wrap:nowrap;gap:5px;margin-left:auto}
+body.is-tablet.is-landscape .top-quick #btnUndo,body.is-tablet.is-landscape .top-quick #btnRedo{display:none}
+body.is-tablet.is-landscape .top-quick .btn{padding:4px 9px;font-size:12px;white-space:nowrap}
+body.is-tablet.is-landscape .docbar{padding:2px 6px 0;gap:4px}
+body.is-tablet.is-landscape .doctab{padding:4px 6px 4px 10px;font-size:11.5px}
+body.is-tablet.is-landscape .doc-nav{padding-bottom:2px}
+body.is-tablet.is-landscape .doc-nav button{min-height:26px;padding:2px 9px}
+body.is-tablet.is-landscape .toolbar{width:76px;padding:6px 4px}
+body.is-tablet.is-landscape .tool{min-height:48px;padding:6px 2px}
+body.is-tablet.is-landscape .ruler-top{height:18px}
+body.is-tablet.is-landscape .ruler-left{width:18px}
+body.is-tablet.is-landscape .touch-hint{padding:4px 8px;font-size:11px;line-height:1.45}
+body.is-tablet.is-landscape .statusbar{padding:2px 8px;font-size:11px;gap:8px;flex-wrap:nowrap;overflow:hidden}
+body.is-tablet.is-landscape .statusbar .btn{min-height:28px;padding:3px 9px;font-size:11.5px}
+body.is-tablet.is-landscape .statusbar .sb-panel{display:inline-flex;align-items:center}
+body.is-tablet.is-landscape .statusbar input[type=range]{width:70px!important}
+/* 右パネルは横向きではスライド式ではなく常駐ドック（.main の flex 子としてキャンバスと横並び）。幅は clamp で作業の邪魔にならない範囲に抑え、畳むと display:none でキャンバスがその分広がる */
+body.is-tablet.is-landscape .panel{position:relative;right:auto;top:auto;bottom:auto;width:clamp(264px,27vw,304px);flex-shrink:0;z-index:5;box-shadow:none;border-left:1px solid var(--line);transform:none;transition:none}
+body.is-tablet.is-landscape .panel:not(.open){display:none}
+body.is-tablet.is-landscape .panel-head{display:flex;padding:6px 10px 0}
+body.is-tablet.is-landscape .tabs button{padding:7px 2px}
+body.is-tablet.is-landscape.panel-open #panelShade{display:none!important}
+body.is-tablet.is-landscape.panel-open .fab-panel{display:none!important}
+body.is-tablet.is-landscape .fab-panel{bottom:14px}
 </style>
 <script>try{var _tm0=localStorage.getItem("vectorKobo.theme")||"system";var _dk0=_tm0==="dark"||(_tm0==="system"&&window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=_dk0?"dark":"light";document.documentElement.dataset.themeMode=_tm0;}catch(e){document.documentElement.dataset.theme="light";}</script>
 </head>
@@ -12612,7 +12650,9 @@ document.querySelectorAll(".dropdown").forEach(dd=>{let _sx=0,_sy=0,_scrolled=fa
   dd.addEventListener("touchmove",e=>{e.stopPropagation();},{passive:true});
   dd.addEventListener("wheel",e=>{e.stopPropagation();},{passive:true});});
 document.addEventListener("click",()=>document.querySelectorAll(".dropdown").forEach(d=>d.classList.remove("open")));
-function togglePanel(){$("panel").classList.toggle("open");document.body.classList.toggle("panel-open",$("panel").classList.contains("open"));syncFabLabel();}
+/* タブレット横向きのドック開閉でキャンバス幅が変わるため、フィット表示中なら追従して再フィットする（手動で動かした表示はそのまま。ラベルとルーラーだけ追従させる） */
+function refitDockSoon(){try{if(!currentDevice||currentDevice.effective!=="tablet"||currentDevice.orientation!=="landscape")return;requestAnimationFrame(()=>{try{drawRulers();updateBoardLabels();layoutFab();if(!_viewMoved)zoomFit();}catch(e){}});}catch(e){}}
+function togglePanel(){$("panel").classList.toggle("open");document.body.classList.toggle("panel-open",$("panel").classList.contains("open"));syncFabLabel();refitDockSoon();}
 function syncFabLabel(){const f=$("fabPanel");if(!f)return;f.textContent=$("panel").classList.contains("open")?"✕ パネルを閉じる":"⚙ パネル";}
 
 /* ============ STYLE UI SYNC ============ */
@@ -13124,22 +13164,34 @@ function applyDeviceUI(reason){
   const badge=$("deviceBadge"); if(badge) badge.title=`${modeNote} ／ 画面 ${info.w}×${info.h} ／ タッチ ${info.isTouch?info.touchPoints+"点対応":"なし"} ／ ポインタ ${info.coarse?"タッチ（太い）":info.fine?"マウス（細かい）":"不明"} ／ 向き ${info.orientation==="portrait"?"縦":"横"}`;
   const sd=$("stDevice"); if(sd) sd.textContent=`${detectedLabel}${info.os?"（"+info.os+"）":""} → ${label.replace("向けUI","")}`;
   const pn=$("panelDeviceNote"); if(pn) pn.textContent=modeNote;
-  const th=$("touchHint"); if(th){ const tt=$("touchHintText"); if(tt)tt.textContent=eff==="phone"?"タッチ操作：1本指で描画・移動 ／ ツールは画面下のバーから選べます。色やレイヤーは右下「パネル」から変更できます。":eff==="tablet"?"タッチ操作：左の大きなツールバーから選べます。色やレイヤーは右下「パネル」から変更できます。":""; let hintClosed=false; try{hintClosed=!!localStorage.getItem("vectorKobo.touchHintClosed");}catch(e){} th.style.display=(!hintClosed&&eff!=="desktop"&&(info.coarse||info.isTouch))?"flex":"none"; }
+  const th=$("touchHint"); if(th){ const tt=$("touchHintText"); if(tt)tt.textContent=eff==="phone"?"タッチ操作：1本指で描画・移動 ／ ツールは画面下のバーから選べます。色やレイヤーは右下「パネル」から変更できます。":eff==="tablet"?(info.orientation==="landscape"?"タッチ操作：左のツールバーから選び、色やレイヤーは右側に常駐のパネルで変更できます。パネルは上部の ✕ で畳めます。":"タッチ操作：左の大きなツールバーから選べます。色やレイヤーは右下「パネル」から変更できます。"):""; let hintClosed=false; try{hintClosed=!!localStorage.getItem("vectorKobo.touchHintClosed");}catch(e){} th.style.display=(!hintClosed&&eff!=="desktop"&&(info.coarse||info.isTouch))?"flex":"none"; }
   // Panel default per device (only on first apply / mode change, not on every resize scroll)
-  if(reason==="init"||reason==="mode-change"||reason==="type-change"){
-    if(eff==="desktop") $("panel").classList.add("open");
-    else $("panel").classList.remove("open");
-    document.body.classList.toggle("panel-open",$("panel").classList.contains("open"));
-    syncFabLabel();
+  // タブレット横向きでは右パネルを常駐ドックとして開く（縦向き・スマホは従来どおり閉じた状態が既定）。
+  // 回転（orientation）時はタブレットだけドック⇔オーバーレイの既定へ切り替え、PC／スマホのパネル状態には触らない。
+  if(reason==="init"||reason==="mode-change"||reason==="type-change"||reason==="orientation"){
+    let touchPanel=true;
+    if(reason==="orientation"&&(eff==="desktop"||eff==="phone")) touchPanel=false;
+    if(touchPanel){
+      if(eff==="desktop") $("panel").classList.add("open");
+      else if(eff==="tablet"&&info.orientation==="landscape") $("panel").classList.add("open");
+      else $("panel").classList.remove("open");
+      document.body.classList.toggle("panel-open",$("panel").classList.contains("open"));
+      syncFabLabel();
+    }
   }
   // Rulers are CSS-hidden on phone; redraw when visible
   try{drawRulers();}catch(e){}
   return currentDevice;
 }
-let _lastEff=null,_resizeTimer=null,_fitW=null;
+let _lastEff=null,_resizeTimer=null,_fitW=null,_lastOrient=null;
 function handleViewportChange(reason){
   const before=_lastEff;
-  const d=applyDeviceUI(before&&before!==detectDevice().type?"type-change":reason);
+  // 向き（縦⇔横）が変わったかどうかを先に判定する。回転時はレイアウトだけを切り替え、選択・履歴・編集内容には触らない
+  const _infoNow=detectDevice();
+  const orientChanged=_lastOrient!==null&&_lastOrient!==_infoNow.orientation;
+  const effReason=orientChanged?"orientation":reason;
+  _lastOrient=_infoNow.orientation;
+  const d=applyDeviceUI(before&&before!==detectDevice().type?"type-change":effReason);
   // If effective type changed due to resize (e.g. rotate / window resize), re-fit canvas
   const effNow=d.effective;
   if(before!==null&&before!==effNow){
@@ -13153,6 +13205,11 @@ function handleViewportChange(reason){
   const gestureBusy=(typeof _pinch!=="undefined"&&_pinch)||(typeof _pointers!=="undefined"&&_pointers&&_pointers.size>0);
   if(effNow==="phone"&&_fitW!==null&&Math.abs(wNow-_fitW)>2&&!gestureBusy&&uiModeOverride==="auto"&&(!_viewMoved||reason==="orientation")){
     requestAnimationFrame(()=>{try{if(!_pinch&&_pointers.size===0)zoomFit();}catch(e){}});
+  }
+  // 回転時（タブレット含む）は例外としてフィットし直し、アートボードが新しい表示範囲に必ず収まるようにする。
+  // ズーム／パン以外の状態（選択・Undo履歴・オブジェクト）には一切触れない。レイアウト確定後（2フレーム後）に実行する。
+  if(orientChanged&&(effNow==="tablet"||effNow==="phone")&&!gestureBusy){
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{try{if(!_pinch&&_pointers.size===0)zoomFit();}catch(e){}}));
   }
   _fitW=wNow;
   _lastEff=effNow;
@@ -13834,7 +13891,7 @@ $("importPdfResave").addEventListener("change",async e=>{const f=e.target.files[
   }catch(err){toast("PDFを読み込めませんでした："+(err&&err.message||err));}});
 
 /* ============ UI HELPERS / PANEL TABS ============ */
-function openTab(name){document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x.dataset.tab===name));document.querySelectorAll(".tabpage").forEach(p=>p.classList.remove("active"));const pg=$("tab-"+name);if(pg)pg.classList.add("active");const panel=$("panel");if(panel&&!panel.classList.contains("open")){panel.classList.add("open");syncFabLabel();}}
+function openTab(name){document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x.dataset.tab===name));document.querySelectorAll(".tabpage").forEach(p=>p.classList.remove("active"));const pg=$("tab-"+name);if(pg)pg.classList.add("active");const panel=$("panel");if(panel&&!panel.classList.contains("open")){panel.classList.add("open");document.body.classList.toggle("panel-open",true);syncFabLabel();refitDockSoon();}}
 function inputDialog(title,fields,cb){const d=document.createElement("dialog");d.innerHTML=`<h3 style="margin-top:0">${esc(title)}</h3><div class="dlg-form">${fields.map(f=>`<label>${esc(f.label)} <input type="${f.type||"number"}" data-k="${f.key}" value="${f.def??""}" ${f.min!==undefined?`min="${f.min}"`:""} ${f.max!==undefined?`max="${f.max}"`:""} step="${f.step||1}"></label>`).join("")}</div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px"><button class="btn" data-a="no">キャンセル</button><button class="btn primary" data-a="ok">実行</button></div>`;document.body.appendChild(d);
   d.querySelector('[data-a="no"]').addEventListener("click",()=>d.close());
   d.querySelector('[data-a="ok"]').addEventListener("click",()=>{const out={};d.querySelectorAll("input[data-k]").forEach(inp=>{out[inp.dataset.k]=inp.type==="number"?parseFloat(inp.value):inp.value;});d.close();cb(out);});
@@ -14238,7 +14295,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Enter"){const a=document.act
 /* ============ INIT ============ */
 applyTheme();applyRelaxed();
 window.addEventListener("error",()=>{try{saveDraft();}catch(e){}}); // 異常時も編集状態を緊急保存する
-applyDeviceUI("init");_lastEff=currentDevice?currentDevice.effective:null;syncFabLabel();
+applyDeviceUI("init");_lastEff=currentDevice?currentDevice.effective:null;_lastOrient=currentDevice?currentDevice.orientation:null;syncFabLabel();
 renderSwatches();renderGradEditor();
 docs=[{id:"doc-init",name:"無題-1",data:blankDocData()}];activeDocId="doc-init";docSeq=1;
 applyDocData(docs[0].data);
