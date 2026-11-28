@@ -1,6 +1,6 @@
 /* CURVELIA Service Worker — network-first for the app page so updates arrive,
    cache fallback so the app still opens offline after the first load. */
-const CACHE = 'curvelia-20261128-r2';
+const CACHE = 'curvelia-20261128-r3';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (e) => {
