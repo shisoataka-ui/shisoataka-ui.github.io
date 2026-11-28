@@ -159,6 +159,19 @@ body.is-phone .tabs::-webkit-scrollbar{display:none}
 body.is-phone .tabs button{padding:12px 10px;font-size:13px;flex:none}
 body.is-phone .swatches{grid-template-columns:repeat(6,1fr)}
 body.is-phone dialog{max-width:94vw}
+/* 検証で再現した不具合の修正：幅360pxのスマホではトップバーの「全画面」ボタン右端が画面外へ約11pxはみ出し、端が切れて表示されていた。
+   狭幅ではロゴ・メニュー・レベル選択・全画面ボタンの余白を詰めて全コントロールを画面内に収める */
+@media(max-width:400px){body.is-phone .topbar{padding:4px 4px;gap:1px}body.is-phone .logo{font-size:12px}body.is-phone .menu>button{padding:4px 3px;font-size:11.5px}body.is-phone #levelSelect{max-width:72px}body.is-phone .fs-btn{padding:4px 5px;font-size:11px}}
+/* 検証で再現した不具合の修正：スマホのパネル（ボトムシート）内で、位置・大きさ（X/Y/幅/高さ）とアートボード位置の入力欄が
+   グリッド列を押し広げ、パネル幅390pxに対し内容が555pxまで膨らんで右側の入力欄（Y・高さ等）が画面外に切れていた。
+   列の最小幅を0にし、入力欄を列幅に収める */
+body.is-phone .grid2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+body.is-phone .grid3{grid-template-columns:repeat(3,minmax(0,1fr))}
+body.is-phone .grid2>*,body.is-phone .grid3>*{min-width:0}
+body.is-phone .grid2 label input,body.is-phone .grid3 label input{width:100%;min-width:0;box-sizing:border-box}
+/* 同上：書き出し対象などの長い選択肢を持つ select がラベルごとパネル幅を押し広げないようにする */
+body.is-phone .panel label.small{max-width:100%;min-width:0}
+body.is-phone .panel select{max-width:100%;min-width:0}
 body.is-landscape.is-phone .toolbar{padding-bottom:calc(6px + env(safe-area-inset-bottom))}
 body.is-landscape.is-phone .tool{min-height:48px;min-width:54px}
 body.is-landscape.is-phone .panel{height:86dvh;max-height:86dvh}
@@ -13066,7 +13079,13 @@ function layoutFab(){const fab=$("fabPanel");if(!fab)return;
   nb=Math.min(nb,swr.bottom-(vr.top+4+fr.height));
   fab.style.bottom=Math.round(nb)+"px";
 }
-$("boardLabels").addEventListener("pointerdown",e=>{const c=e.target&&e.target.closest?e.target.closest(".board-chip"):null;if(!c)return;e.stopPropagation();e.preventDefault();if(state.activeBoard!==c.dataset.bid){state.activeBoard=c.dataset.bid;renderAll();renderBoards();}});
+$("boardLabels").addEventListener("pointerdown",e=>{const c=e.target&&e.target.closest?e.target.closest(".board-chip"):null;if(!c)return;e.stopPropagation();e.preventDefault();if(state.activeBoard!==c.dataset.bid){state.activeBoard=c.dataset.bid;renderAll();renderBoards();}_chipDrag={x:e.clientX,y:e.clientY,id:e.pointerId,type:e.pointerType||"touch",fwd:false};});
+/* 検証で再現した不具合の修正：ボード名チップの上で指を動かすと（ドラッグ開始）従来は入力がチップに吸われ、チップの帯（アートボード左上）に重なる範囲では描画・選択を一切始められなかった。
+   タップ（ほぼ動かない）は従来どおりボード切替、7px以上動いたら開始点をキャンバスへ引き継いで通常のドラッグとして扱う */
+let _chipDrag=null;
+window.addEventListener("pointermove",e=>{if(!_chipDrag||_chipDrag.fwd||e.pointerId!==_chipDrag.id)return;if(Math.hypot(e.clientX-_chipDrag.x,e.clientY-_chipDrag.y)<7)return;_chipDrag.fwd=true;try{vp.dispatchEvent(new PointerEvent("pointerdown",{pointerId:_chipDrag.id,pointerType:_chipDrag.type,clientX:_chipDrag.x,clientY:_chipDrag.y,button:0,buttons:1,isPrimary:true,bubbles:true,cancelable:true,pressure:0.5}));}catch(err){}},true);
+window.addEventListener("pointerup",()=>{_chipDrag=null;},true);
+window.addEventListener("pointercancel",()=>{_chipDrag=null;},true);
 
 /* ============ THEME（白／黒／システム） ============ */
 let themeMode="system";
@@ -13239,7 +13258,7 @@ function renderLayers(){const w=$("layerList");if(!w)return;w.innerHTML="";
 function moveLayer(id,dir){const i=state.layers.findIndex(l=>l.id===id);const j=i+dir;if(i<0||j<0||j>=state.layers.length)return;const t=state.layers[i];state.layers[i]=state.layers[j];state.layers[j]=t;pushHistory();renderAll();}
 function addLayer(){const l={id:"l"+Date.now(),name:"レイヤー "+(state.layers.length+1),visible:true,locked:false};state.layers.push(l);state.activeLayer=l.id;pushHistory();renderAll();}
 function deleteLayer(){if(state.layers.length<=1)return notify("レイヤーは最低1つ必要です");state.objects=state.objects.filter(o=>o.layer!==state.activeLayer);state.layers=state.layers.filter(l=>l.id!==state.activeLayer);state.activeLayer=state.layers[0].id;pushHistory();renderAll();}
-function notify(m){const d=document.createElement("dialog");d.innerHTML=`<p>${m}</p><button class="btn primary" onclick="this.closest('dialog').close()">OK</button>`;document.body.appendChild(d);d.showModal();}
+function notify(m){const d=document.createElement("dialog");d.innerHTML=`<p>${m}</p><button class="btn primary" onclick="this.closest('dialog').close()">OK</button>`;document.body.appendChild(d);d.addEventListener("close",()=>d.remove());d.showModal();} /* 閉じた通知ダイアログをDOMに残し続けない（他の確認ダイアログと同仕様に統一） */
 let _toastTimer=null;
 function toast(m){const t=$("toast");if(!t)return;const s=$("toastMsg");if(s)s.textContent=m;else t.textContent=m;const b=$("toastBtn");if(b)b.hidden=true;t.classList.add("show");clearTimeout(_toastTimer);
   /* D4: 表示時間は文字数に応じて伸ばし、数値を含む結果は少し長めに残す */
@@ -13257,7 +13276,8 @@ function stripHistForDraft(data){if(!data)return blankDocData();const c=JSON.par
 let _emgAt=0;
 let _emgHoldUntil=0; // B2: 下書きを破棄しても、緊急バックアップはしばらく（10分）上書きしない
 function rotateEmergency(str){const now=Date.now();if(now<_emgHoldUntil)return;if(now-_emgAt<60000)return;_emgAt=now;try{const e1=localStorage.getItem("vectorKobo.emg.1");if(e1)localStorage.setItem("vectorKobo.emg.2",e1);const e0=localStorage.getItem("vectorKobo.emg.0");if(e0)localStorage.setItem("vectorKobo.emg.1",e0);localStorage.setItem("vectorKobo.emg.0",str);}catch(e){}}
-function saveDraft(){const el=$("stSave");try{const cur=docs.find(d=>d.id===activeDocId);if(cur)cur.data=captureDocData();
+function saveDraft(){const el=$("stSave");const _rb=$("restoreBar");if(_rb&&!_rb.hidden)return; /* 検証で再現した不具合の修正：復元バー表示中（前回の下書きを復元するか決める前）は、起動直後の空の状態で下書きを上書きしない。従来は再読み込み後約1秒で下書きが空に置き換わり、「復元する」を押しても0件しか戻らなかった（保存済みの作業が静かに消える） */
+  try{const cur=docs.find(d=>d.id===activeDocId);if(cur)cur.data=captureDocData();
   const pack={v:1,savedAt:Date.now(),activeDocId,docs:docs.map(d=>({id:d.id,name:d.name,data:stripHistForDraft(d.data)}))};
   const str=JSON.stringify(pack);const tm=new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   try{localStorage.setItem(DRAFT_KEY,str);}
