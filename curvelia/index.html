@@ -14168,13 +14168,17 @@ function scissorsAt(p){
   const n=a.length, lim=o.closed?n:n-1;
   for(let i=0;i<lim;i++){const p1=a[i],p2=a[(i+1)%n];const steps=14;for(let s=0;s<=steps;s++){const t=s/steps;const q=cubicAt(p1,p2,t);const d=Math.hypot(q.x-p.x,q.y-p.y);if(d<best.d)best={d,seg:i,t};}}
   if(best.d>20/state.zoom+10){toast("パスの近くをクリックしてください");return;}
-  let idx;
+  let idx,insPt=null;
   if(best.t<0.08)idx=best.seg;else if(best.t>0.92)idx=(best.seg+1)%n;
-  else{const p1=a[best.seg],p2=a[(best.seg+1)%n];const q=cubicAt(p1,p2,best.t);a.splice(best.seg+1,0,{x:q.x,y:q.y});idx=best.seg+1;}
+  else{const p1=a[best.seg],p2=a[(best.seg+1)%n];insPt=cubicAt(p1,p2,best.t);idx=best.seg+1;}
+  if(!o.closed&&!insPt&&(idx<=0||idx>=a.length-1)){toast("パスの端ではない場所をクリックしてください");return;} /* 端クリック時はオブジェクトを一切変更せずに終える（下の prepare や点挿入を履歴なしに残さない） */
+  anchorEditPrepare(o); /* FB7-M3残件: ブラシ等の輪郭データ(customD)があると pathD が customD を優先し、アンカーを分割しても描画が変わらず「切れない」状態だった。アンカー編集と同様、切断前に customD を外してアンカー駆動に切り替える（ブラシの anchors は輪郭点そのものなので形は変わらない） */
+  if(insPt)a.splice(idx,0,{x:insPt.x,y:insPt.y});
   if(o.closed){const rot=a.slice(idx).concat(a.slice(0,idx));o.anchors=rot;o.closed=false;state.selected=[o.id];pushHistory();renderAll();toast("はさみ：閉じたパスを開きました");}
   else{if(idx<=0||idx>=a.length-1){toast("パスの端ではない場所をクリックしてください");return;}
     const second=baseObj("path",{anchors:a.slice(idx),closed:false,fill:"none",name:(o.name||"パス")+"（分割）"});
-    ["fill","stroke","strokeWidth","opacity","dash","linecap","gradient","pattern","blendMode"].forEach(k=>second[k]=JSON.parse(JSON.stringify(o[k])));second.fill="none";
+    ["fill","stroke","strokeWidth","opacity","dash","linecap","gradient","pattern","blendMode"].forEach(k=>second[k]=JSON.parse(JSON.stringify(o[k])));
+    if(o.stroke&&o.stroke!=="none"&&(o.strokeWidth==null||+o.strokeWidth>0))second.fill="none"; /* 線で描かれるパスは従来どおり分割側の塗りを消す。ブラシ輪郭のように塗りだけで見えるパス（線なし）は塗りを残さないと、分割した片方が線も塗りも無く見えなくなる */
     o.anchors=a.slice(0,idx+1);state.objects.push(second);state.selected=[o.id,second.id];pushHistory();renderAll();toast("はさみ：パスを2つに分割しました");}
 }
 function cubicAt(p1,p2,t){const c1=p1.hOut||{x:p1.x,y:p1.y},c2=p2.hIn||{x:p2.x,y:p2.y};const u=1-t;return{x:u*u*u*p1.x+3*u*u*t*c1.x+3*u*t*t*c2.x+t*t*t*p2.x,y:u*u*u*p1.y+3*u*u*t*c1.y+3*u*t*t*c2.y+t*t*t*p2.y};}
