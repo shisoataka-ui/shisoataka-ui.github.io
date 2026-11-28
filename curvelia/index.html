@@ -221,6 +221,23 @@ body.level-beginner [data-adv]{display:none!important}
 body.level-beginner #startSection{display:block}
 body.level-beginner .toolHelp-long{display:none}
 .level-note{font-size:11px;color:var(--mut)}
+/* ===== Panel mode switch (スマホでも設定パネルからモード切替) ===== */
+.panel-mode{padding:10px 12px;border-bottom:1px solid var(--line);background:var(--panel)}
+.pm-row{display:flex;align-items:center;gap:8px}
+.pm-label{font-size:12px;font-weight:800;white-space:nowrap}
+.pm-seg{display:flex;flex:1;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.pm-seg button{flex:1;border:0;background:#f8fafc;color:var(--ink);padding:7px 2px;font-size:12px;font-weight:700;min-height:38px}
+.pm-seg button+button{border-left:1px solid var(--line)}
+.pm-seg button.active{background:var(--acc);color:#fff}
+.pm-note{font-size:11px;color:var(--mut);line-height:1.6;margin:7px 0 0}
+html[data-theme="dark"] .pm-seg button{background:#262b31}
+/* ===== First-run mode cards (初回モード選択) ===== */
+.mode-cards{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.mode-card{display:block;width:100%;text-align:left;border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:14px;padding:13px 14px}
+.mode-card:hover{border-color:var(--acc)}
+.mode-card b{font-size:15px;display:block;margin-bottom:3px}
+.mode-card span{display:block;font-size:12px;color:var(--mut);line-height:1.7}
+.mode-card .mc-for{color:var(--ink);font-weight:700;font-size:12px;margin-bottom:2px}
 /* ===== Tool search (Discover風) ===== */
 .search-wrap{position:relative;min-width:170px}
 .search-wrap input{width:100%;min-height:34px}
@@ -678,6 +695,16 @@ dialog{padding-right:52px}
       <div id="panelResizer" title="ドラッグでパネルの幅を変更" aria-hidden="true"></div>
       <div class="panel-grab" aria-hidden="true"></div>
       <div class="panel-head"><b>設定パネル</b><span style="font-size:11px;color:var(--mut)" id="panelDeviceNote"></span><button onclick="togglePanel()" aria-label="パネルを閉じる">✕</button></div>
+      <div class="panel-mode" id="panelMode">
+        <div class="pm-row"><span class="pm-label">モード</span>
+          <div class="pm-seg" id="panelModeSeg" role="group" aria-label="モード切替（入門／標準／プロ）">
+            <button type="button" data-level="beginner">入門</button>
+            <button type="button" data-level="standard">標準</button>
+            <button type="button" data-level="pro">プロ</button>
+          </div>
+        </div>
+        <p class="pm-note" id="panelModeNote">現在のモード：標準</p>
+      </div>
       <div class="tabs">
         <button class="active" data-tab="props">見た目</button>
         <button data-tab="layers">レイヤー</button>
@@ -1199,6 +1226,17 @@ dialog{padding-right:52px}
     <button class="btn" id="firstLicTrial" style="min-height:52px;font-size:14px">試用として始める（編集は自由・書き出しは登録後）</button>
   </div>
   <p style="font-size:12px;color:var(--mut);line-height:1.8;margin-top:12px">フィードバック用コード（VK-FB01 のような形式）でも登録できます。後から登録・変更する場合は、上部メニュー「表示」→「ライセンス登録」からいつでもできます。</p>
+</dialog>
+<!-- ===== M2 初回モード選択（初回のみ・選ぶまで本編へ進めない） ===== -->
+<dialog id="firstModeDlg" data-no-x="1">
+  <h3 style="margin-top:0">モードを選んでください</h3>
+  <p style="font-size:13px;line-height:1.9">カーヴェリアには、表示する機能の量が違う3つのモードがあります。あなたに合ったものを選んでください。<b>後からいつでも変更できます</b>（PCでは上部の「レベル」、スマホでは「パネル」ボタンから開く設定パネルの一番上）。</p>
+  <div class="mode-cards">
+    <button type="button" class="mode-card" data-first-mode="beginner"><b>入門（かんたん）</b><span class="mc-for">こんな人向け：ベクター編集は初めて／まず触ってみたい</span><span>変わること：よく使う機能だけのシンプルな画面になります。「何を作りますか？」のテンプレート（レーザー／ステッカー等）から選んで始められます。</span></button>
+    <button type="button" class="mode-card" data-first-mode="standard"><b>標準</b><span class="mc-for">こんな人向け：ひととおりの機能を使いたい</span><span>変わること：基本機能がひととおり使える、標準の画面です。迷ったらこれを選べば大丈夫です。</span></button>
+    <button type="button" class="mode-card" data-first-mode="pro"><b>プロ（全機能）</b><span class="mc-for">こんな人向け：Illustrator等の経験者／細かい調整まで使いこなしたい</span><span>変わること：全機能を表示します。上級者向けの設定や機能も含めて、すべて使える画面です。</span></button>
+  </div>
+  <p style="font-size:12px;color:var(--mut);line-height:1.8;margin-top:12px">選んだモードはこの端末に保存され、次回からはこの画面は出ません。</p>
 </dialog>
 <!-- ===== L2 アプリロック設定 ===== -->
 <dialog id="lockSetDlg">
@@ -12717,7 +12755,7 @@ vp.addEventListener("pointerdown",e=>{
     const thL=16/state.zoom+6;let hitL=false;
     const origL={};
     for(const en of state.lassoAnchors){const o=state.objects.find(x=>x.id===en.oid);if(!o||!o.anchors||!o.anchors[en.idx])continue;const a=o.anchors[en.idx];origL[en.oid+":"+en.idx]={x:a.x,y:a.y,hIn:a.hIn?{x:a.hIn.x,y:a.hIn.y}:undefined,hOut:a.hOut?{x:a.hOut.x,y:a.hOut.y}:undefined};if(Math.hypot(a.x-p0.x,a.y-p0.y)<thL)hitL=true;}
-    if(hitL){drag={kind:"lassoMove",start:p0,orig:origL,moved:false};vp.setPointerCapture(e.pointerId);return;}
+    if(hitL){state.lassoAnchors.forEach(en=>anchorEditPrepare(state.objects.find(x=>x.id===en.oid)));drag={kind:"lassoMove",start:p0,orig:origL,moved:false};vp.setPointerCapture(e.pointerId);return;}
   }
   // handles first
   const gz=e.target.getAttribute&&e.target.getAttribute("data-gresize");
@@ -12733,9 +12771,9 @@ vp.addEventListener("pointerdown",e=>{
   const hd=e.target.getAttribute&&e.target.getAttribute("data-handle");
   if(rz){drag={kind:"resize",dir:rz,oid:e.target.getAttribute("data-oid"),start:p0,orig:JSON.parse(JSON.stringify(state.objects.find(o=>o.id===e.target.getAttribute("data-oid"))))};vp.setPointerCapture(e.pointerId);return;}
   if(rt){const o=state.objects.find(x=>x.id===rt);drag={kind:"rotate",oid:rt,start:p0,c:center(o),a0:Math.atan2(p0.y-center(o).y,p0.x-center(o).x),r0:o.rotation||0};vp.setPointerCapture(e.pointerId);return;}
-  if(hd){const [kind,idx]=hd.split("-");drag={kind:"handle",oid:e.target.getAttribute("data-oid"),which:kind,idx:+idx,start:p0};vp.setPointerCapture(e.pointerId);return;}
+  if(hd){const [kind,idx]=hd.split("-");anchorEditPrepare(state.objects.find(x=>x.id===e.target.getAttribute("data-oid")));drag={kind:"handle",oid:e.target.getAttribute("data-oid"),which:kind,idx:+idx,start:p0};vp.setPointerCapture(e.pointerId);return;}
   if(an!==null&&an!==undefined&&(t==="direct"||t==="anchor"||t==="delAnchor"||t==="addAnchor")){
-    const o=state.objects.find(x=>x.id===e.target.getAttribute("data-oid"));
+    const o=state.objects.find(x=>x.id===e.target.getAttribute("data-oid"));anchorEditPrepare(o);
     if(t==="delAnchor"){o.anchors.splice(+an,1);pushHistory();renderAll();return;}
     drag={kind:"anchor",oid:o.id,idx:+an,start:p0,orig:{x:o.anchors[+an].x,y:o.anchors[+an].y}};vp.setPointerCapture(e.pointerId);return;}
   if(t==="artboard"){const b=boardAt(p0);if(b){state.activeBoard=b.id;drag={kind:"bmove",bid:b.id,start:p0,orig:{x:b.x,y:b.y}};vp.setPointerCapture(e.pointerId);}renderAll();return;}
@@ -12752,9 +12790,9 @@ vp.addEventListener("pointerdown",e=>{
   if(t==="scissors"){scissorsAt(p);return;}
   if(t==="shapebuilder"){drag={kind:"shapebuilder",pts:[p0],alt:e.altKey};vp.setPointerCapture(e.pointerId);return;}
   if(t==="measure"){drag={kind:"measure",start:p0,cur:p0};vp.setPointerCapture(e.pointerId);return;}
-  if(t==="addAnchor"){const o=hitObject(p);if(o&&o.anchors){let bi=0,bd=1e9;o.anchors.forEach((a,i)=>{const d=Math.hypot(a.x-p.x,a.y-p.y);if(d<bd){bd=d;bi=i;}});o.anchors.splice(bi+1,0,{x:p.x,y:p.y});state.selected=[o.id];pushHistory();renderAll();}return;}
-  if(t==="delAnchor"){const o=hitObject(p);if(o&&o.anchors){let bi=-1,bd=18/state.zoom+8;o.anchors.forEach((a,i)=>{const d=Math.hypot(a.x-p.x,a.y-p.y);if(d<bd){bd=d;bi=i;}});if(bi>=0)o.anchors.splice(bi,1);pushHistory();renderAll();}return;}
-  if(t==="anchor"){const o=hitObject(p);if(o){state.selected=[o.id];if(!o.anchors){const wl=o.type==="line";o.anchors=anchorsForShape(o);o.customD=null;o.type="path";o.closed=!wl;}drag={kind:"anchorConvert",oid:o.id,start:p0};vp.setPointerCapture(e.pointerId);renderAll();}return;} /* K3 */
+  if(t==="addAnchor"){const o=hitObject(p);if(o&&o.anchors){anchorEditPrepare(o);let bi=0,bd=1e9;o.anchors.forEach((a,i)=>{const d=Math.hypot(a.x-p.x,a.y-p.y);if(d<bd){bd=d;bi=i;}});o.anchors.splice(bi+1,0,{x:p.x,y:p.y});state.selected=[o.id];pushHistory();renderAll();}return;}
+  if(t==="delAnchor"){const o=hitObject(p);if(o&&o.anchors){anchorEditPrepare(o);let bi=-1,bd=18/state.zoom+8;o.anchors.forEach((a,i)=>{const d=Math.hypot(a.x-p.x,a.y-p.y);if(d<bd){bd=d;bi=i;}});if(bi>=0)o.anchors.splice(bi,1);pushHistory();renderAll();}return;}
+  if(t==="anchor"){const o=hitObject(p);if(o){state.selected=[o.id];if(!o.anchors){const wl=o.type==="line";o.anchors=anchorsForShape(o);o.customD=null;o.type="path";o.closed=!wl;}anchorEditPrepare(o);drag={kind:"anchorConvert",oid:o.id,start:p0};vp.setPointerCapture(e.pointerId);renderAll();}return;} /* K3 */
   if(t==="pencil"||t==="brush"){ // フリーハンドはスナップした点ではなく生の座標を使う（スナップの軸ごとの吸着が斜め線を階段状にしていた）
     freeDraft=baseObj(t,{anchors:[{x:p0.x,y:p0.y,p:(typeof e.pressure==="number"&&e.pressure>0)?e.pressure:undefined}],closed:false,fill:"none",strokeWidth:t==="brush"?parseFloat($("brushSize").value)||10:parseFloat($("pStrokeW").value)||2,name:t==="brush"?"ブラシ":"鉛筆"});
     freeDraft.linecap="round";freeDraft._raw=[{x:p0.x,y:p0.y,p:(typeof e.pressure==="number"&&e.pressure>0)?e.pressure:undefined}];
@@ -12777,7 +12815,7 @@ vp.addEventListener("pointerdown",e=>{
   if(t==="width"){const o=hitObject(p);if(o){o.strokeWidth=Math.min(80,(o.strokeWidth||2)+2);pushHistory();renderAll();}return;}
   if(t==="rotate"||t==="scale"||t==="shear"){const o=hitObject(p);if(o&&!state.selected.includes(o.id))state.selected=[o.id];
     if(selObjs().length){drag={kind:t,start:p0,c:center(selObjs()[0]),r0:selObjs()[0].rotation||0,s0:selObjs()[0].scaleX||1,sh0:selObjs()[0].shear||0,d0:Math.max(10,Math.hypot(p0.x-center(selObjs()[0]).x,p0.y-center(selObjs()[0]).y))};vp.setPointerCapture(e.pointerId);}return;}
-  if(t==="direct"){const o=hitObject(p);if(o){state.selected=[o.id];if(!o.anchors&&o.type!=="text"&&o.type!=="compound"&&o.type!=="image"&&o.type!=="svgImport"){const wl=o.type==="line";o.anchors=anchorsForShape(o);o.type="path";o.closed=!wl;o.customD=null;}else if(o.type==="compound")toast("複合パスはアンカー編集できません（選択ツールで移動・拡縮はできます）");renderAll();}else state.selected=[];renderAll();return;} /* K3: アンカー編集で多角形が四角形に化ける不具合の修正。N2: 複合パス・画像は四角形パスに化けさせない */
+  if(t==="direct"){const o=hitObject(p);if(o){state.selected=[o.id];if(o.anchors)anchorEditPrepare(o);if(!o.anchors&&o.type!=="text"&&o.type!=="compound"&&o.type!=="image"&&o.type!=="svgImport"){const wl=o.type==="line";o.anchors=anchorsForShape(o);o.type="path";o.closed=!wl;o.customD=null;}else if(o.type==="compound")toast("複合パスはアンカー編集できません（選択ツールで移動・拡縮はできます）");renderAll();}else state.selected=[];renderAll();return;} /* K3: アンカー編集で多角形が四角形に化ける不具合の修正。N2: 複合パス・画像は四角形パスに化けさせない */
   if(t==="lasso"){state.lassoAnchors=[];drag={kind:"lasso",start:p0,cur:p0,pts:[{x:p0.x,y:p0.y}]};vp.setPointerCapture(e.pointerId);return;}
   // select tool
   const o=hitObject(p0);
@@ -14920,6 +14958,11 @@ function openRecolor(){const map=new Map();state.objects.forEach(o=>{if(o.fill&&
     if(Object.keys(remap).length){state.objects.forEach(o=>{const f=toHex(o.fill);if(f&&remap[f.toLowerCase()]){o.fill=remap[f.toLowerCase()];o.cmykFill=null;}const s2=toHex(o.stroke);if(s2&&remap[s2.toLowerCase()])o.stroke=remap[s2.toLowerCase()];if(o.gradient)o.gradient.stops.forEach(st=>{const h=toHex(st.color);if(h&&remap[h.toLowerCase()])st.color=remap[h.toLowerCase()];});});pushHistory();renderAll();toast("リカラーを適用しました");}
     d.close();});
   d.addEventListener("close",()=>d.remove());d.showModal();}
+/* FB7-M3: ブラシ等の輪郭データ(customD)を持つオブジェクトは、pathD が customD を優先するため、
+   アンカーを動かしても描画が一切変わらず「アンカーが役割を果たしていない」状態だった。
+   ブラシ確定時は anchors に輪郭点そのものが入っているので、アンカー編集を始める時点で customD を外し、
+   アンカーから描画させれば形はそのままで点編集が効くようになる（移動・拡縮で既に採っている方式と同じ） */
+function anchorEditPrepare(o){if(o&&o.customD&&o.anchors&&o.anchors.length)o.customD=null;}
 function ensureAnchors(o){if(o.anchors)return true;if(["rect","ellipse","polygon","star","line"].includes(o.type)){o.anchors=anchorsForShape(o);o.customD=null;const wasLine=o.type==="line";o.type="path";o.closed=!wasLine;return true;}return false;}
 function applyWarp(kind){const sel=selObjs();if(!sel.length)return toast("まずオブジェクトを選んでください");let done=0;
   sel.forEach(o=>{if(!ensureAnchors(o))return;const b=bbox(o);if(!b.w||!b.h)return;const cx=b.x+b.w/2,cy=b.y+b.h/2;
@@ -15246,7 +15289,12 @@ function tplBanner(){createDoc("バナー下書き");state.boards[0].w=1200;stat
   pushHistory();renderAll();toast("バナーテンプレート（1200×628）を開きました");}
 
 /* ============ LEVEL / SEARCH / TUTORIAL ============ */
-function applyLevel(lv){document.body.classList.toggle("level-beginner",lv==="beginner");document.body.classList.toggle("level-pro",lv==="pro");const sel=$("levelSelect");if(sel)sel.value=lv;try{localStorage.setItem("vectorKobo.level",lv);}catch(e){}
+const LEVEL_LABELS={beginner:"入門（かんたん）",standard:"標準",pro:"プロ（全機能）"};
+const LEVEL_NOTES={beginner:"よく使う機能だけ表示し、「何を作りますか？」テンプレートから始められます",standard:"基本機能がひととおり使える、標準の画面です",pro:"全機能を表示します"};
+function syncLevelUI(lv){const sel=$("levelSelect");if(sel)sel.value=lv;
+  document.querySelectorAll("#panelModeSeg button").forEach(b=>b.classList.toggle("active",b.dataset.level===lv));
+  const mn=$("panelModeNote");if(mn)mn.textContent="現在のモード："+(LEVEL_LABELS[lv]||lv)+" — "+(LEVEL_NOTES[lv]||"");}
+function applyLevel(lv){document.body.classList.toggle("level-beginner",lv==="beginner");document.body.classList.toggle("level-pro",lv==="pro");syncLevelUI(lv);try{localStorage.setItem("vectorKobo.level",lv);}catch(e){}
   if(lv==="beginner")toast("入門モード：よく使う機能だけ表示し、テンプレートを用意しました");else if(lv==="pro")toast("プロモード：全機能を表示します");else toast("標準モードにしました");}
 const SEARCH_ACTIONS=[];
 function buildSearchActions(){SEARCH_ACTIONS.length=0;
@@ -15285,6 +15333,8 @@ function initCompat(){
   hasLic=!!getLicense();
   if(lv)applyLevel(lv);
   $("levelSelect").addEventListener("change",e=>applyLevel(e.target.value));
+  document.querySelectorAll("#panelModeSeg button").forEach(b=>b.addEventListener("click",()=>applyLevel(b.dataset.level))); /* M1: スマホでも設定パネル最上部からモード切替できるように（上部バーの「レベル」と同じ applyLevel を使う） */
+  syncLevelUI(lv||"standard");
   $("colorModeSel").addEventListener("change",e=>{state.colorMode=e.target.value;saveDraftSoon();toast("カラーモードを "+(state.colorMode==="cmyk"?"CMYK（印刷向け）":"RGB（画面向け）")+" にしました");});
   $("bleedMm").addEventListener("change",e=>{state.bleedMm=Math.max(0,Math.min(10,parseFloat(e.target.value)||0));saveDraftSoon();});
   $("cropMarksChk").addEventListener("change",e=>{state.cropMarks=e.target.checked;saveDraftSoon();});
@@ -15422,10 +15472,25 @@ $("agreeDlg").addEventListener("cancel",e=>{if(_agreeBoot)e.preventDefault();});
 /* ============ G9: 初回ライセンス選択（コード入力／試用で始める） ============ */
 function openFirstLicenseChoice(){const d=$("firstLicDlg");if(!d||d.open)return;try{d.showModal();}catch(e){}}
 $("firstLicDlg").addEventListener("cancel",e=>{e.preventDefault();}); /* どちらか選ぶまで閉じられない */
-$("firstLicTrial").addEventListener("click",()=>{try{localStorage.setItem("vectorKobo.licenseChoice","trial");localStorage.setItem("vectorKobo.licenseAsked","1");}catch(e){}$("firstLicDlg").close();lockGate();});
+$("firstLicTrial").addEventListener("click",()=>{try{localStorage.setItem("vectorKobo.licenseChoice","trial");localStorage.setItem("vectorKobo.licenseAsked","1");}catch(e){}$("firstLicDlg").close();modeGate();});
 $("firstLicCode").addEventListener("click",()=>{$("firstLicDlg").close();openLicenseDialog();
-  const d=$("licenseDlg");const onClose=()=>{d.removeEventListener("close",onClose);try{if(!localStorage.getItem("vectorKobo.licenseChoice"))localStorage.setItem("vectorKobo.licenseChoice",isLicensed()?"registered":"deferred");}catch(e){}lockGate();};
+  const d=$("licenseDlg");const onClose=()=>{d.removeEventListener("close",onClose);try{if(!localStorage.getItem("vectorKobo.licenseChoice"))localStorage.setItem("vectorKobo.licenseChoice",isLicensed()?"registered":"deferred");}catch(e){}modeGate();};
   d.addEventListener("close",onClose);});
+
+/* ============ M2: 初回モード選択（ライセンス選択の直後・初回のみ・選ぶまで進めない） ============ */
+/* 「初回」の判定：このスクリプト読み込み時点（＝今回の起動で何も記録される前）に、端末内に利用記録
+   （同意記録／ライセンス選択／ライセンス登録／レベル設定／下書き）が一切無い場合だけを初回とする。
+   既存ユーザーは同意済み・選択済みのため firstRunFlow から直接 lockGate へ進み、この画面には到達しない */
+let _freshDevice=false;
+try{_freshDevice=!localStorage.getItem("vectorKobo.agreedAt")&&!localStorage.getItem("vectorKobo.licenseChoice")&&!localStorage.getItem("vectorKobo.level")&&!localStorage.getItem("vectorKobo.draft")&&!localStorage.getItem("vectorKobo.license.v1");}catch(e){}
+function modeChosenDone(){try{return !!localStorage.getItem("vectorKobo.modeChosen");}catch(e){return false;}}
+function openFirstModeChoice(){const d=$("firstModeDlg");if(!d||d.open)return;try{d.showModal();}catch(e){}}
+$("firstModeDlg").addEventListener("cancel",e=>{e.preventDefault();}); /* どれか選ぶまで閉じられない（同意書・ライセンス選択と同じ扱い） */
+function chooseFirstMode(lv){try{localStorage.setItem("vectorKobo.modeChosen","1");}catch(e){}
+  applyLevel(lv); /* vectorKobo.level に保存される。後から設定で変更した場合はそちらが優先される */
+  const d=$("firstModeDlg");if(d&&d.open)d.close();lockGate();}
+document.querySelectorAll("[data-first-mode]").forEach(b=>b.addEventListener("click",()=>chooseFirstMode(b.dataset.firstMode)));
+function modeGate(){if(_freshDevice&&!modeChosenDone()){openFirstModeChoice();return;}lockGate();}
 
 /* ============ L3/J5: 起動フロー（スプラッシュ → 同意書 → ライセンス選択 → ロック → 本編）。端末種別・下書きの有無で順番は変わらない ============ */
 function postBootNotices(){if(window._postBoot)try{window._postBoot();}catch(e){}}
